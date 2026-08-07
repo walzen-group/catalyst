@@ -10,7 +10,7 @@ import { buildDispatchInput, capabilityFor, deliveredBriefText, runtimeToCli } f
 import { ROLES } from './fixtures.mjs';
 
 // Canonical skills root, mirroring config.mjs.
-const SKILLS_ROOT = join(homedir(), 'nix', 'settings', 'skills');
+const SKILLS_ROOT = join(homedir(), 'nix', 'catalyst', 'skills');
 const HERE = dirname(fileURLToPath(import.meta.url));
 
 /**
@@ -23,7 +23,7 @@ function resolveDispatchPath(rel) {
   if (existsSync(alongside)) return alongside;
   const suiteDir = resolve(HERE, '..');
   const kitRoot = resolve(suiteDir, '..', '..', '..');
-  return join(kitRoot, 'settings', 'skills', 'catalyst-v2-dispatch', rel);
+  return join(kitRoot, 'skills', 'catalyst-v2-dispatch', rel);
 }
 
 // Read-only import of the dispatch tool's own test helpers (proves they are
