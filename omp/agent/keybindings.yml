@@ -1,0 +1,13 @@
+# omp keybindings. omp reads this file from its agent dir (~/.omp/agent, the bind
+# mount of this directory), and a listed keybinding replaces omp's default key list
+# for that action, so the defaults are repeated here.
+#
+# ctrl+h is the Ctrl+Backspace path through herdr: Windows Terminal sends raw 0x08,
+# herdr reads that legacy byte back as Ctrl+H, and re-encodes it for the pane.
+# See docs/wsl-setup.md, "Ctrl+Backspace word delete".
+tui.editor.deleteWordBackward:
+  - ctrl+w
+  - alt+backspace
+  - ctrl+backspace
+  - super+alt+backspace
+  - ctrl+h

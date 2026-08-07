@@ -21,11 +21,11 @@ bash /opt/devcontainer/omp-sync.sh seed \
 bash /opt/devcontainer/claude-sync.sh seed \
   || echo "claude-sync: seed failed; run 'bash /opt/devcontainer/claude-sync.sh seed' inside the container"
 
-# The skills and .cortex binds land under ~/nix/catalyst, and the omp config under
-# ~/nix/settings/omp, mirroring the host layout so a path is written once and reads the
-# same in both places. Docker creates the dirs above each bind as root; chown them (not
-# the binds themselves, which are host files) so the container user owns its own ~/nix tree.
-for _p in "$HOME/nix" "$HOME/nix/catalyst" "$HOME/nix/settings" "$HOME/nix/settings/omp" "$HOME/nix/settings/omp/agent"; do
+# The skills, .cortex, and omp config binds all land under ~/nix/catalyst, mirroring the
+# host layout so a path is written once and reads the same in both places. Docker creates
+# the dirs above each bind as root; chown them (not the binds themselves, which are host
+# files) so the container user owns its own ~/nix tree.
+for _p in "$HOME/nix" "$HOME/nix/catalyst" "$HOME/nix/catalyst/omp" "$HOME/nix/catalyst/omp/agent"; do
   [ -d "$_p" ] && [ ! -O "$_p" ] && sudo chown "$(id -u):$(id -g)" "$_p"
 done
 

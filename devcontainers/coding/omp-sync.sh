@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Move omp's tracked config between the repo template and the ~/.omp volume, where omp's
-# agent dir lives. The template is settings/omp/agent in the nix repo, which on a host
-# running omp directly IS ~/.omp/agent; the container reaches the tracked entries through
-# per-file binds under ~/nix/settings/omp/agent (devcontainer.json).
+# agent dir lives. The template is omp/agent in the catalyst repo; on a host running omp
+# directly the tracked base config is seeded into ~/.omp/agent, and the container reaches
+# the tracked entries through per-file binds under ~/nix/catalyst/omp/agent
+# (devcontainer.json).
 #
 #   seed    copy in whatever the volume is missing, leaving what is already there
 #           (post-create.sh runs this, so a fresh container starts on the repo config)
@@ -14,7 +15,7 @@
 set -euo pipefail
 
 _mode="${1:-seed}"
-_tpl="${OMP_TEMPLATE_DIR:-$HOME/nix/settings/omp/agent}"
+_tpl="${OMP_TEMPLATE_DIR:-$HOME/nix/catalyst/omp/agent}"
 _live="${OMP_AGENT_DIR:-$HOME/.omp/agent}"
 _entries="config.yml models.yml keybindings.yml extensions"
 

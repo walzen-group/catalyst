@@ -17,7 +17,6 @@ bootstrap prevents.
 | Situation | Read first |
 |---|---|
 | Orchestrating anything; tempted to implement yourself | `catalyst-v2-orchestrating-delegates` |
-| Wanting the whole capability set | `catalyst-v2-overview` |
 | Small task, chore, or follow-up | `catalyst-v2-running-a-reduced-workset` |
 | Starting a multi-task effort | `catalyst-v2-writing-execution-plans` |
 | Writing a task spec or dispatch prompt | `catalyst-v2-writing-delegation-specs` |

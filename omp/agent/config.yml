@@ -1,0 +1,60 @@
+skills: 
+  enableClaudeUser: false
+  enableClaudeProject: false
+  customDirectories:
+    - ~/nix/catalyst/skills
+symbolPreset: unicode
+theme: 
+  dark: titanium
+  light: light
+setupVersion: 1
+modelRoles: 
+  plan: kimi-code/k3
+  designer: kimi-code/k3
+  default: opencode-go/deepseek-v4-flash:high
+  smol: opencode-go/deepseek-v4-flash
+  tiny: opencode-go/deepseek-v4-flash
+  task: opencode-go/deepseek-v4-flash:max
+hideThinkingBlock: true
+memory: 
+  backend: "off"
+defaultThinkingLevel: high
+statusLine: 
+  preset: custom
+  separator: powerline
+  leftSegments: 
+    - pi
+    - model
+    - mode
+    - path
+    - git
+    - pr
+    - subagents
+  rightSegments: 
+    - usage
+    - cache_hit
+    - token_in
+    - token_out
+    - token_rate
+    - cache_read
+    - cost
+    - context_pct
+    - time_spent
+    - time
+  segmentOptions: 
+    model: 
+      showThinkingLevel: true
+    path: 
+      abbreviate: true
+      maxLength: 50
+    git: 
+      showBranch: true
+      showStaged: true
+      showUnstaged: true
+      showUntracked: true
+    time: 
+      format: 24h
+      showSeconds: false
+startup: 
+  quiet: false
+interruptMode: wait

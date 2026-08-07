@@ -184,7 +184,7 @@ test('migration coverage: every pre-migration role migrated with its model strin
   }
 
   // The two omp-internal modelRoles from the table (plan/designer, smol/tiny) are
-  // configured in settings/omp/agent/config.yml, not dispatched by catalyst; their model
+  // configured in omp/agent/config.yml, not dispatched by catalyst; their model
   // strings must still survive in the migrated set so nothing was lost.
   const models = new Set(Object.values(roles).map((r) => r.model));
   assert.ok(models.has('kimi-code/k3'), 'omp plan/designer model kimi-code/k3 survives');

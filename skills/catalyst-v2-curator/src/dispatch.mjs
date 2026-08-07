@@ -47,7 +47,7 @@ function briefText(tree, effort) {
     '5. RESURRECT any tombstoned entry made relevant again (c2m resurrect <slug>).',
     `6. REINDEX (c2m reindex --tree ${tree}).`,
     '',
-    'Then deliver the hand-back: the pass verdicts and the store changes, in the Curator voice, via c2d steer --agent orchestrator --text with the A2A: prefix. If the steer fails, write the hand-back to ' + handbacksDir + ' and retire.',
+    'Then deliver the hand-back: the pass verdicts and the store changes, as a plain structured report, via c2d steer --agent orchestrator --text with the A2A: prefix. If the steer fails, write the hand-back to ' + handbacksDir + ' and retire.',
     '',
     'The store is single-writer: do not hand-edit the ledger; move only through the c2m verbs.',
   );
@@ -65,7 +65,7 @@ function summonBriefText(tree, effort) {
   if (effort) lines.push(`Effort plan dir: ${effort}`);
   lines.push(
     '',
-    'Answer the user plainly first, then in your voice (the persona comes from your style_file).',
+    'Answer the user plainly and directly (the persona comes from your style_file).',
     'Apply the c2m verbs (promote, decay, prune, resurrect, pin, merge, inbox done) only when the user explicitly asks.',
     'Run no automatic pass on your own: no decay sweep, no store reindex, no commit, no inbox drain.',
   );

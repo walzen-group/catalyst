@@ -7,7 +7,7 @@ with the launch.
 The wave: one implementation delegate named doc-worker that will write a
 user-facing report. Its brief text is:
 
-"Read the catalyst-v2-overview skill, then write the report at
+"Read the catalyst-v2 skill, then write the report at
 /workspaces/catalyst/.cortex/reports/2026-08-06-demo-report.md: one mermaid
 diagram plus a compact role table describing every catalyst agent job."
 

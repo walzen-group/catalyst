@@ -11,6 +11,9 @@ on a plain host, or declarative integration when consumed as a git submodule ins
 nix flake. Both routes end the same way, with the skills discoverable by Claude, the
 tools on PATH, and omphu sourced in the shell.
 
+Catalyst currently drives two agent harnesses: the `claude` CLI and omp. A dispatch
+targets one of them per agent; other harnesses are not supported yet.
+
 ## What lands where
 
 | Piece | Target | Purpose |
@@ -101,10 +104,9 @@ resolve catalyst material (skills, `.cortex`, `c2d`, `c2m`) through
 |------|-------|
 | `skills/` | All skills: `catalyst-v2-*`, `herdr`, `humanizer`, `i-have-adhd` |
 | `skills/catalyst-v2/SKILL.md` | Entry point and routing table for the v2 skill set |
-| `skills/catalyst-v2-overview/` | Every catalyst-v2 skill with its purpose and boundary |
 | `devcontainers/coding/` | Devcontainer template, `post-create.sh`, omphu |
 | `install.sh` | Host bootstrap for a plain (non-nix) host |
 | `.cortex/` | Kit tree: catalyst system knowledge, self-tests, dev plans, incidents, system memory |
 
 Start with `skills/catalyst-v2/SKILL.md`; it routes to the right skill for the task at
-hand. For the whole capability set at a glance, read `skills/catalyst-v2-overview/`.
+hand, and its table lists every catalyst-v2 skill with the situation it covers.

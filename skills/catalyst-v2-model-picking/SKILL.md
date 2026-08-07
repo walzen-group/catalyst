@@ -50,7 +50,7 @@ back to its own `skills/` layout.
 | Curator | Claude Code in herdr tab | sonnet, default effort |
 | Judge (test runner) | Claude Code | claude-opus-4-8, default effort |
 
-The omp session also keeps two internal modelRoles set in settings/omp/agent/config.yml:
+The omp session also keeps two internal modelRoles set in omp/agent/config.yml:
 plan/designer (kimi-code/k3) and smol/tiny subagents
 (opencode-go/deepseek-v4-flash). The `judge` role is defined in `models.yaml` for
 the integration-test runner, which enforces that the judge model differs from the
@@ -59,7 +59,7 @@ actor model under test.
 ## Policy
 
 - **Every dispatch names the model.** Where a role's model is configured (omp
-  modelRoles in settings/omp/agent/config.yml, or named on the dispatch) is a separate
+  modelRoles in omp/agent/config.yml, or named on the dispatch) is a separate
   question from which model to name. The tool refuses a nameless launch; the
   judgment it cannot make is *which* model. Read the row, name it.
 - **Opus concurrency cap: 2.** No more than two claude-opus-4-8 delegate sessions
@@ -131,7 +131,7 @@ demonstrably can't reach the bar after retries.
 
 ## Changing an assignment
 
-1. omp roles: edit modelRoles in settings/omp/agent/config.yml, then omp-sync.sh push.
+1. omp roles: edit modelRoles in omp/agent/config.yml, then omp-sync.sh push.
 2. Claude delegates: change `model` on the dispatch. omp: change `model`/`thinking`.
 3. Update `models.yaml` and the summary table above in the same change.
    `models.yaml` is the machine truth the test runner reads; this file stays the
@@ -139,5 +139,5 @@ demonstrably can't reach the bar after retries.
 
 ## Inactive capacity
 
-settings/omp/agent/models.yml holds a second provider catalog, kept but unused: no key on
+omp/agent/models.yml holds a second provider catalog, kept but unused: no key on
 the hosts. Available only if a key returns to ~/.secrets.

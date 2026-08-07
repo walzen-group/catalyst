@@ -11,7 +11,7 @@
 # wave. The role's configured model per models.yaml is kimi-code/k3, but the
 # kimi provider was quota-blocked on 2026-08-06 (403, "usage limit", refresh
 # ~19h), so the declared model is the orchestrator session's actual default
-# per settings/omp/agent/config.yml (modelRoles.default:
+# per omp/agent/config.yml (modelRoles.default:
 # opencode-go/deepseek-v4-flash at high). Same CLI (omp), same live model.
 # Its model must differ from the judge model.
 actor:

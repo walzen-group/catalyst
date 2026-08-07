@@ -78,7 +78,7 @@
     // by workspace path, so projects stay separate inside it.
     "source=claude-config-shared,target=/home/vscode/.claude,type=volume",
     // omp state: whole agent dir (config, logins in agent.db, sessions, memories),
-    // plugins, caches, logs; one volume shared by all projects. settings/omp/agent
+    // plugins, caches, logs; one volume shared by all projects. catalyst/omp/agent
     // seeds the config via omp-sync.sh; see post-create.sh and the four binds below.
     "source=omp-config-shared,target=/home/vscode/.omp,type=volume",
     // gh auth (hosts.yml, the token): shared across projects, a GitHub login is not
@@ -98,23 +98,24 @@
     // staged under ~/nix/catalyst, not on ~/.claude/skills, so that volume stays writable.
     // Mirrors the host ~/nix/catalyst layout, so paths match host and container.
     // API keys, one file per service (.neuralwatt.env holds NEURALWATT_API_KEY, read
-    // by the neuralwatt provider in settings/omp/agent/models.yml). Read-only and from
+    // by the neuralwatt provider in catalyst/omp/agent/models.yml). Read-only and from
     // the home dir, not NIX_REPO: a secret stays out of this repo. Docker aborts on a
     // missing bind source, so the dir must exist: modules/home/secrets.nix creates it
     // on WSL hosts, glaive by hand. Windows leaves HOME empty: comment this mount out
     // there (and with it the neuralwatt provider).
     "source=${localEnv:HOME}/.secrets,target=/home/vscode/.secrets,type=bind,readonly",
     "source=${localEnv:CATALYST_REPO}/skills,target=/home/vscode/nix/catalyst/skills,type=bind",
-    // omp config seed, entry by entry, not the whole settings/omp dir: on a host
-    // running omp directly that dir is ~/.omp, holding agent.db with the provider
-    // logins, sessions and memories, so binding the parent would hand every container
-    // the host's omp state. These four are the tracked entries omp-sync.sh copies into
+    // omp config seed, entry by entry, not the whole catalyst/omp dir: on a host
+    // running omp directly the tracked base config is copied into ~/.omp/agent, which
+    // also holds agent.db with the provider logins, sessions and memories, so binding
+    // a parent dir would hand every container the host's omp state. These four are the
+    // tracked entries omp-sync.sh copies into
     // the volume at OMP_TEMPLATE_DIR. Read-write so `omp-sync.sh pull` carries a change
     // made inside the container back to the repo. See docs/devcontainer.md.
-    "source=${localEnv:NIX_REPO}/settings/omp/agent/config.yml,target=/home/vscode/nix/settings/omp/agent/config.yml,type=bind",
-    "source=${localEnv:NIX_REPO}/settings/omp/agent/models.yml,target=/home/vscode/nix/settings/omp/agent/models.yml,type=bind",
-    "source=${localEnv:NIX_REPO}/settings/omp/agent/keybindings.yml,target=/home/vscode/nix/settings/omp/agent/keybindings.yml,type=bind",
-    "source=${localEnv:NIX_REPO}/settings/omp/agent/extensions,target=/home/vscode/nix/settings/omp/agent/extensions,type=bind",
+    "source=${localEnv:CATALYST_REPO}/omp/agent/config.yml,target=/home/vscode/nix/catalyst/omp/agent/config.yml,type=bind",
+    "source=${localEnv:CATALYST_REPO}/omp/agent/models.yml,target=/home/vscode/nix/catalyst/omp/agent/models.yml,type=bind",
+    "source=${localEnv:CATALYST_REPO}/omp/agent/keybindings.yml,target=/home/vscode/nix/catalyst/omp/agent/keybindings.yml,type=bind",
+    "source=${localEnv:CATALYST_REPO}/omp/agent/extensions,target=/home/vscode/nix/catalyst/omp/agent/extensions,type=bind",
     // Catalyst kit state (incidents, memory, plans) at a fixed path, so every project
     // container reaches the same store no matter which workspace it serves. Sits at
     // ~/nix/catalyst/.cortex, the submodule's own location, so the path means one thing

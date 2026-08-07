@@ -4,7 +4,7 @@
 # else passes. The user's own terminal never runs through Claude Code, so it
 # is not affected. Synced by claude-sync.sh from
 # devcontainers/coding/claude-config/hooks/. Keep patterns in sync with
-# settings/omp/agent/extensions/guard-push.js.
+# omp/agent/extensions/guard-push.js.
 set -u
 
 input="$(cat)"
