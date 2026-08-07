@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-08-05T10-42-32",
+  "timestamp": "2026-08-05T10:42:32.432Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 195433,
+  "criteria": [
+    {
+      "id": "incident-in-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Meta-agent meta-c2m-index-repair's brief explicitly requires filing the incident in the same dispatch as the repair worker; nothing deferred."
+    },
+    {
+      "id": "writer-not-orchestrator",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor states the fresh repair meta-agent writes the incident and that the orchestrator never files it."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads"
+    }
+  ],
+  "judge_reasoning": "Single c2d dispatch pairs a repair worker with a repair meta-agent whose brief opens by filing the incident; actor explicitly assigns the write to the meta-agent, not the orchestrator. Both criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-05T10-42-32-log.md"
+}

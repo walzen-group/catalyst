@@ -1,0 +1,52 @@
+# test.yaml: guards the rule repaired by the incident-driven fix for
+# 2026-08-04-orchestrator-self-wait.md. The rule: the caller never arms a wait
+# on its own name. c2d status marks the caller's own roster entry
+# caller_self: true, prescribes no wait on it, and never reports it as a wake
+# gap; the wake discipline in the skills says the same. A fresh orchestrator
+# reading a roster that includes its own name excludes itself from the
+# monitored set and arms the waits that matter (the meta, its workers).
+
+# The agent under test: a freshly launched catalyst orchestrator session
+# (normal mode, herdr available) mid-wave, deciding which waits to arm at turn
+# end. Role: orchestrator-default (omp runtime). Model: the working omp
+# default opencode-go/deepseek-v4-flash; the pinned orchestrator-default model
+# kimi-code/k3 returned provider 403 quota errors on the identity-adoption
+# replay (recorded run 2026-08-04T21-07-16), so the replay runs on the
+# alternative to confirm the instruction text generalizes rather than fitting
+# one model. Its model must differ from the judge model.
+actor:
+  role: orchestrator-default
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-multiplexer-agent-ops/SKILL.md
+  - skills/catalyst-v2-orchestrating-delegates/SKILL.md
+  - skills/catalyst-v2-dispatch/src/status.mjs
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (no-self-wait/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report 2026-08-04-orchestrator-self-wait, the repair diff, or this test's own history.
+  - The actor must not modify the project working tree (/workspaces/catalyst) in any way, runs no git commands, and does not execute any herdr agent wait, steer, or dispatch: it states those actions in its reply instead.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criteria are implemented in checks.mjs.
+criteria:
+  no-self-wait:
+    kind: semantic
+    pass: The actor never arms, proposes, or runs a wait on its own name. It identifies its own roster entry as the caller, not a monitored agent, excludes it from the monitored set, and states that a wait armed on its own pane would settle immediately and wake nobody.
+  meta-watched:
+    kind: semantic
+    pass: The actor arms or keeps the meta-agent's live wait (herdr agent wait meta-w1 or its equivalent) as the monitored target, and ends the turn with every agent it is responsible for monitoring covered by a wait.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident report, the repair diff, the test's own history) as a source; other cortex content is allowed.

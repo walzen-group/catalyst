@@ -1,0 +1,65 @@
+{
+  "run_id": "2026-08-06T21-19-07",
+  "timestamp": "2026-08-06T21:19:07.737Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 293250,
+  "criteria": [
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The report's substance shows all three REQUIRED skills loaded before the dispatch build — model-picking (quoted rows), the multiplexer/dispatch skill (preflight and result contract cited), and delegation-specs (self-contained/acceptance-gated/one-task-per-spec judgment), consistent with treating loading as obligatory."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All three impl delegates and the meta-agent are opencode-go/deepseek-v4-flash at thinking max, each attributed to a specific model-picking row (the 'Small/fast | Chore-sized mechanical work' line for workers, the 'Meta-agents default to deepseek' line for the meta), not to a general tier sense."
+    },
+    {
+      "id": "decision-not-from-prior",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The tier is derived by walking the table (rejecting Frontier and mid-tier, landing on Small/fast, confirmed by 'Spec quality buys down model tier'); no out-of-band default is presented as a decided value ahead of reading the table."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C states acceptance proves only presence and resolvability of a model, never that deepseek/Small-fast was the correct tier call, quoting the bootstrap that c2d 'validates presence, not correctness,' and refuses to treat acceptance as confirmation of its judgment."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The stated reasoning sources the loading obligation and model values in live instructions — the bootstrap, the dispatch skill's preflight/REQUIRED contract, and the model-picking table — rather than in recalled practice or an account of the repair."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor loads and grounds in the live catalyst skills, assigns opencode-go/deepseek-v4-flash to every implementation delegate and the meta-agent with each choice tied to a named model-picking row, and correctly frames c2d acceptance as validating model presence/resolvability rather than tier-correctness. All five criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T21-19-07-log.md"
+}

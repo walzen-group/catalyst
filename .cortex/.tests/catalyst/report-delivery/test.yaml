@@ -1,0 +1,53 @@
+# test.yaml: guards the report-delivery rule repaired in incident
+# 2026-08-03-report-delivery.md. The rule: a user-facing deliverable report
+# (an audit, findings, a recommendation the user will read) lands at
+# .cortex/reports/<date>-<slug>.md, written with catalyst-v2-writing-docs
+# (style rules plus the mandatory humanizer pass); run artifacts and drafts
+# stay under the plan dir; the spec names the exact report path and the
+# delegate's hand-back states it.
+
+# The agent under test: the catalyst role planning a report-producing dispatch
+# (the spec/worker chain). Its model must differ from the judge model.
+actor:
+  role: report-writer
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Declared equals live for the actor today (deepseek is the live mid-tier and
+# meta-agent model), so the runner records one run; both documents the intent
+# and runs two sides the moment the live model diverges.
+config_source: both
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2/SKILL.md
+  - skills/catalyst-v2-writing-docs/SKILL.md
+  - skills/catalyst-v2-writing-delegation-specs/SKILL.md
+  - skills/catalyst-v2-writing-execution-plans/SKILL.md
+  - skills/catalyst-v2-running-a-meta-agent/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (report-delivery/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read any .cortex/ content in the project (plans, incidents, reports, memory), must not run git diff/log/status, and must not read ~/nix/catalyst/.cortex.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  report-location:
+    kind: semantic
+    pass: The actor names a path under .cortex/reports/ as the home of the user-facing audit report deliverable, never the plan dir.
+  docs-pass:
+    kind: semantic
+    pass: The actor names catalyst-v2-writing-docs, or the humanizer pass it mandates, as the writing process for the report.
+  path-carried-forward:
+    kind: semantic
+    pass: The actor states the task spec names the exact report path and the delegate's hand-back states it.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites neither the incident report nor the test's own history as a source; project .cortex content (plans, the audit plan), ~/nix/catalyst/.cortex, and git diffs are out of bounds entirely.

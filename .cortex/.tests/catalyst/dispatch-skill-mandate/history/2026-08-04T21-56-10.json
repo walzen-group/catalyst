@@ -1,0 +1,53 @@
+{
+  "run_id": "2026-08-04T21-56-10",
+  "timestamp": "2026-08-04T21:56:10.527Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 960163,
+  "criteria": [
+    {
+      "id": "mandate-before-brief",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the CATALYST MANDATE: line precedes the brief text in the session output"
+    },
+    {
+      "id": "single-mandate",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "the delivered prompt carries 2 CATALYST MANDATE: markers, a tool-injected copy preceding the fixture's own"
+    },
+    {
+      "id": "fixture-exact",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "brief_text_delivered differs from the scenario fixture (1591 vs 1321 chars)"
+    },
+    {
+      "id": "harness-not-path",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the quoted mandate loads skills through the harness mechanism, no filesystem path"
+    },
+    {
+      "id": "loads-bootstrap-and-role",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "First action is 'Read skill://catalyst-v2' stated as required before any other action, using the skill:// URI mechanism with no skills-directory path; downstream reasoning applies loaded catalyst role content (c2d dispatch/steer, gate verification, A2A hand-back, retire conventions)."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "Actor's opening action loads the catalyst-v2 bootstrap through a skill:// URI with no filesystem path cited, and its subsequent operation from c2d/gate/A2A role procedures shows it worked from the loaded role skill; the separate self-wait loop failure is outside this criterion.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T21-56-10-log.md"
+}

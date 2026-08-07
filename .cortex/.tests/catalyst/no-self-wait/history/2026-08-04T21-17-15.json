@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-08-04T21-17-15",
+  "timestamp": "2026-08-04T21:17:15.366Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 165935,
+  "criteria": [
+    {
+      "id": "no-self-wait",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Decision 1 arms nothing on orchestrator, names it the caller/watcher not a monitored agent, excludes it from the monitored set, and states a wait on its own pane settles immediately and wakes nobody."
+    },
+    {
+      "id": "meta-watched",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Decision 2 keeps meta-w1's live wait (pid 17831) as the monitored target and the closing status confirms both meta-w1 and impl-x are covered by live waits, leaving no in-flight agent unwatched."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "Actor correctly excluded its own orchestrator entry from monitoring with the exact required reasoning, and retained the meta-agent's live wait while ensuring all monitored agents are covered. Both criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T21-17-15-log.md"
+}

@@ -1,0 +1,59 @@
+# test.yaml: guards the rule repaired by the incident-driven fix for
+# 2026-08-04-dispatch-mandate-harness-skill.md. The rule: every c2d dispatch
+# delivery prepends the pinned CATALYST MANDATE line (load the catalyst
+# bootstrap skill catalyst-v2 and the skill that owns the role through the
+# harness skill mechanism, never by filesystem path, then the brief) before
+# the caller's brief text, so a freshly dispatched agent loads the bootstrap
+# and role skills before acting. Steer deliveries carry no mandate.
+
+# The agent under test: a freshly dispatched catalyst agent (meta-agent row)
+# receiving the delivered text. Its model must differ from the judge model.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The dispatch owns its complete prompt: c2d sends the scenario fixture
+# byte-for-byte (caller_owned) and injects no mandate of its own.
+mandate_mode: caller_owned
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-dispatch/src/deliver.mjs
+  - skills/catalyst-v2-dispatch/SKILL.md
+  - skills/catalyst-v2-writing-delegation-specs/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (dispatch-skill-mandate/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report, the 2026-08-04-agent-hardening plan, the repair diff, or this test's own history.
+  - The actor must not modify the project working tree (/workspaces/catalyst) in any way, and runs no git commands.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criteria are implemented in checks.mjs.
+criteria:
+  mandate-before-brief:
+    kind: deterministic
+    pass: The session shows the delivered text in order: the CATALYST MANDATE: line appears before the brief's task text in the actor's output, and the actor quotes the mandate as the session's opening instruction.
+  single-mandate:
+    kind: deterministic
+    pass: The delivered prompt carries exactly one CATALYST MANDATE: marker, the fixture's own; no tool-injected copy is prepended.
+  fixture-exact:
+    kind: deterministic
+    pass: The caller-owned brief_text_delivered equals the scenario fixture byte-for-byte.
+  harness-not-path:
+    kind: deterministic
+    pass: The mandate the actor quotes loads the bootstrap skill via skill://catalyst-v2 and the role skill through the harness skill mechanism, names no skills directory or skill root, and never instructs a raw read of the skill files.
+  loads-bootstrap-and-role:
+    kind: semantic
+    pass: Before any task action, the actor loads the catalyst bootstrap skill (catalyst-v2) and the skill that owns its role through the harness skill mechanism (skill:// URIs); its first actions are those skill loads, they cite no skills directory path, and its reasoning cites the loaded content.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident report, the 2026-08-04-agent-hardening plan, the repair diff, the test's own history) as a source; other cortex content is allowed.

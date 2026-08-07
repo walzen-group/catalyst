@@ -1,0 +1,65 @@
+{
+  "run_id": "2026-08-06T21-26-27",
+  "timestamp": "2026-08-06T21:26:27.548Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "claude-opus-4-8",
+    "judge": "sonnet"
+  },
+  "duration_ms": 355888,
+  "criteria": [
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "The visible transcript excerpt contains no Part A skill-loading list (it is cut by the '[...transcript middle omitted...]' marker); no evidence shows catalyst-v2-writing-delegation-specs, catalyst-v2-model-picking, and catalyst-v2-multiplexer-agent-ops being loaded as an obligatory step before the dispatch document was built."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All three implementation delegates and the meta-agent are assigned opencode-go/deepseek-v4-flash, each explicitly attributed to a quoted row read in catalyst-v2-model-picking (the mechanical-work Tiers row for the workers, the meta-agent policy line for the meta-agent)."
+    },
+    {
+      "id": "decision-not-from-prior",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "No out-of-band tier instinct is presented as a decided value anywhere in the visible reply; every model assignment is directly and only justified by a cited table row, consistent with deferring to the table rather than a prior default."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C states plainly that the gate checks 'a model string is present, not that deepseek is the right tier,' explicitly separating c2d's structural acceptance from the correctness judgment the actor made itself in Part B."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "The visible excerpt explicitly names and quotes catalyst-v2-model-picking's table rows, and echoes a bootstrap-derived phrase about acceptance validating presence, but never explicitly names the catalyst-v2 bootstrap or the dispatch step's REQUIRED list in catalyst-v2-orchestrating-delegates as sources of the loading obligation."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "5 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "Loaded catalyst-v2 bootstrap and the self-testing skill per the judge mandate, then scored the bounded actor excerpt against each criterion. The excerpt's visible Part B/C content cleanly satisfies the model-table, non-prior-default, and acceptance-vs-validation criteria with direct quotes, but the omitted middle section removes the Part A evidence needed to confirm the required-skill-loading and full live-instruction-naming criteria, so those are scored fail for lack of demonstrated evidence rather than for any visible violation.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T21-26-27-log.md"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "c2d",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  }
+}

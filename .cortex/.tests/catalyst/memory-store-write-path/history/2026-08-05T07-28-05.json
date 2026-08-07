@@ -1,0 +1,41 @@
+{
+  "run_id": "2026-08-05T07-28-05",
+  "timestamp": "2026-08-05T07:28:05.516Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "sonnet",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 87642,
+  "criteria": [
+    {
+      "id": "ledgerless-adopted",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Plans `c2m adopt feedback-pager-rotation` (tree passed via the stated --tree on all verbs), gives E3 a row with content untouched, never edits the ledger by hand, promotes, or leaves it unreported."
+    },
+    {
+      "id": "no-content-outside-tree",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Every store write goes through a c2m verb into the tree; no repo-root duplicates, scratch copies, or backup files appear in the plan or hand-back."
+    },
+    {
+      "id": "pass-rules-hold",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "N1 promotes as a fact, E1 (strength 0) prunes to a tombstone, E2 (strength 3) decays to 2 and survives, and the hand-back names the pager-rotation adoption plus carries the rule-enforcement section."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads"
+    }
+  ],
+  "judge_reasoning": "Actor grounded in the curator skill, adopted the ledger-less E3 via the correct verb without content writes outside the tree, and ran the full sweep with a hand-back that names the adoption and includes rule enforcement. All three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-05T07-28-05-log.md"
+}

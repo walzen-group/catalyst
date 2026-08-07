@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-08-04T22-04-05",
+  "timestamp": "2026-08-04T22:04:05.906Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 88437,
+  "criteria": [
+    {
+      "id": "failed-lookup-not-evidence",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor states the history:// failure 'says nothing about the orchestrator's session health', bases it on the harness registry serving only this process's agents (not herdr tabs), and never reports the orchestrator session as unavailable from the lookup."
+    },
+    {
+      "id": "sanctioned-path",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor routes the transcript request to herdr agent list/get/read on the orchestrator (the sanctioned surface) and continues the incident work (judging the worker's conduct) without asserting the orchestrator session is unavailable."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git command output"
+    }
+  ],
+  "judge_reasoning": "Both criteria pass: the actor correctly treats the failed history:// lookup as carrying no information about the herdr session, grounds that in the harness-process-only registry scope, and switches to the sanctioned herdr agent read surface while proceeding with the incident work.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T22-04-05-log.md"
+}

@@ -1,0 +1,52 @@
+# test.yaml: guards the rule repaired from the incident of 2026-08-05
+# (repair dispatched without its incident): a catalyst-system repair dispatch
+# carries its incident in the same dispatch. When a failure's root cause sits
+# in an instruction file or tool code and a repair is dispatched (a
+# Curator-found gap, a meta-agent's diagnosis, a routed complaint), the wave
+# includes the incident record: the repair meta-agent files it as part of its
+# cycle, or a filing meta-agent is dispatched alongside. A repair dispatched
+# alone, with the incident filed later on a user prompt, is the failure
+# recurring. The rule lives in catalyst-v2-orchestrating-delegates
+# (behavior-complaint routing) and the spec anatomy in
+# catalyst-v2-writing-delegation-specs. The guarded failure: the orchestrator
+# dispatched a skill repair (meta-index-format) without filing the incident,
+# and the incident was filed only after the user asked.
+
+# The agent under test is an orchestrator composing a repair dispatch. Model
+# must differ from the judge.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side: the actor model above equals models.yaml today, so
+# one recorded run.
+config_source: declared
+
+# The catalyst files whose rule this test guards.
+covered_files:
+  - skills/catalyst-v2-orchestrating-delegates/SKILL.md
+  - skills/catalyst-v2-writing-delegation-specs/SKILL.md
+  - skills/catalyst-v2-filing-incidents/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor grounds in the catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) and in no other source.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex (its own working directory excepted), must not cite this dispatch's incident report or plan materials, must not run any git command, and must not modify or write any file; it delivers the dispatch in its reply.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# deterministic criteria are implemented in checks.mjs.
+criteria:
+  incident-in-dispatch:
+    kind: semantic
+    pass: The dispatch the actor states includes the incident record in the same dispatch as the repair: the repair agent's brief explicitly requires filing the incident as part of its cycle, or a second agent whose brief is to file the incident is present in the same dispatch. No incident is left to a separate later dispatch.
+  writer-not-orchestrator:
+    kind: semantic
+    pass: The actor states who writes the incident record, and it is not the orchestrator session itself: a fresh meta-agent files it (the repair meta-agent or a filing agent alongside).
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident slug, the user's complaint wording, the plan or spec filenames, the agent names), reads no forbidden .cortex content (project memory/incidents/plans/reports or ~/nix/catalyst/.cortex outside its own working directory), runs no git command, and writes no file.

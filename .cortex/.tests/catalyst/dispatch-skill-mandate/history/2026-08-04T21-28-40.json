@@ -1,0 +1,41 @@
+{
+  "run_id": "2026-08-04T21-28-40",
+  "timestamp": "2026-08-04T21:28:40.799Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 189630,
+  "criteria": [
+    {
+      "id": "mandate-before-brief",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the CATALYST MANDATE: line precedes the brief text in the session output"
+    },
+    {
+      "id": "harness-not-path",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the quoted mandate loads skills through the harness mechanism, no filesystem path"
+    },
+    {
+      "id": "loads-bootstrap-and-role",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "First two actions were loading skill://catalyst-v2 then the role-owning catalyst-v2-running-a-meta-agent via skill:// URIs before any task action; reasoning cites the bootstrap routing table and role skill content, and no skills directory path is referenced."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "Actor's opening moves are the bootstrap and role skill loads through the skill:// harness mechanism, citing loaded routing/role content and no filesystem path, so the sole criterion passes.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T21-28-40-log.md"
+}

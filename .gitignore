@@ -1,0 +1,8 @@
+# Runtime and OS junk; tracked kit state (memory, tombstones, curator ledger) stays.
+.DS_Store
+node_modules/
+*.db
+*.db-wal
+*.db-shm
+.cortex/reports/handbacks/*
+.cortex/memory/.agent-trash/

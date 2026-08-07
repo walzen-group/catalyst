@@ -1,0 +1,51 @@
+# test.yaml: guards the rule repaired from the Curator pass of 2026-08-05
+# (crash-curation-readme, task-4-index-format-skill-repair): a MEMORY.md index
+# line is exactly `- <file>.md - <description>` — the bare filename (no path,
+# no backticks, no wikilinks), then ` - `, then a plain-prose description with
+# no wikilinks, no em or en dashes, no spaced hyphen, and no leading "See".
+# c2m's index parser (catalyst-v2-curator/src/index.mjs) accepts only lines of
+# this shape and silently drops any other line on reindex (store.mjs), so a
+# migrated or hand-written line in the old style (wikilinks, dash separators)
+# flattens to a bare title from its content. The format lives in
+# catalyst-v2-in-repo-agent-memory (Layout); the curator side points at it
+# from the Plain register.
+
+# The agent under test is any agent writing a MEMORY.md index line per
+# catalyst-v2-in-repo-agent-memory. Its model must differ from the judge.
+actor:
+  role: implementation-mid
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side: the actor model above equals models.yaml today, so
+# one recorded run.
+config_source: declared
+
+# The catalyst files whose rule and mechanics this test guards.
+covered_files:
+  - skills/catalyst-v2-in-repo-agent-memory/SKILL.md
+  - skills/catalyst-v2-curator/SKILL.md
+  - skills/catalyst-v2-curator/src/index.mjs
+  - skills/catalyst-v2-curator/src/store.mjs
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor grounds in the catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) and in no other source.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex, must not cite this dispatch's plan or spec, must not run any git command, and must not modify or write any file (the working tree is shared state); it delivers the line in its reply.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# deterministic criteria are implemented in checks.mjs.
+criteria:
+  description-conveyed:
+    kind: semantic
+    pass: The description in the produced line conveys both clauses of the given description — the scrim queue backs up when matchmaking drops, and retries then pile up server-side — in plain prose, and the line is the single index line the actor delivers.
+  line-format:
+    kind: deterministic
+    pass: The produced line matches `- <file>.md - <description>` exactly: the file token is the bare slug plus .md (feedback-scrim-queue-blocked.md), and the description has no wikilinks, no em or en dashes, no spaced hyphen, and no leading "See".
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the plan dir or spec filename), reads no forbidden .cortex content (project memory/incidents/plans/reports or ~/nix/catalyst/.cortex), runs no git command, and writes no file.

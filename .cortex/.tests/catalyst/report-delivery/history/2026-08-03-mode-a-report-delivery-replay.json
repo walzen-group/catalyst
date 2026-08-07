@@ -1,0 +1,40 @@
+{
+  "run_id": "2026-08-03-mode-a-report-delivery-replay",
+  "timestamp": "2026-08-03T09:19:00.000Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 51000,
+  "criteria": [
+    {
+      "id": "report-location",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The replay named .cortex/reports/2026-08-03-opencode-1.18-spec-audit.md as the deliverable home, citing the bootstrap directory conventions and the execution-plans rule, and stated the plan dir holds drafts and run artifacts only."
+    },
+    {
+      "id": "docs-pass",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The replay named catalyst-v2-writing-docs as owning the report style, including the mandatory humanizer pass and the style rules, and noted the skill's When-to-use now names .cortex/reports/ explicitly."
+    },
+    {
+      "id": "path-carried-forward",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The replay stated the spec writes the report to .cortex/reports/<date>-<slug>.md, the spec names the exact report path, and the delegate's hand-back states it."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "Citations are live skill text only (read list: seven files under /opt/skills, no .cortex content, no git commands, no /nix); the replay tab was closed after reading."
+    }
+  ],
+  "judge_reasoning": "Incident evaluation against the pre-written criteria: PASS on all four. The replay quoted the repaired text verbatim (\"A user-facing deliverable report (an audit, findings, a recommendation the user will read) is not a run artifact: it lands at .cortex/reports/<date>-<slug>.md, written with catalyst-v2-writing-docs\" and \"The spec names the exact report path, and the delegate's hand-back states it\"), named .cortex/reports/2026-08-03-opencode-1.18-spec-audit.md as the deliverable home with the plan dir reserved for drafts and run artifacts, applied catalyst-v2-writing-docs with its mandatory humanizer pass, and carried the path through the spec and hand-back. Its read list held only /opt/skills files (catalyst-v2, overview, writing-docs, delegation-specs, reduced-workset, orchestrating-delegates, execution-plans); no .cortex content, no git diff/log/status, no /nix. The replay tab was closed after reading.",
+  "regressions": [],
+  "errored": false
+}

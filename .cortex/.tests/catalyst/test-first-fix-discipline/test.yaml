@@ -1,0 +1,54 @@
+# test.yaml: guards the test-first fix procedure codified in the new
+# catalyst-v2-testing skill (improvement plan 2026-08-03-testing-skill-split).
+# The rule: a fix is proven by a test written FIRST capturing the wanted
+# behavior, run against the current unwanted behavior and recorded as FAILING
+# (the source of truth), then a minimal fix, then the green run. Writing a test
+# after implementing the fix is dishonest: the test gets shaped by the code
+# that exists instead of pinning the wanted behavior. The procedure is carried
+# into fix specs by catalyst-v2-writing-delegation-specs and into fix
+# verification by catalyst-v2-running-a-meta-agent (a green run with no
+# recorded red run does not confirm a fix).
+
+# The agent under test: the implementation worker role that fixes product
+# behavior. Its model must differ from the judge model.
+actor:
+  role: implementation-mid
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Declared equals live for the actor today (deepseek is the live
+# implementation-mid model), so the runner records one run; both documents the
+# intent and runs two sides the moment the live model diverges.
+config_source: both
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-testing/SKILL.md
+  - skills/catalyst-v2-writing-delegation-specs/SKILL.md
+  - skills/catalyst-v2-running-a-meta-agent/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (test-first-fix-discipline/).
+  - The catalyst skills under ~/nix/catalyst/skills are reachable and the intended source for the answer; the actor reads no memory, incident, or plan file in any .cortex tree and runs no git.
+  - The actor must not read the improvement plan 2026-08-03-testing-skill-split, the hand-back file, or this test's own history.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  test-first:
+    kind: semantic
+    pass: The actor's fix plan writes the test first, before any implementation change, and the test captures the wanted behavior (Client.list_models returns an empty list when the API responds with a null models field).
+  red-recorded:
+    kind: semantic
+    pass: The plan runs the test against the current unwanted behavior, expects it to fail, and records the failing (red) run as the source of truth before any fix.
+  fix-then-green:
+    kind: semantic
+    pass: The plan implements the minimal fix only after the red record, then runs the test again expecting green, and keeps both records as the evidence.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites neither the improvement plan, the hand-back file, nor the test's own history as a source.

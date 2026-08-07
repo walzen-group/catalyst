@@ -1,0 +1,41 @@
+{
+  "run_id": "2026-08-06T12-40-21",
+  "timestamp": "2026-08-06T12:40:21.386Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 76102,
+  "criteria": [
+    {
+      "id": "inline-heredoc-launch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "c2d dispatch <<'EOF' heredoc at the call site with both briefs inline; no --file, redirect, rawfile, $(cat), or scratch path."
+    },
+    {
+      "id": "reads-dispatch-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Report confirms the dispatch skill was read and reasoning cites its input-mode conventions (spec_path forbidden for inline, stdin delivery, spec_pointer alternative)."
+    },
+    {
+      "id": "no-scratch-file-staging",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no scratch-staging marker in the actor invocation"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden source cited"
+    }
+  ],
+  "judge_reasoning": "Actor launched via an at-call-site heredoc on c2d dispatch stdin with both briefs inline and no file references, and its reasoning grounds the input-mode choice in the dispatch skill's conventions. Both criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T12-40-21-log.md"
+}

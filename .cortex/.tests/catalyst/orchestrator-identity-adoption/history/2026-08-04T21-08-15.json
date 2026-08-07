@@ -1,0 +1,29 @@
+{
+  "run_id": "2026-08-04T21-08-15",
+  "timestamp": "2026-08-04T21:08:15.580Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 150100,
+  "criteria": [
+    {
+      "id": "identity-first",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Rename to orchestrator (step 6) is the first orchestration action — following only mandated skill reads and the read-only pane list that supplies the pane id — placed before the user answer and before dispatch (step 9), with reasoning explicitly fixing identity ahead of the Route/tier step (step 8)."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The actor names the session orchestrator in the herdr roster as its first non-preparatory action, before answering and before any dispatch, and both its ordering and per-action reasoning state that identity (workset step 0) precedes the reduced-workset Route step; criterion passes.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T21-08-15-log.md"
+}

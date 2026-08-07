@@ -1,0 +1,47 @@
+{
+  "run_id": "2026-08-04T22-53-31",
+  "timestamp": "2026-08-04T22:53:31.328Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "sonnet",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 105353,
+  "criteria": [
+    {
+      "id": "directive-not-promoted",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "N1 rejected as already codified naming running-a-meta-agent; N2 owed to running-a-meta-agent with landing left to orchestrator; neither promoted."
+    },
+    {
+      "id": "fact-promotes",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "N3 staging write-window promoted as reference keeper, never rejected or held as a directive."
+    },
+    {
+      "id": "store-pointer-pruned",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "E1 pointer entry never named relevant, decays to prune/tombstone; genuine reference E2 kept and renewed."
+    },
+    {
+      "id": "handback-enforcement-section",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Rule-enforcement section names per item what it said, the owning skill for both directives, and disposition (rejected/owed/pruned)."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads"
+    }
+  ],
+  "judge_reasoning": "Actor rejected the already-codified directive and named its skill, recorded the uncodified directive as owed to a skill, promoted the environment fact as a keeper, drove the store pointer to prune while keeping the real reference, and delivered a hand-back with a per-item rule-enforcement section. All four criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T22-53-31-log.md"
+}

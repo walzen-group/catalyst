@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-08-05T07-35-55",
+  "timestamp": "2026-08-05T07:35:55.990Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 34023,
+  "criteria": [
+    {
+      "id": "tree-is-memory-dir",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Both commands carry --tree /workspaces/catalyst/.cortex/memory, ending in .cortex/memory; neither passes the project root /workspaces/catalyst as the tree value."
+    },
+    {
+      "id": "shape-stated",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor states the value must be the memory tree directory itself, <project-root>/.cortex/memory, never the project root, in item 3."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads"
+    }
+  ],
+  "judge_reasoning": "Both c2m commands use the memory-tree path /workspaces/catalyst/.cortex/memory for --tree, and the actor explicitly states in its own words that the value is the memory tree and never the project root.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-05T07-35-55-log.md"
+}

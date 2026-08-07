@@ -1,0 +1,44 @@
+✔ an omp brief lands via herdr's confirmed submit over a quiet composer (45.479067ms)
+✔ an omp delivery over a live composer draft is refused with the draft as specimen (31.358216ms)
+✔ an omp delivery with no readable composer bar fails honestly, nothing sent (27.457241ms)
+✔ an omp parked-paste chip does not trip the pre-send hold (42.852015ms)
+✔ an omp paste chip is recognized on its own wording, not claude's (0.193709ms)
+✔ a parked omp paste (herdr stall + chip) is released with Enter and verified working (128.29846ms)
+✔ an omp paste that never clears fails honestly after its Enter attempts, never delivered (206.202872ms)
+✔ omp recovery bounded to zero attempts never Enters and fails honestly (74.616649ms)
+✔ an omp stall with no parked-paste chip on screen is an honest failure, never blindly Entered (72.062429ms)
+✔ an omp stall with no chip is delivered when the session shows the text submitted (77.462744ms)
+✔ a session without the sent text keeps a chip-less stall an honest failure (70.614798ms)
+✔ an omp stall with no chip is delivered when the session proof lands within the proof window (103.35577ms)
+✔ a retry over a session that already shows the exact text is skipped, nothing re-sent (0.294459ms)
+✔ a chip-less stall whose session never shows the text fails honestly after the proof window (99.43917ms)
+✔ sessionShowsSubmitted reads a submitted user message from the transcript (0.180001ms)
+✔ herdr reports a stall on stderr, and that is where the code is read from (0.089001ms)
+✔ a parked paste placeholder is recognized as our own text (0.091083ms)
+✔ a stalled multi-line send is released with Enter and verified consumed (116.182783ms)
+✔ a composer that never clears fails loudly after its Enter attempts (212.567899ms)
+✔ a failure that is not a stall is not treated as one (44.006519ms)
+✔ a clean send needs no recovery at all (46.006945ms)
+✔ a composer that is only slow to draw is waited for, not failed (71.299468ms)
+✔ a composer that never appears still fails, with the screen (172.479437ms)
+✔ ghost text in the composer is not real input, so the brief is delivered over it (103.084644ms)
+✔ ghost text appearing after the stall is delivery, not a refusal (134.902196ms)
+✔ real text that shortens under the probe is still refused, and never sent over (103.956856ms)
+✔ the probe puts back the character it took: real input survives it intact (103.691313ms)
+✔ a composer holding someone else's text is refused, never Entered (48.150496ms)
+✔ a dispatch delivery prepends the mandate to the caller's brief, verbatim after a blank line (50.072503ms)
+✔ the mandate loads the bootstrap and role skills through the harness skill mechanism, never a filesystem path (48.011787ms)
+✔ the mandate names the dispatched agent so the session knows its own roster entry (45.35615ms)
+✔ the mandate stays byte-identical whatever CATALYST_SKILL_ROOT says (88.815042ms)
+✔ a steer delivery carries the caller text unchanged, no mandate (42.255596ms)
+✔ an explicit mandateMode injected prepends the mandate exactly like the default (44.825439ms)
+✔ a caller_owned dispatch sends the brief byte-for-byte, no mandate (42.347387ms)
+✔ the recorded delivery document holds the full delivered text including the mandate (45.040607ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2584.821096

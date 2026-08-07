@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-08-04T21-59-41",
+  "timestamp": "2026-08-04T21:59:41.327Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 127886,
+  "criteria": [
+    {
+      "id": "failed-lookup-not-evidence",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor states history://orchestrator only serves harness-process registrations (Main), calls the Unknown agent result a surface mismatch not evidence of absence, and never reports the orchestrator unavailable."
+    },
+    {
+      "id": "sanctioned-path",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor routes the transcript request to herdr agent get/read orchestrator (widened lines) and continues judging the worker without asserting the orchestrator session is unavailable."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git command output"
+    }
+  ],
+  "judge_reasoning": "Both criteria pass: the actor correctly distinguishes the harness history surface from herdr's agent surface, treats the failed lookup as inconclusive, and pulls context via the sanctioned herdr agent read path.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T21-59-41-log.md"
+}

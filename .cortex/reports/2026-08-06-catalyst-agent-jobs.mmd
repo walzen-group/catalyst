@@ -1,0 +1,52 @@
+flowchart TD
+  User([User])
+  QC["Chat layer (quickchat)"]
+  Orch["Orchestrator"]
+  c2d[["c2d tool"]]
+  Diff[/"Repo diff"/]
+  Mem[("Memory store")]
+
+  subgraph normal["Normal workflow"]
+    subgraph tabs["herdr tabs"]
+      Impl["Implementer"]
+      Board["Board keeper"]
+      Meta["Meta-agent"]
+      Cur["Curator"]
+    end
+    subgraph tiers["Model tiers"]
+      Front["Frontier"]
+      Mid["Mid + small"]
+      Res["Reserve"]
+    end
+  end
+
+  subgraph incident["Incident and repair workflow"]
+    Inc["Incident report"]
+    Actor["Replay actor"]
+    Judge["Judge"]
+    Test["Guarding test"]
+  end
+
+  User -->|asks| QC
+  QC -->|relays| Orch
+  User -.->|direct| Orch
+  Orch -->|dispatch / steer / status| c2d
+  c2d -->|launch wave| tabs
+  Impl -->|writes| Diff
+  Impl -->|state| Board
+  Meta -->|monitor / steer| Impl
+  Meta -->|verify + spec check| Diff
+  Meta -->|hand-back| Orch
+  Board -->|sync| Orch
+  Orch -->|c2m housekeeping| Cur
+  Cur -->|drain / decay / prune| Mem
+  Orch -->|teardown settled tabs| tabs
+  Orch -->|report| User
+  Meta -.->|files on failure| Inc
+  c2d -->|launch| Actor
+  c2d -->|launch| Judge
+  Actor -->|replays the repair| Judge
+  Judge -->|per-criterion verdict| Test
+  Front -.opus, max 2.-> Impl
+  Mid -.deepseek max.-> Meta
+  Res -.smol / self.-> Orch

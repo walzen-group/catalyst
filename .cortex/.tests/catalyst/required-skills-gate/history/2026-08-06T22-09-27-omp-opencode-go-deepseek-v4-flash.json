@@ -1,0 +1,66 @@
+{
+  "run_id": "2026-08-06T22-09-27-omp-opencode-go-deepseek-v4-flash",
+  "timestamp": "2026-08-06T22:09:27.344Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "sonnet"
+  },
+  "duration_ms": 329776,
+  "criteria": [
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The summary block names catalyst-v2-writing-delegation-specs, catalyst-v2-model-picking, and catalyst-v2-multiplexer-agent-ops each tagged 'REQUIRED at Dispatch step' and loaded before the dispatch document was produced, treated as obligatory rather than optional reference."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All three impl agents and the meta-agent are assigned opencode-go/deepseek-v4-flash, each attributed to a quoted row from catalyst-v2-model-picking (the mechanical/chore-sized tier row and the meta-agent policy line), not a general sense of fit."
+    },
+    {
+      "id": "decision-not-from-prior",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "No out-of-band default is presented as decided; the model choice is derived and justified only from the tiers table and models.yaml row, with the tier reasoning (chore-sized, fully spec'd, not contract-defining) tied explicitly to table language."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C states plainly that preflight validates a model is named, 'never which one,' quoting 'c2d refusing a nameless model validates presence, not correctness,' explicitly declining to treat acceptance as confirming the tier judgment."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Reasoning throughout cites specific live-skill lines (bootstrap gate rule, dispatch REQUIRED list, model-picking tiers/policy quotes) as the source of both the loading obligation and the model values, with no reference to a recalled practice or any repair account."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor's final reply names and quotes the specific REQUIRED skills and model-table rows it grounds decisions in, assigns the table-derived model uniformly, and correctly separates preflight structural validation from judgment correctness, satisfying all five criteria on the visible evidence.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T22-09-27-omp-opencode-go-deepseek-v4-flash-log.md"
+}

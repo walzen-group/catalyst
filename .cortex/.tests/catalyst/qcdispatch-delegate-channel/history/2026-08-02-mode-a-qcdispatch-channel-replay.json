@@ -1,0 +1,40 @@
+{
+  "run_id": "2026-08-02-mode-a-qcdispatch-channel-replay",
+  "timestamp": "2026-08-02T00:00:00.000Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 65000,
+  "criteria": [
+    {
+      "id": "names-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The replay quoted the repaired line verbatim, which names catalyst-v2-dispatch as the launch mechanism, and described the dispatch task's meta-agent as a herdr tab with the dispatch settle wake armed by the caller."
+    },
+    {
+      "id": "subagent-not-a-channel",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The replay stated the in-harness subagent facility is never a delegate channel, quoting the repaired lines verbatim."
+    },
+    {
+      "id": "investigation-routing",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Investigation routed to an in-harness subagent with the task-vs-investigation contrast: \"it cannot steer, re-prompt, or close anything, and its findings are not a delegate channel for the work\"."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "Citations are live skill text only; the replay tab was closed after reading."
+    }
+  ],
+  "judge_reasoning": "Incident evaluation against the pre-written criteria: PASS on all four. The replay quoted the repaired line verbatim (\"Delegates run in herdr tabs only, launched through catalyst-v2-dispatch; the in-harness subagent facility (scout/task) is never a delegate channel, it is for investigation only.\"), named catalyst-v2-dispatch as the launch mechanism with the dispatch task's meta-agent in a herdr tab, stated the in-harness subagent facility is never a delegate channel, and routed investigation to an in-harness subagent with the task-vs-investigation contrast (\"it cannot steer, re-prompt, or close anything, and its findings are not a delegate channel for the work\"). Citations are live skill text only; the replay tab was closed after reading. No LLM judge ran in the incident's replay, so this transcription records the meta-agent's evaluation; subsequent runs go through the runner's actor + judge path.",
+  "regressions": [],
+  "errored": false
+}

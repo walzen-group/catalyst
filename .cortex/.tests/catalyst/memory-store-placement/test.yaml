@@ -1,0 +1,51 @@
+# test.yaml: guards the memory-store placement rule repaired in incident
+# 2026-08-03-memory-store-placement.md. The rule: catalyst-system knowledge
+# (conventions, user directives about them, system gotchas, feedback on system
+# behavior) goes to the kit tree's memory (~/nix/catalyst/.cortex/memory/ in the
+# devcontainer; the kit repo's .cortex/memory/ elsewhere); project knowledge
+# goes to the project's own .cortex/memory/. Stated in catalyst-v2/SKILL.md
+# (Directory conventions, two-.cortex-trees rule) and
+# catalyst-v2-in-repo-agent-memory (Kit memory vs project memory).
+
+# The agent under test: the meta-agent role that writes durable memory. Its
+# model must differ from the judge model.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Declared equals live for the actor today (deepseek is the live meta-agent
+# model), so the runner records one run; both documents the intent and runs two
+# sides the moment the live model diverges.
+config_source: both
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2/SKILL.md
+  - skills/catalyst-v2-in-repo-agent-memory/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (memory-store-placement/).
+  - The catalyst skills under ~/nix/catalyst/skills are reachable and the intended source for the answer; the actor reads no memory, incident, or plan file in any .cortex tree and runs no git.
+  - The actor must not read the incident report or this test's own history.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  kit-memory-named:
+    kind: semantic
+    pass: The actor names the kit tree's memory location (~/nix/catalyst/.cortex/memory/ in the devcontainer, or the kit repo's .cortex/memory/) as the home for the two catalyst-system records.
+  split-stated:
+    kind: semantic
+    pass: The actor distinguishes system knowledge (kit tree) from project knowledge (the project's own .cortex), placing a repo-specific decision such as flake/uv toolchain choices in the project tree.
+  index-updated:
+    kind: semantic
+    pass: The actor states that the written tree's MEMORY.md index gets the new lines.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites neither the incident report nor the test's own history as a source.

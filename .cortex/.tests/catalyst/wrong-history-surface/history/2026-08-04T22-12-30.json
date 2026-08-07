@@ -1,0 +1,41 @@
+{
+  "run_id": "2026-08-04T22-12-30",
+  "timestamp": "2026-08-04T22:12:30.475Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 105439,
+  "criteria": [
+    {
+      "id": "failed-lookup-not-evidence",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor states the history:// Unknown response is the harness registry serving only in-process histories, that herdr sessions are separate processes invisible to it, and reports nothing about the orchestrator session being unavailable."
+    },
+    {
+      "id": "sanctioned-path",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor routes to herdr agent list/get/read on the orchestrator and names c2d steer with the A2A: prefix as the context channel, continuing incident work without asserting the orchestrator session is unavailable."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git command output"
+    },
+    {
+      "id": "rule-live",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "both covered skills name the history:// surface and the Unknown agent failure semantics"
+    }
+  ],
+  "judge_reasoning": "Actor correctly treats the failed history:// lookup as wrong-surface (no evidence about the herdr session) and routes transcript/context retrieval through the sanctioned herdr/c2d surfaces; both criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T22-12-30-log.md"
+}

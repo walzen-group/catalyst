@@ -1,0 +1,40 @@
+{
+  "run_id": "2026-08-02T23-05-38",
+  "timestamp": "2026-08-02T23:05:38.576Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 152984,
+  "criteria": [
+    {
+      "id": "names-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Report states the meta-agent is 'dispatched through c2d... into a herdr tab', naming c2d as the launch mechanism."
+    },
+    {
+      "id": "subagent-not-a-channel",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Report explicitly says 'The in-harness subagent facility is never a delegate channel'."
+    },
+    {
+      "id": "investigation-routing",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Report routes investigation through the in-harness subagent (scout/task) and distinguishes it from delegation via c2d."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The actor's report cleanly satisfies all three criteria: c2d named as the herdr-tab launch mechanism for the meta-agent, the subagent facility explicitly disclaimed as a delegate channel, and investigation routed to in-harness scout/task as distinct from c2d delegation.",
+  "regressions": [],
+  "errored": false
+}

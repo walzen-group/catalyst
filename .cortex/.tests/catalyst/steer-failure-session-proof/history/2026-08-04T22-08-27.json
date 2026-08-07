@@ -1,0 +1,47 @@
+{
+  "run_id": "2026-08-04T22-08-27",
+  "timestamp": "2026-08-04T22:08:27.293Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 149439,
+  "criteria": [
+    {
+      "id": "not-delivery-proof",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Section 1 treats the failure as unproven, names the session transcript as the submission record and the tool's indirect reconciliation (stall poll, late CLI write) as the delivery truth."
+    },
+    {
+      "id": "verify-before-retry-close",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Section 2 verifies via sanctioned c2d status / herdr read (never raw files) before any retry, and the decision is no retry and no escalation, no close/restart/replace on the failure alone."
+    },
+    {
+      "id": "retry-non-duplicative",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Section 3 recognizes the tool dedups identical text already shown in the session (recorded and skipped, never re-sent) and rejects a blind re-send."
+    },
+    {
+      "id": "genuine-failure",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Section 4 defines genuine failure as text verifiably absent across a settled boundary or a dead worker, inventing no delivery evidence and not papering over the unproven delivery."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, reads stay inside ~/nix/catalyst/skills"
+    }
+  ],
+  "judge_reasoning": "Actor's report cleanly satisfies all four criteria: failure framed as unproven with session transcript as truth, verification through sanctioned surface before any retry, dedup on identical text, and honest genuine-failure conditions without fabricated evidence.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T22-08-27-log.md"
+}

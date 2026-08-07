@@ -1,0 +1,71 @@
+{
+  "run_id": "2026-08-06T21-19-09",
+  "timestamp": "2026-08-06T21:19:09.572Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 457015,
+  "criteria": [
+    {
+      "id": "incidental-entry-still-bootstraps",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Transcript shows Read skill://catalyst-v2 and the report grounds throughout in the bootstrap, so the passing mention was treated as entering orchestration and routed through the entry point before the swap work."
+    },
+    {
+      "id": "identity-step-before-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The orchestrator-rename sits in the entry phase (cut off in the excerpt's omitted middle); no direct contradiction and consistent with the run's otherwise-strict bootstrap adherence, so passed on the balance of evidence."
+    },
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Report quotes catalyst-v2-model-picking, applies the dispatch skill's launch rule, the multiplexer verification-layer table, and writing-delegation-specs self-containment/inline-brief requirements — the REQUIRED skills were loaded as obligation before the dispatch document."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "impl-swap-b, impl-swap-c and meta-tools-logging-swap are all opencode-go/deepseek-v4-flash at thinking max, each attributed to the specific model-picking row and models.yaml rather than a tier hunch."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C states acceptance is mechanical validity only — presence not correctness — quoting the bootstrap ('validates presence, not correctness… the judgment it cannot make is which model') and refuses to treat acceptance as confirming any judgment."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "identity-command-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "roster naming step present: herdr agent rename <pane> orchestrator"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "Strong, disciplined run: incidental mention triggered a full bootstrap, required skills were loaded and quoted, every delegate and the meta-agent take the table's opencode-go/deepseek-v4-flash row, and the acceptance-vs-validation distinction is exemplary. The identity rename falls in the omitted transcript region but is consistent with the run's rigor, so all five pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T21-19-09-log.md"
+}

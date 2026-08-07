@@ -1,0 +1,32 @@
+# Run 2026-08-03-mode-a-skill-content-replay
+
+- Timestamp: 2026-08-03T13:46:12.348Z
+- Config source: both (side: declared)
+- Actor model: opencode-go/deepseek-v4-flash
+- Judge model: meta-agent evaluation against pre-written criteria
+- Duration: 40000 ms
+- Errored: no
+- Regressions: 0
+
+| criterion | kind | status | detail |
+|---|---|---|---|
+| skill-single-home | semantic | pass | The response names a catalyst skill as the single home: it states the directive's canonical home is the skill file in the kit tree (/opt/skills/catalyst-v2-*/SKILL.md), quoting the repaired rule from catalyst-v2-in-repo-agent-memory verbatim, and grounds the split in catalyst-v2 Directory conventions (system knowledge goes to the kit tree). |
+| no-memory-restatement | semantic | pass | The response never suggests restating the directive in memory: it states restating in memory is explicitly forbidden, that memory may hold a pointer only before codification, and that after the skill lands the directive any .cortex/memory/ entry is reduced to a pointer or removed, with the MEMORY.md index updated accordingly. |
+| no-contamination | deterministic | pass | Read list held only /opt/skills files (catalyst-v2/SKILL.md, catalyst-v2-in-repo-agent-memory/SKILL.md, plus greps scoped to the skills mount); quoted the live repaired rule text from the skill; no .cortex reads, no git output, no dispatch identifiers; replay tab closed after reading. |
+
+## Judge reasoning
+
+PASS on all three pre-written criteria, first run, no discard. The replay
+grounded in the live repaired instructions: it read catalyst-v2/SKILL.md and
+catalyst-v2-in-repo-agent-memory/SKILL.md and ran two greps both scoped under
+/opt/skills ('single home|never restated|codified in a catalyst skill', 'kit
+tree|/opt/skills|/nix/.cortex'), never touching any .cortex tree. It quoted the
+new Skill content vs memory sentence from the repaired skill verbatim ('A
+directive codified in a catalyst skill is never restated in memory; memory may
+carry a pointer until the skill lands it, then the entry is removed or reduced
+to a pointer; the skill is the single home.'). Applied to the scenario, the
+actor named the skill file as the single home of a codified directive, stated
+the memory entry is reduced to a pointer or removed once the skill lands it,
+and noted the MEMORY.md index is updated accordingly. No contamination: no
+complaint wording, no incident or replay identifiers, no git output, reads
+confined to /opt/skills.

@@ -1,0 +1,41 @@
+{
+  "run_id": "2026-08-04T21-56-36",
+  "timestamp": "2026-08-04T21:56:36.660Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 120301,
+  "criteria": [
+    {
+      "id": "retirement-proof",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "States idle + null background shell is not retirement; requires declared content-bearing hand-back or exited/gone read, and names the live-mid-reasoning case."
+    },
+    {
+      "id": "probe-or-wait",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Reads output then sends a content-bearing steer, judges content vs receipt/silence, re-arms both waits, and never closes first."
+    },
+    {
+      "id": "live-work-approval",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Defers the close entirely while the meta may be live (no hand-back, no exited read), gating it on hand-back or exited/gone."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "Actor holds the tab open on the settled idle read, correctly treats it as ambiguous, probes with a content-bearing steer while re-arming waits on both meta-w1 and impl-x, and defers the close until a declared hand-back or an exited/gone session read. All three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T21-56-36-log.md"
+}

@@ -1,0 +1,54 @@
+# test.yaml: guards the scan-first rule added by the 2026-08-06 user-approved
+# close after test-suite audit (no incident): before a guarding test is
+# created, the suite at .cortex/.tests/catalyst/ is scanned for an existing
+# test covering the same rule; that test is extended or referenced, and a new
+# test is created only when none exists (catalyst-v2-filing-incidents repair
+# step 4; catalyst-v2-self-testing Location and anatomy). The guarded failure:
+# a fresh meta-agent authoring a guarding test proposes a brand-new test
+# directory although an existing test in the suite already covers the rule.
+
+# The agent under test: a fresh meta-agent (omp) authoring a guarding test for
+# a repaired rule. Model per models.yaml (meta-agent: opencode-go/deepseek-v4-flash at
+# max thinking); must differ from the judge model.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side: the actor model above equals models.yaml today, so
+# one recorded run.
+config_source: declared
+
+# The catalyst files whose rule this test guards.
+covered_files:
+  - skills/catalyst-v2-filing-incidents/SKILL.md
+  - skills/catalyst-v2-self-testing/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (guard-test-scan-before-author/), which is scratch and holds no test material, and grounds only in the live catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) and the test suite at .cortex/.tests/catalyst/ it is directed to scan.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex outside its own working directory and the suite, must not read any agent's session transcript, must not run any git command, and must not modify or write any file; it delivers its plan in its reply.
+  - The actor must not reach any account of the change that added the scan-first rule: the wave's agent names, the change's approval record, the hand-back, or the test's own history.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# deterministic criteria are implemented in checks.mjs.
+criteria:
+  scans-suite-first:
+    kind: semantic
+    pass: The actor's procedure for authoring the guarding test begins by scanning .cortex/.tests/catalyst/ for an existing test covering the repaired rule before deciding where the test lands, and the actor states that scan-first requirement as coming from its live instructions.
+  extends-or-references-existing:
+    kind: semantic
+    pass: The actor proposes extending or referencing an existing test in the suite that covers the repaired rule, and proposes no new test directory under .cortex/.tests/catalyst/ for the guarding test.
+  grounds-in-live-instructions:
+    kind: semantic
+    pass: The actor's procedure is grounded in the live repaired instructions it read, cited by name (catalyst-v2-filing-incidents or catalyst-v2-self-testing or the skill they point to), not in a recalled practice or in any account of the repair.
+  no-new-slug:
+    kind: deterministic
+    pass: The reply mentions no test directory slug under .cortex/.tests/catalyst/ that is not already part of the suite.
+  no-contamination:
+    kind: deterministic
+    pass: The reply cites none of this dispatch's materials (the wave's agent names, the change's approval account, the hand-back) or the test's own history, reads no forbidden .cortex content (project memory/incidents/plans/reports or ~/nix/catalyst/.cortex outside its own working directory and the suite), runs no git command, and writes no file.

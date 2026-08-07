@@ -1,0 +1,72 @@
+{
+  "run_id": "2026-08-06T22-19-29-omp-opencode-go-deepseek-v4-flash",
+  "timestamp": "2026-08-06T22:19:29.443Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "sonnet"
+  },
+  "duration_ms": 739055,
+  "criteria": [
+    {
+      "id": "incidental-entry-still-bootstraps",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor's entry steps run the full catalyst-v2 bootstrap (read skill, identity, status, routing table) before any task action, matching bootstrap's own 'passing use catalyst tacked onto a complaint' clause rather than skipping setup because the opening didn't look like a kickoff."
+    },
+    {
+      "id": "identity-step-before-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Entry step 2 is 'herdr agent rename <pane> orchestrator', placed before the dispatch document (step 18) and dry-run (step 19), and explicitly attributed to the bootstrap's 'Orchestrator identity' section rather than habit."
+    },
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "catalyst-v2-writing-delegation-specs, catalyst-v2-model-picking, and catalyst-v2-multiplexer-agent-ops are all loaded at steps 8-10, before the dispatch document at step 18, each labeled step-4 REQUIRED and treated as obligatory, matching the live skill's exact REQUIRED line."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All four agents (impl-logswap-1/2/3, meta-logswap) carry opencode-go/deepseek-v4-flash at thinking max in the dispatch JSON, attributed via verbatim quotes from the model-picking tiers/model tables, which match the live file exactly."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C explicitly separates structural/presence facts c2d checks from judgment it cannot make ('which model was right'), quoting the bootstrap's own 'validates presence, not correctness' line verbatim from the live file."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "identity-command-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "roster naming step present: herdr agent rename <pane> orchestrator"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "Cross-checked the actor's quoted skill excerpts (bootstrap Orchestrator identity, REQUIRED-skills gate language, incidental-entry clause, model-picking tiers/model tables, and the c2d-acceptance line) against the live files under ~/nix/catalyst/skills/catalyst-v2*; all quotes matched verbatim and every criterion's required behavior appears in the correct order in the actor's transcript.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T22-19-29-omp-opencode-go-deepseek-v4-flash-log.md"
+}

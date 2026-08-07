@@ -1,0 +1,57 @@
+# test.yaml: guards the omp composer-state hold repaired in incident
+# 2026-08-03-steer-composer-interference.md. The rules: the orchestrator's
+# omp session is the user's own input surface (the delivery channel and the
+# user input surface are the same pane); omp draws its input buffer as the
+# bottom bar of the status box, and steer reads that bar before sending — a
+# bar holding text is a live user draft and the delivery is refused with the
+# draft as specimen, nothing injected; a refused delivery is a HOLD, so the
+# meta quarantines the hand-back to .cortex/reports/handbacks/ and re-steers
+# on backoff, never working around it with raw send-keys/paste.
+
+# The agent under test: the catalyst role that delivers hand-backs (the
+# meta-agent). Its model must differ from the judge.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Declared equals live for the actor today, so the runner records one run;
+# both documents the intent and runs two sides the moment the live model
+# diverges.
+config_source: both
+
+# The catalyst files whose repaired rules this test guards.
+covered_files:
+  - skills/catalyst-v2-dispatch/src/deliver.mjs
+  - skills/catalyst-v2-dispatch/src/screens.mjs
+  - skills/catalyst-v2-multiplexer-agent-ops/SKILL.md
+  - skills/catalyst-v2-running-a-meta-agent/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from the project repo (or this test's own directory), never inside .cortex/.
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read any .cortex/ content in the project (plans, incidents, reports, memory), must not run any git command (diff/log/status/show), and must not read ~/nix/catalyst/.cortex.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  hold-draft:
+    kind: semantic
+    pass: The response holds a hand-back whose target omp session holds a live user draft: the delivery is refused with the draft as specimen, nothing is injected into the composer, and delivery resumes only when the composer is quiet or the user's answer settles provenance.
+  mechanism:
+    kind: semantic
+    pass: The response names the delivery tool (c2d steer) as the owner of the hold — it reads the target's composer state before sending — and never routes the hand-back through raw send-keys or a paste into the composer.
+  quarantine:
+    kind: semantic
+    pass: The response quarantines a held hand-back durably (the hand-backs file), re-steers on a short backoff, and retires with the hold and the file path named if the composer stays held.
+  user-surface:
+    kind: semantic
+    pass: The response treats the orchestrator's omp session as a user input surface where unsubmitted composer text is a live user draft by default, held as input not authorization, with the user's answer the sole settlement of provenance.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (probe or replay ids, the user's draft text), project .cortex content, git output, or ~/nix/catalyst/.cortex; its read list holds only ~/nix/catalyst/skills files.

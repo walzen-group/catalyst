@@ -1,0 +1,56 @@
+# test.yaml: guards the rule repaired by the fix for
+# 2026-08-04-handback-provenance-misread-and-unprocessed.md. The rule:
+# markers classify agent-originated traffic and never reclassify user input.
+# A user-supplied A2A-marked hand-back is user input describing a claimed
+# agent result: verified through the sanctioned herdr/c2d surfaces, then
+# processed (account every agent, record reported files and verification,
+# close settled tabs, complete cleanup). No conversion to A2U is owed on the
+# user's own text; the provenance hold applies only to an unmarked
+# user-channel message claiming to be an agent relay. Agent-originated
+# relays to the user still carry A2U and agent-to-agent traffic (steers,
+# hand-backs) still carries A2A.
+
+# The agent under test: the catalyst orchestrator receiving a user-supplied
+# hand-back on the user channel. Role: orchestrator-default (omp runtime).
+# Model: the working omp default opencode-go/deepseek-v4-flash; the pinned
+# orchestrator-default model kimi-code/k3 returned provider 403 quota errors
+# on 2026-08-04, so the replay runs on the alternative per the cross-model
+# precedent. Its model must differ from the judge model.
+actor:
+  role: orchestrator-default
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst files whose repaired rules this test guards.
+covered_files:
+  - skills/catalyst-v2-multiplexer-agent-ops/SKILL.md
+  - skills/catalyst-v2-orchestrating-delegates/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (user-supplied-handback-input/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report 2026-08-04-handback-provenance-misread-and-unprocessed, the repair diff, or this test's own history.
+  - The actor must not modify the project working tree (/workspaces/catalyst) in any way, runs no git commands, and does not execute herdr agent rename, any dispatch, any steer, or any tab close: it states those actions in its reply instead. Read-only c2d status / herdr agent read of the live roster is allowed.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  user-input:
+    kind: semantic
+    pass: The actor treats the user-supplied A2A-marked hand-back as user input describing a claimed agent result: it accepts the user's text as input, demands no conversion to A2U, and applies no provenance hold to the user's own message (the hold is reserved for an unmarked user-channel message claiming to be an agent relay).
+  verify-process:
+    kind: semantic
+    pass: The actor verifies the claimed result through the sanctioned surfaces (c2d status, herdr agent read) rather than trusting or interrogating the user, then processes the hand-back: accounts for every agent, records the reported files and verification, closes settled tabs, and completes the cycle's cleanup.
+  marker-distinction:
+    kind: semantic
+    pass: The actor preserves the marker convention for agent-originated traffic: agent-to-agent steers and hand-backs carry A2A, agent relays to the user carry A2U, and only the user-supplied case is exempt from any conversion requirement.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of the incident report, the repair diff, the test's own history, git output, or ~/nix/catalyst/.cortex as a source; its read list holds only live skills under skills.

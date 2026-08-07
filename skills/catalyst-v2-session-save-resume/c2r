@@ -1,0 +1,293 @@
+#!/usr/bin/env bash
+# Save and resume a catalyst effort's front-line sessions: the quickchat chat
+# layer and the orchestrator(s). Delegates, meta-agents, and board keepers are
+# out of scope by design. See SKILL.md beside this file for the contract.
+set -euo pipefail
+
+SCHEMA="catalyst-session/1"
+PROG="c2r"
+
+die() { printf '%s: %s\n' "$PROG" "$*" >&2; exit 1; }
+
+usage() {
+  cat >&2 <<'EOF'
+usage:
+  c2r save <effort-slug> [--chat-layer TARGET]
+           [--orchestrator TARGET]... [--model TARGET=MODEL]...
+           [--repo DIR] [--dir DIR]
+  c2r resume [FILE] [--repo DIR] [--dir DIR] [--json]
+  c2r list [--repo DIR] [--dir DIR]
+
+TARGET is a herdr agent name or a pane id (an unnamed agent, such as the
+session the user types in, is addressed by its pane id).
+
+--model records the launch model for a target whose transcript does not carry
+one yet (omp writes its session file on the first turn, so an agent launched
+and not yet prompted has no model on disk).
+EOF
+  exit 2
+}
+
+command -v herdr >/dev/null 2>&1 || die "herdr is not on PATH"
+command -v jq >/dev/null 2>&1 || die "jq is required"
+
+# --- helpers ---------------------------------------------------------------
+
+repo_root() {
+  git -C "$1" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$1"
+}
+
+# Run a herdr subcommand and return its JSON, turning herdr's {"error":...}
+# envelope and any non-JSON reply into a hard failure.
+herdr_json() {
+  local out
+  out=$(herdr "$@" 2>&1) || die "herdr $*: $out"
+  printf '%s' "$out" | jq -e . >/dev/null 2>&1 || die "herdr $*: non-JSON reply: $out"
+  if printf '%s' "$out" | jq -e 'has("error")' >/dev/null 2>&1; then
+    die "herdr $*: $(printf '%s' "$out" | jq -r '.error.message // .error.code')"
+  fi
+  printf '%s' "$out"
+}
+
+# Locate an agent's transcript from the agent_session herdr reports.
+# omp reports kind "path" (the file itself); claude reports kind "id".
+transcript_path() { # kind value cwd
+  local kind=$1 value=$2 cwd=$3 slug direct
+  case "$kind" in
+    path) [ -f "$value" ] && printf '%s' "$value" ;;
+    id)
+      slug=$(printf '%s' "$cwd" | sed 's/[^A-Za-z0-9]/-/g')
+      direct="$HOME/.claude/projects/$slug/$value.jsonl"
+      if [ -f "$direct" ]; then
+        printf '%s' "$direct"
+      else
+        find "$HOME/.claude/projects" -maxdepth 2 -name "$value.jsonl" -print -quit 2>/dev/null || true
+      fi ;;
+  esac
+  # A transcript that is missing or not written yet is a degraded save, never a
+  # failed one: the session value herdr reports is what resume matches on.
+  return 0
+}
+
+# Read the model and thinking level the session actually ran on, from its own
+# transcript. Both runtimes record every change, so the last one is current.
+model_json() { # cli transcript
+  local cli=$1 file=$2 model="" think="" source="unavailable"
+  if [ -n "$file" ] && [ -f "$file" ]; then
+    case "$cli" in
+      omp)
+        model=$( { jq -r 'select(.type=="model_change") | .model' "$file" 2>/dev/null || true; } | tail -1)
+        think=$( { jq -r 'select(.type=="thinking_level_change") | .thinkingLevel' "$file" 2>/dev/null || true; } | tail -1)
+        source="omp-transcript" ;;
+      claude)
+        model=$( { jq -r 'select(.message.model? != null) | .message.model' "$file" 2>/dev/null || true; } | tail -1)
+        think=$( { jq -r 'select(.message.model? != null) | (.effort // empty)' "$file" 2>/dev/null || true; } | tail -1)
+        source="claude-transcript" ;;
+      *) source="unsupported-cli" ;;
+    esac
+    [ -n "$model" ] || source="not-recorded"
+  fi
+  jq -n --arg m "$model" --arg t "$think" --arg s "$source" \
+    '{model: (if $m == "" then null else $m end),
+      thinking: (if $t == "" then null else $t end),
+      model_source: $s}'
+}
+
+sessions_dir() { printf '%s/.cortex/.sessions' "$1"; }
+
+# --- save ------------------------------------------------------------------
+
+cmd_save() {
+  local effort="" repo="" dir="" chat="" declared="" ; local -a orch=()
+  [ $# -gt 0 ] || usage
+  effort=$1; shift
+  case "$effort" in -*) usage ;; esac
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --chat-layer)   chat=${2:-}; [ -n "$chat" ] || usage; shift 2 ;;
+      --orchestrator) [ -n "${2:-}" ] || usage; orch+=("$2"); shift 2 ;;
+      --model)        case "${2:-}" in *=*) ;; *) usage ;; esac
+                      declared="$declared${2%%=*}	${2#*=}
+"; shift 2 ;;
+      --repo)         repo=${2:-}; [ -n "$repo" ] || usage; shift 2 ;;
+      --dir)          dir=${2:-}; [ -n "$dir" ] || usage; shift 2 ;;
+      *) usage ;;
+    esac
+  done
+  [ -n "$chat" ] || [ ${#orch[@]} -gt 0 ] || die "save needs at least one --chat-layer or --orchestrator target"
+
+  repo=$(repo_root "${repo:-$PWD}")
+  dir=${dir:-$(sessions_dir "$repo")}
+  mkdir -p "$dir"
+
+  local tabs roles="[]" ws=""
+  tabs=$(herdr_json tab list)
+
+  add_role() { # role target
+    local role=$1 target=$2 agent info tp mj tab_label
+    info=$(herdr_json agent get "$target" | jq -c '.result.agent')
+    [ "$info" != "null" ] || die "no agent at target $target"
+    local cli cwd kind value
+    cli=$(printf '%s' "$info" | jq -r '.agent')
+    cwd=$(printf '%s' "$info" | jq -r '.cwd // ""')
+    kind=$(printf '%s' "$info" | jq -r '.agent_session.kind // ""')
+    value=$(printf '%s' "$info" | jq -r '.agent_session.value // ""')
+    [ -n "$value" ] || die "agent $target reports no session value; herdr cannot identify it later"
+    tp=$(transcript_path "$kind" "$value" "$cwd")
+    mj=$(model_json "$cli" "$tp")
+    local dm
+    dm=$(printf '%s' "$declared" | awk -F'\t' -v t="$target" '$1==t {print $2}' | tail -1)
+    if [ -n "$dm" ]; then
+      mj=$(printf '%s' "$mj" | jq -c --arg m "$dm" '.model = $m | .model_source = "declared"')
+    fi
+    tab_label=$(printf '%s' "$tabs" | jq -r --arg t "$(printf '%s' "$info" | jq -r '.tab_id')" \
+      '.result.tabs[] | select(.tab_id == $t) | .label // ""')
+    roles=$(printf '%s' "$roles" | jq -c --arg role "$role" --arg label "$tab_label" \
+      --arg tp "$tp" --argjson info "$info" --argjson m "$mj" '
+      . + [{
+        role: $role,
+        agent_name: $info.name,
+        cli: $info.agent,
+        model: $m.model,
+        thinking: $m.thinking,
+        model_source: $m.model_source,
+        session: {kind: $info.agent_session.kind, value: $info.agent_session.value},
+        transcript: (if $tp == "" then null else $tp end),
+        tab: {id: $info.tab_id, label: (if $label == "" then null else $label end)},
+        pane_id: $info.pane_id,
+        workspace_id: $info.workspace_id,
+        cwd: $info.cwd,
+        status: $info.agent_status,
+        title: $info.terminal_title_stripped
+      }]')
+    [ -n "$ws" ] || ws=$(printf '%s' "$info" | jq -r '.workspace_id')
+  }
+
+  [ -n "$chat" ] && add_role chat-layer "$chat"
+  local t; for t in ${orch[@]+"${orch[@]}"}; do add_role orchestrator "$t"; done
+
+  local file="$dir/$(date -u +%Y-%m-%d)-$effort.json"
+  jq -n --arg schema "$SCHEMA" --arg effort "$effort" \
+        --arg saved "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg repo "$repo" \
+        --arg hv "$(herdr --version 2>/dev/null | head -1)" --arg ws "$ws" \
+        --argjson roles "$roles" '
+    {schema: $schema, effort: $effort, saved_at: $saved, repo: $repo,
+     herdr_version: $hv, workspace_id: $ws, roles: $roles}' > "$file"
+  printf 'saved %s (%s role(s))\n' "$file" "$(printf '%s' "$roles" | jq 'length')"
+}
+
+# --- resume ----------------------------------------------------------------
+
+cmd_resume() {
+  local file="" repo="" dir="" as_json=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --repo) repo=${2:-}; [ -n "$repo" ] || usage; shift 2 ;;
+      --dir)  dir=${2:-}; [ -n "$dir" ] || usage; shift 2 ;;
+      --json) as_json=1; shift ;;
+      -*)     usage ;;
+      *)      file=$1; shift ;;
+    esac
+  done
+  repo=$(repo_root "${repo:-$PWD}")
+  dir=${dir:-$(sessions_dir "$repo")}
+  if [ -z "$file" ]; then
+    file=$(ls -1t "$dir"/*.json 2>/dev/null | head -1 || true)
+    [ -n "$file" ] || die "no saved sessions in $dir"
+  fi
+  [ -f "$file" ] || die "no such save file: $file"
+  jq -e '.schema == "'"$SCHEMA"'"' "$file" >/dev/null 2>&1 \
+    || die "$file is not a $SCHEMA save file"
+
+  local live report
+  live=$(herdr_json agent list | jq -c '.result.agents')
+
+  # A saved role is live when some agent still carries its session value.
+  # Its tab held by a different session is "replaced"; nothing at all is "gone".
+  report=$(jq -n --slurpfile s "$file" --argjson live "$live" '
+    $s[0] as $save
+    | [ $save.roles[] as $r
+        | ($live[] | select(.agent_session.value == $r.session.value)) // null as $hit
+        | ($live[] | select(.tab_id == $r.tab.id)) // null as $occupant
+        | $r + {
+            verdict: (if $hit != null then "live"
+                      elif $occupant != null then "replaced"
+                      else "gone" end),
+            now: (if $hit != null then
+                    {name: $hit.name, tab: $hit.tab_id, pane: $hit.pane_id, status: $hit.agent_status}
+                  elif $occupant != null then
+                    {name: $occupant.name, tab: $occupant.tab_id, pane: $occupant.pane_id,
+                     status: $occupant.agent_status, session: $occupant.agent_session.value}
+                  else null end)
+          } ]
+    | {file: "'"$file"'", effort: $save.effort, saved_at: $save.saved_at, repo: $save.repo,
+       roles: .,
+       counts: {live: (map(select(.verdict=="live")) | length),
+                replaced: (map(select(.verdict=="replaced")) | length),
+                gone: (map(select(.verdict=="gone")) | length)}}')
+
+  if [ "$as_json" = 1 ]; then printf '%s\n' "$report" | jq .; return; fi
+
+  printf 'catalyst session resume\n'
+  printf '  file    %s\n' "$file"
+  printf '  effort  %s\n' "$(printf '%s' "$report" | jq -r '.effort')"
+  printf '  saved   %s   repo %s\n\n' \
+    "$(printf '%s' "$report" | jq -r '.saved_at')" "$(printf '%s' "$report" | jq -r '.repo')"
+  printf '%-13s %-22s %-7s %-7s %-30s %-8s %-8s %s\n' \
+    ROLE NAME TAB CLI MODEL SAVED NOW VERDICT
+  printf '%s' "$report" | jq -r '.roles[] |
+    [ .role, (.agent_name // "-"), .tab.id, .cli, (.model // "?"),
+      .status, (.now.status // "-"), .verdict ] | @tsv' |
+    while IFS=$'\t' read -r role name tab cli model saved now verdict; do
+      printf '%-13s %-22s %-7s %-7s %-30s %-8s %-8s %s\n' \
+        "$role" "$name" "$tab" "$cli" "$model" "$saved" "$now" "$verdict"
+    done
+  printf '\nlive %s, replaced %s, gone %s\n' \
+    "$(printf '%s' "$report" | jq -r '.counts.live')" \
+    "$(printf '%s' "$report" | jq -r '.counts.replaced')" \
+    "$(printf '%s' "$report" | jq -r '.counts.gone')"
+
+  if [ "$(printf '%s' "$report" | jq -r '.counts.live')" != 0 ]; then
+    printf '\nreconnect (live):\n'
+    printf '%s' "$report" | jq -r '.roles[] | select(.verdict=="live") |
+      "  \(.role): herdr agent read \(.now.name // .pane_id) --source recent-unwrapped --lines 120"'
+  fi
+  if [ "$(printf '%s' "$report" | jq -r '.counts.gone + .counts.replaced')" != 0 ]; then
+    printf '\ngone or replaced (transcript kept; restarting one is a launch, run the launch procedure):\n'
+    printf '%s' "$report" | jq -r '.roles[] | select(.verdict!="live") |
+      "  \(.role) [\(.verdict)] \(.cli) model=\(.model // "?") transcript=\(.transcript // "not found")"'
+  fi
+}
+
+# --- list ------------------------------------------------------------------
+
+cmd_list() {
+  local repo="" dir=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --repo) repo=${2:-}; [ -n "$repo" ] || usage; shift 2 ;;
+      --dir)  dir=${2:-}; [ -n "$dir" ] || usage; shift 2 ;;
+      *) usage ;;
+    esac
+  done
+  repo=$(repo_root "${repo:-$PWD}")
+  dir=${dir:-$(sessions_dir "$repo")}
+  [ -d "$dir" ] || die "no sessions directory at $dir"
+  local f
+  for f in "$dir"/*.json; do
+    [ -f "$f" ] || continue
+    printf '%s\t%s\t%s\n' \
+      "$(jq -r '.saved_at' "$f")" "$(jq -r '.effort' "$f")" "$f"
+  done | sort -r
+}
+
+# --- dispatch --------------------------------------------------------------
+
+[ $# -gt 0 ] || usage
+sub=$1; shift
+case "$sub" in
+  save)   cmd_save "$@" ;;
+  resume) cmd_resume "$@" ;;
+  list)   cmd_list "$@" ;;
+  *)      usage ;;
+esac

@@ -1,0 +1,65 @@
+{
+  "run_id": "2026-08-06T21-12-41",
+  "timestamp": "2026-08-06T21:12:41.016Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 315680,
+  "criteria": [
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor names and grounds in all three REQUIRED skills — writing-delegation-specs, model-picking (the model table), and multiplexer-agent-ops (worktree isolation) — using them as binding sources rather than optional reference before building the dispatch document."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Meta-agent and the three one-file implementation delegates all get opencode-go/deepseek-v4-flash, attributed to the table's 'all other work ... meta-agent runs deepseek-v4-flash' row and the 'spec quality buys down tier / mechanical one-file edit' rows, not a general tier sense."
+    },
+    {
+      "id": "decision-not-from-prior",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "No out-of-band default is presented as decided; every model value is tied back to a quoted table row and the retired 'effort moved before model' note is cited as live skill content, not a pre-filled instinct."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C states c2d validates presence not judgment, quotes the bootstrap ('validates presence, not correctness ... the judgment it cannot make is which model'), and explicitly says acceptance does not prove the tier or model was right."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Reasoning names the live bootstrap, the model-picking table, multiplexer-agent-ops and writing-delegation-specs as the source of both the loading obligation and the model values, invoking no recalled practice and no account of the repair."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "file write or edit: Write out,"
+    }
+  ],
+  "judge_reasoning": "The bounded transcript (Part B/C visible, Part A/middle omitted) shows the actor loading and citing all three REQUIRED skills, assigning deepseek-v4-flash to every delegate and the meta-agent with attribution to specific model-table rows, cleanly separating c2d acceptance (presence/structure) from correctness of the model choice, and grounding throughout in live skill text with no repair-account contamination. All five criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T21-12-41-log.md"
+}

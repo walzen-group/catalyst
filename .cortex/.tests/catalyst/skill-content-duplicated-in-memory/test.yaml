@@ -1,0 +1,47 @@
+# test.yaml: guards the rule codified from the architect's complaint of
+# 2026-08-03: a directive codified in a catalyst skill is never restated in
+# memory; memory may carry a pointer only until the skill lands it, then the
+# entry is removed; the skill is the single home. The rule
+# lives in catalyst-v2-in-repo-agent-memory (Skill content vs memory). The
+# guarded failure: the orchestrator restated the user-ground-truth core
+# principle (already codified in catalyst-v2 Core principles) as a memory
+# section, leaving the directive in two homes that drift.
+
+# The agent under test: any catalyst role that decides where a directive
+# lives. Its model must differ from the judge.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Declared equals live for the actor today, so the runner records one run;
+# both documents the intent and runs two sides the moment the live model
+# diverges.
+config_source: both
+
+# The catalyst files whose repaired rules this test guards.
+covered_files:
+  - skills/catalyst-v2-in-repo-agent-memory/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from the project repo (or this test's own directory), never inside .cortex/.
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read any .cortex/ content in the project (plans, incidents, reports, memory), must not read ~/nix/catalyst/.cortex, must not run any git command (diff/log/status/show), and must not modify any file.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  skill-single-home:
+    kind: semantic
+    pass: The response names a catalyst skill as the single home of a directive that is codified in a skill; the directive's authoritative text belongs in the skill that owns it, not in memory.
+  no-memory-restatement:
+    kind: semantic
+    pass: The response never suggests restating the directive in memory; memory at most carries a pointer, and only until the skill lands the directive, after which the memory entry is removed.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (complaint wording, incident or replay ids, the hand-back filename), project .cortex content, git output, or ~/nix/catalyst/.cortex; its read list holds only ~/nix/catalyst/skills files.

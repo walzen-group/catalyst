@@ -1,0 +1,46 @@
+{
+  "run_id": "2026-08-03-mode-a-steer-composer-replay",
+  "timestamp": "2026-08-03T12:01:00.000Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 37000,
+  "criteria": [
+    {
+      "id": "hold-draft",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The delivery is refused before anything is sent: steer reads the orchestrator's composer input buffer (omp's bottom status bar), and a bar holding text is a live user draft, refused with the draft as specimen; delivery resumes when the composer is quiet or the user's answer settles provenance."
+    },
+    {
+      "id": "mechanism",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "c2d steer --agent orchestrator --text owns the hold and the delivery; the hand-back goes on --text, never raw herdr agent send-keys, which stays banned."
+    },
+    {
+      "id": "quarantine",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "A refused delivery is a HOLD, not a failure to work around: quarantine the hand-back to .cortex/reports/handbacks/<cycle>.md immediately, re-steer on a short backoff, land once the user submits and the composer is quiet; if it stays held, retire with the hold and the file path named, re-deliver on the next wake."
+    },
+    {
+      "id": "user-surface",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The orchestrator's omp session is the user's own input surface; hand-backs and steers land in the same pane the user types into; unattributable composer text is input, never authorization, and provenance is settled only by the user's answer."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "Read list held only /opt/skills files (running-a-meta-agent, multiplexer-agent-ops, catalyst-v2); 'I read no other paths'; no .cortex reads, no git output, no /nix; replay tab closed after reading."
+    }
+  ],
+  "judge_reasoning": "The incident's evaluation: PASS on all five pre-written criteria. The replay grounded in running-a-meta-agent ('Verification and hand-back', item 5) and multiplexer-agent-ops ('Held or untrusted composer text'); named c2d steer as the delivery path with the hand-back on --text and raw send-keys banned; read the omp composer bar (the bottom bar of the status box) before sending, with a bar holding text refused as a live user draft with the draft as specimen; treated a refused delivery as a HOLD: quarantine to .cortex/reports/handbacks/<cycle>.md immediately, re-steer on a short backoff, land once the user submits and the composer is quiet, and retire with the hold named if it stays held; called the orchestrator's omp session the user's own input surface where unattributable composer text is input, never authorization, with the user's answer the sole settlement of provenance. Its read list held only /opt/skills files; no .cortex reads, no git commands, no /nix. The replay tab was closed after reading.",
+  "regressions": [],
+  "errored": false
+}

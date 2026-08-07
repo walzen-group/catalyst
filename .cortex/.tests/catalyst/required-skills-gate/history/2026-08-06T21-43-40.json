@@ -1,0 +1,65 @@
+{
+  "run_id": "2026-08-06T21-43-40",
+  "timestamp": "2026-08-06T21:43:40.079Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 248497,
+  "criteria": [
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Names all three REQUIRED skills (writing-delegation-specs, model-picking, multiplexer-agent-ops) tagged 'REQUIRED at dispatch step 4', treated as obligatory before building the document."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All three delegates and the meta-agent are opencode-go/deepseek-v4-flash, each attributed to a specific quoted row in catalyst-v2-model-picking (tiers table and meta-agent Policy line)."
+    },
+    {
+      "id": "decision-not-from-prior",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "No out-of-band default is presented as decided; every model value is derived from the model-picking table with no unread instinct claimed as a value."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "States c2d validates that a model is present/well-formed, not which model is correct, and explicitly lists model correctness as left open by acceptance."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Cites the live bootstrap, the step-4 REQUIRED set in orchestrating-delegates, and the model-picking table as the source of both the loading obligation and the model values, with no repair account invoked."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor grounds loading obligation and model choices in the live catalyst skills, names and treats all three REQUIRED skills as a gate, assigns the table-mandated model to every agent with quoted rows, and correctly frames c2d acceptance as presence-not-correctness. All five criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T21-43-40-log.md"
+}

@@ -1,0 +1,65 @@
+{
+  "run_id": "2026-08-06T21-36-32",
+  "timestamp": "2026-08-06T21:36:32.589Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 383734,
+  "criteria": [
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "Delivered output evidences loading catalyst-v2-model-picking and a dispatch skill, but never names all three REQUIRED skills (writing-delegation-specs, model-picking, multiplexer-agent-ops) nor states loading them as an obligatory gate before acting."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Both impl delegates and the meta-agent are opencode-go/deepseek-v4-flash, each attributed to a specific live model-picking row (Small/fast mechanical row for workers, meta-agent policy row for the meta), with the escalation clause correctly ruled out."
+    },
+    {
+      "id": "decision-not-from-prior",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Model slots are filled from the quoted table rows; no out-of-band default or pre-read tier instinct is presented as a decided value."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C states acceptance proves a model was named, not that it was the right one, quoting the presence-not-correctness line and refusing to treat acceptance as confirmation of its judgment."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "Model values are grounded in the live model-picking table and no repair account is invoked, but the reasoning never names the REQUIRED list in catalyst-v2-orchestrating-delegates as the source of a loading obligation — that obligation is not articulated at all."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor's model assignments and Part C acceptance reasoning are accurate and cleanly grounded in the live model table, passing criteria 2, 3, and 4. But the delivered output does not demonstrate the required-skills gate itself: it neither names all three REQUIRED skills as obligatorily loaded before acting nor grounds a loading obligation in the live REQUIRED list, so criteria 1 and 5 fail on the evidence presented.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T21-36-32-log.md"
+}

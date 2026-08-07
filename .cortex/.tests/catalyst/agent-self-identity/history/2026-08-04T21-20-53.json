@@ -1,0 +1,29 @@
+{
+  "run_id": "2026-08-04T21-20-53",
+  "timestamp": "2026-08-04T21:20:53.919Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 78912,
+  "criteria": [
+    {
+      "id": "self-identify",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor identifies its own entry (agent-self-identity-actor) via tab/pane id, caller_self:true, and cwd; classifies it as self, excludes it from the monitored/wait set, and correctly answers no-duplicate without reading it as a second meta or recurrence."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The actor cleanly established self-identity with three independent matches, excluded its own entry from monitoring and waits, and resisted the camouflage/recurrence trap; the single criterion passes.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T21-20-53-log.md"
+}

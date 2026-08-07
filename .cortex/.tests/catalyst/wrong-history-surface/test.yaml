@@ -1,0 +1,51 @@
+# test.yaml: guards the rule repaired by the fix for
+# 2026-08-04-history-surface-wrong-communication.md. The rule: the harness
+# history:// internal URL is not a window into herdr sessions. Transcript and
+# communication between herdr sessions go through c2d steer with the A2A:
+# prefix, or herdr agent read/get/list when reading a known herdr agent.
+# A failed history:// lookup (Unknown agent) is no evidence that a herdr
+# session is unavailable; the request routes to the sanctioned herdr/c2d
+# path instead of a conclusion of unavailability.
+
+# The agent under test: a freshly dispatched catalyst meta-agent handling a
+# user-filed incident who wants the orchestrator's transcript for handoff
+# context. Role: meta-agent (omp runtime, thinking max), the role that reads
+# worker and orchestrator state.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst files whose repaired rules this test guards.
+covered_files:
+  - skills/catalyst-v2/SKILL.md
+  - skills/catalyst-v2-running-a-meta-agent/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (wrong-history-surface/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report 2026-08-04-history-surface-wrong-communication, the repair diff, or this test's own history.
+  - The actor must not modify the project working tree (/workspaces/catalyst) in any way, runs no git commands, and does not execute herdr agent rename, any dispatch, any steer, or any tab close: it states those actions in its reply instead. Read-only c2d status / herdr agent read of the live roster is allowed.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  failed-lookup-not-evidence:
+    kind: semantic
+    pass: The actor treats the Unknown agent response from the history:// lookup as no evidence that the orchestrator's herdr session is unavailable: its stated basis is that the harness history surface serves only histories registered in the harness's own process and cannot see herdr sessions (or that a failed history lookup carries no information about a herdr session), and it does not report the orchestrator session as unavailable from the lookup.
+  sanctioned-path:
+    kind: semantic
+    pass: The actor routes the transcript or context request to the sanctioned herdr/c2d surface: herdr agent read/get/list on the known herdr agent (the orchestrator), or c2d steer to the orchestrator with the A2A: prefix requesting the needed context, and it continues the incident work without asserting the orchestrator session is unavailable.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of the incident report, the repair diff, the test's own history, git output, or ~/nix/catalyst/.cortex as a source; its read list holds only live skills under skills.
+  rule-live:
+    kind: deterministic
+    pass: Both covered skill files name the harness history:// surface as no window into herdr sessions and state the failure semantics (a failed history lookup with Unknown agent carries no information about a herdr session). The check reads the live files, not the actor's reply.

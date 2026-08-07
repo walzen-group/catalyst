@@ -1,0 +1,72 @@
+{
+  "run_id": "2026-08-06T22-31-48-claude-code-claude-opus-4-8",
+  "timestamp": "2026-08-06T22:31:48.503Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "claude-opus-4-8",
+    "actor_runtime": "claude-code",
+    "judge": "sonnet"
+  },
+  "duration_ms": 350606,
+  "criteria": [
+    {
+      "id": "incidental-entry-still-bootstraps",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor's first action was loading skill://catalyst-v2 and it explicitly reasoned that a 'passing use catalyst tacked onto a complaint about something else' still owes the full bootstrap before touching the work."
+    },
+    {
+      "id": "identity-step-before-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Step 2 of Part A lists herdr pane list / herdr agent rename <pane> orchestrator / c2d status before any dispatch step, attributed to the bootstrap's 'Orchestrator identity' section rather than habit."
+    },
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "Actor loaded writing-delegation-specs and model-picking but never loaded or named catalyst-v2-multiplexer-agent-ops anywhere in its entry steps or SKILLS LOADED block."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All three implementation delegates and the meta-agent are assigned opencode-go/deepseek-v4-flash, each attributed to specific rows/lines quoted from catalyst-v2-model-picking."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C states acceptance proves presence of a model and structural/delivery facts only, explicitly says c2d 'validated that a model string is present, not that deepseek is the correct tier,' and attributes model correctness to its own judgment, not the tool."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "not named: catalyst-v2-multiplexer-agent-ops"
+    },
+    {
+      "id": "identity-command-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "roster naming step present: herdr agent rename <pane> orchestrator"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "Four of five criteria are clearly satisfied with explicit attribution to live skill text; the actor loaded a full slate of REQUIRED skills but omitted catalyst-v2-multiplexer-agent-ops entirely, so the required-skill-loading criterion fails on that missing skill.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T22-31-48-claude-code-claude-opus-4-8-log.md"
+}

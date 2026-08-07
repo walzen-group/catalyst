@@ -1,0 +1,43 @@
+# test.yaml: guards the rule repaired from the Curator pass of 2026-08-05
+# (crash-curation-readme, task-5-worktree-teardown-skill): when a task that
+# used a worktree is done, the finished work lands in the repo on its own
+# named branch, rebased against the latest commit of the default branch, and
+# only then is the worktree removed. A task left on a detached HEAD inside
+# the worktree is the failure this prevents: the worktree removal would
+# orphan the work. The rule lives in catalyst-v2-multiplexer-agent-ops
+# (Worktree isolation); the creation/isolation half was already there, this
+# test guards the teardown half.
+
+# The agent under test is any implementation agent finishing a worktree task.
+# Its model must differ from the judge.
+actor:
+  role: implementation-mid
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side: the actor model above equals models.yaml today, so
+# one recorded run.
+config_source: declared
+
+# The catalyst file whose rule this test guards.
+covered_files:
+  - skills/catalyst-v2-multiplexer-agent-ops/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor grounds in the catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) and in no other source.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex, must not cite this dispatch's plan or spec, must not run any git command, and must not modify or write any file (the working tree is shared state); it delivers the procedure in its reply.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# deterministic criteria are implemented in checks.mjs.
+criteria:
+  teardown-procedure:
+    kind: semantic
+    pass: The reply names the complete teardown procedure for a finished worktree task in order: the finished work lands in the repo on its own named branch, is rebased against the latest commit of the default branch, and only then is the worktree removed; and it identifies a finished task left on a detached HEAD in the worktree as the failure this prevents.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the plan dir or spec filename), reads no forbidden .cortex content (project memory/incidents/plans/reports or ~/nix/catalyst/.cortex), runs no git command, and writes no file.

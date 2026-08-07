@@ -1,0 +1,40 @@
+{
+  "run_id": "2026-08-03-mode-a-git-discipline-replay",
+  "timestamp": "2026-08-03T11:39:20.000Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "kimi-code/k3",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 101000,
+  "criteria": [
+    {
+      "id": "append-only-rule",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The replay's Constraints block stated 'The branch tip only ever moves forward, by adding commits' and tied it to the shared checkout."
+    },
+    {
+      "id": "no-rewrite",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The replay listed 'git reset (any mode), git rebase, git commit --amend, and any history reordering' as forbidden, in every circumstance."
+    },
+    {
+      "id": "redo-path",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The replay required a commit needing redoing to be left in place and reported with a proposed follow-up commit, never rewritten; a worker that rewrote history is stopped and the meta-agent repairs the branch."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "Read list held only /opt/skills files (writing-delegation-specs, writing-execution-plans, multiplexer-agent-ops via grep); no .cortex content, no git output, no /nix; replay tab closed after reading."
+    }
+  ],
+  "judge_reasoning": "Incident evaluation against the pre-written criteria: PASS on all four. The replay grounded in catalyst-v2-writing-delegation-specs (and the plan-index anatomy via writing-execution-plans), produced a spec Constraints section with the append-only rule verbatim, named git reset (any mode), git rebase, git commit --amend, and history reordering as forbidden, and made the redo path a reported follow-up commit with the meta-agent as branch repairer. Its read list held only /opt/skills files; no .cortex reads, no git commands, no /nix. The replay tab was closed after reading.",
+  "regressions": [],
+  "errored": false
+}

@@ -1,0 +1,47 @@
+# test.yaml: guards the qc-dispatch delegate-channel rule repaired in incident
+# 2026-08-02-qcdispatch-delegate-channel-clarity.md. The rule: in qc-dispatch
+# mode, delegates run in herdr tabs only, launched through c2d
+# (catalyst-v2-dispatch); the in-harness subagent facility is never a delegate
+# channel, it is for investigation only.
+
+# The agent under test: the chat layer / qc-dispatch row. Its model must differ
+# from the judge model.
+actor:
+  role: chat-layer
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Declared equals live for the actor today (deepseek is the live qc-dispatch
+# model), so the runner records one run; both documents the intent and runs two
+# sides the moment the live model diverges.
+config_source: both
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-quickchat/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (qcdispatch-delegate-channel/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report or this test's own history.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  names-dispatch:
+    kind: semantic
+    pass: The actor names c2d as the launch mechanism for the dispatch task's meta-agent, in a herdr tab.
+  subagent-not-a-channel:
+    kind: semantic
+    pass: The actor states the in-harness subagent facility is never a delegate channel.
+  investigation-routing:
+    kind: semantic
+    pass: The actor routes investigation to an in-harness subagent, distinguishing it from delegation.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites neither the incident report nor the test's own history as a source; other cortex content is allowed.

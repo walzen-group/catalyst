@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-08-04-mode-a-spec-pointer-replay",
+  "log_path": "2026-08-04-mode-a-spec-pointer-replay-log.md",
+  "timestamp": "2026-08-04T18:13:11.000Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 109000,
+  "criteria": [
+    {
+      "id": "names-spec-path",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The brief text the actor wrote opens with the exact absolute spec path: \"Execute the spec at /workspaces/catalyst/.cortex/plans/2026-08-01-dispatch-tool/01-tool-interface.md. Read it first; it is the entire task definition and the contract.\""
+    },
+    {
+      "id": "no-pointer-assumption",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The text stands alone: the path lives inside the text, no placeholder or search instruction, and the actor's reasoning states the decision, \"spec_pointer delivers only brief.text (the delegate never sees spec_path, so the text MUST name the absolute spec path)\", quoting the repaired line."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "Cited sources are live skill text, the scenario's spec file and plan, and the test's own directory; the incident report, the 2026-08-04-test-history-logs plan, the repair diff, and the test history never appear."
+    }
+  ],
+  "judge_reasoning": "Evaluation against the pre-written criteria: PASS on all three. The actor read the live repaired skills (catalyst-v2-dispatch/SKILL.md, catalyst-v2-writing-delegation-specs/SKILL.md) and the scenario's spec, then produced the artifact: a brief.text that names the absolute spec path verbatim as its first line. Its reasoning quotes the repaired rule, \"spec_pointer delivers only brief.text (the delegate never sees spec_path, so the text MUST name the absolute spec path)\", and notes the pointer never reaches the delegate, \"the only way the blank delegate learns the file\". The brief carries the directive, toolchain, gate, style, and report format inline, so nothing depends on a separately delivered pointer. No forbidden source was read or cited.",
+  "regressions": [],
+  "errored": false
+}

@@ -1,0 +1,40 @@
+{
+  "run_id": "2026-08-03-mode-a-memory-store-replay",
+  "timestamp": "2026-08-03T11:55:00.000Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 97000,
+  "criteria": [
+    {
+      "id": "kit-memory-named",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Named /nix/.cortex/memory/feedback-a2a-a2u-channel-markers.md for the A2A/A2U directive and /nix/.cortex/memory/reference-omp-meta-session-liveness.md for the liveness gotcha, citing the repaired skill's system-memory list (\"catalyst conventions and user directives about them\", \"gotchas about the catalyst system itself\")."
+    },
+    {
+      "id": "split-stated",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Contrasted with the repo's flake/uv toolchain choice as project memory at /workspaces/opencode-sdk-python/.cortex/memory/project-toolchain-flake-uv.md; \"The split is applicability: the A2A/A2U convention and the liveness gotcha describe how catalyst itself behaves... The toolchain choice describes only this repo... Same layout, same index rule, different tree.\""
+    },
+    {
+      "id": "index-updated",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "\"Yes, one index update: /nix/.cortex/memory/MEMORY.md (kit tree) gains one dense line per file. The skill says each tree keeps its own MEMORY.md and 'update the index of the tree you wrote in.'... the project's MEMORY.md is untouched.\""
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "Read only /opt/skills (grep of memory-path references across skills; cited catalyst-v2-in-repo-agent-memory, multiplexer-agent-ops, running-a-meta-agent, orchestrating-delegates skill text). Executor note: \"I could not inspect the kit tree per constraints\". No incident, plan, hand-back, workspace .cortex, or git citation."
+    }
+  ],
+  "judge_reasoning": "Meta-agent evaluation against the pre-written criteria: PASS on all four. The replay derived both destinations from the repaired skill text: the A2A/A2U directive and the omp liveness gotcha to the kit memory tree (/nix/.cortex/memory/, with per-type filenames feedback-* and reference-*), the repo's flake/uv choice to the project tree, and the kit MEMORY.md index update stated with the 'index of the tree you wrote in' rule. Isolation held: only /opt/skills was read; the replay explicitly noted it could not inspect the kit tree per the constraints. The replay tab was closed after reading.",
+  "regressions": [],
+  "errored": false
+}

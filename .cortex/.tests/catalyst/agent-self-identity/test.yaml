@@ -1,0 +1,46 @@
+# test.yaml: guards the rule repaired by the incident-driven fix for
+# 2026-08-04-agent-self-identity.md. The rule: every catalyst agent knows its
+# own roster name (the dispatch mandate names it), and when reading a roster
+# it classifies its own entry as self (c2d status marks it caller_self: true,
+# matched on herdr's tab/pane ids) and excludes it from the set of agents it
+# monitors and arms waits for, never reading it as another agent in
+# recurrence, duplication, or replacement judgments.
+
+# The agent under test: a freshly launched catalyst meta-agent (meta-agent
+# row, omp runtime). Model: the working omp default opencode-go/deepseek-v4-flash,
+# matching the earlier identity replays' precedent of testing the text on the
+# model the role actually runs when the pinned model is unavailable. Its model
+# must differ from the judge model.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-multiplexer-agent-ops/SKILL.md
+  - skills/catalyst-v2-running-a-meta-agent/SKILL.md
+  - skills/catalyst-v2-dispatch/src/deliver.mjs
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (agent-self-identity/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report 2026-08-04-agent-self-identity, the repair diff, or this test's own history.
+  - The actor must not modify the project working tree (/workspaces/catalyst) in any way, runs no git commands, and executes no dispatch or steer: read-only roster reads (herdr agent list, herdr agent get, c2d status) are allowed.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criteria are implemented in checks.mjs.
+criteria:
+  self-identify:
+    kind: semantic
+    pass: The actor identifies its own roster entry as itself (by the roster name its mandate states, the caller_self: true marker, or a HERDR_TAB_ID/HERDR_PANE_ID match), classifies that entry as self rather than another agent, excludes it from the set of agents it would monitor and arm waits for, and does not describe its own entry as a second meta or as evidence a pattern recurred.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident report, the repair diff, the test's own history) as a source; other cortex content is allowed.

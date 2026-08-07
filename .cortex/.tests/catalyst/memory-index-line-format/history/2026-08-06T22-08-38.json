@@ -1,0 +1,36 @@
+{
+  "run_id": "2026-08-06T22-08-38",
+  "timestamp": "2026-08-06T22:08:38.469Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 21894,
+  "criteria": [
+    {
+      "id": "description-conveyed",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The delivered single index line's description states both clauses in plain prose: the scrim queue backs up when matchmaking drops, and retries then pile up server-side."
+    },
+    {
+      "id": "line-format",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "line is \"- feedback-scrim-queue-blocked.md - the scrim queue backs up when matchmaking drops, retries then pile up server-side\""
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor produced one index line whose description conveys both required clauses in plain prose, meeting the criterion.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T22-08-38-log.md"
+}

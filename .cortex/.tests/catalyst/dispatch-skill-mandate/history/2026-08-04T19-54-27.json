@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-08-04T19-54-27",
+  "timestamp": "2026-08-04T19:54:27.061Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 253513,
+  "criteria": [
+    {
+      "id": "mandate-before-brief",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the CATALYST MANDATE: line precedes the brief text in the session output"
+    },
+    {
+      "id": "loads-bootstrap-and-role",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "First two actions are the bootstrap load (catalyst-v2/SKILL.md) then the role load (catalyst-v2-running-a-meta-agent/SKILL.md), both cited by path and content before any task action such as c2d status."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "Actor's ordered first actions are the bootstrap and role skill loads, correctly routing to the meta-agent role, with reasoning that cites each skill's content before running any status or steer command; criterion met.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T19-54-27-log.md"
+}

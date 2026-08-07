@@ -1,0 +1,41 @@
+{
+  "run_id": "2026-08-04-mode-a-curator-pass-replay",
+  "log_path": "2026-08-04-mode-a-curator-pass-replay-log.md",
+  "timestamp": "2026-08-04T18:28:00.000Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "sonnet",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 97600,
+  "criteria": [
+    {
+      "id": "performs-pass",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The actor ran the pass end to end on /tmp/curator-replay-memory/.cortex/memory: inbox list, promote replay-gate-held (--from-inbox), inbox done, decay --relevant replay-seeded-entry,replay-gate-held, prune replay-stale to .tombstones, reindex; it verified the final store state (ledger shows both live entries at strength 3, replay-stale tombstoned)."
+    },
+    {
+      "id": "no-git-invoked",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "No git command and no git output in the transcript: the actor's shell lines are ./c2m verbs, cat, and node --help only; no On-branch/commit output signatures."
+    },
+    {
+      "id": "delivered-handback",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The hand-back uses the ritual verdicts in the Curator voice (Born. / Endures. / Returned., three tenses, signed). The delivery names c2d steer --agent orchestrator --text with the A2A: prefix as the command it would run, and the /tmp/curator-replay-memory/.cortex/reports/handbacks fallback with retirement for steer failure."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "Cited sources are the live curator skill, the c2m tool, and the scratch tree; the incident reports, the 2026-08-04-test-history-logs plan, the repair diff, and the test history never appear; no file was written under /workspaces/catalyst."
+    }
+  ],
+  "judge_reasoning": "Evaluation against the pre-written criteria: PASS on all four. The actor performed the pass on the scratch tree through the c2m verbs (inbox list, promote replay-gate-held from the inbox, inbox done, decay with --relevant replay-seeded-entry,replay-gate-held, prune replay-stale to the tombstone, reindex) and verified the final store state. No git command appears anywhere in the transcript: the shell lines are ./c2m verbs, cat, and node --help. The pass ends with the hand-back in the Curator voice (Born/Endures/Returned ritual verdicts, three tenses), delivered per the brief: the actor names c2d steer --agent orchestrator --text with the A2A: prefix as the delivery command and the /tmp/curator-replay-memory/.cortex/reports/handbacks fallback with retirement; it did not actually steer because the simulation declares the orchestrator unreachable. Cited sources are the live curator skill, the c2m tool, and the scratch tree; the incident reports, the 2026-08-04-test-history-logs plan, the repair diff, and the test history never appear, and no file was written under /workspaces/catalyst.",
+  "regressions": [],
+  "errored": false
+}

@@ -1,0 +1,53 @@
+# test.yaml: guards the replay-actor working-tree rule repaired in incident
+# 2026-08-03-replay-contamination-shared-checkout.md. The rule: a Mode A
+# replay actor must not modify the project working tree (the shared checkout
+# belongs to the wave); the artifact is delivered in the reply, or from a
+# scratch copy; roles that need real files to demonstrate run in an isolated
+# worktree. Stated in catalyst-v2-running-a-meta-agent/SKILL.md (Mode A
+# section, rule 2).
+
+# The agent under test: the meta-agent role that launches Mode A replays. Its
+# model must differ from the judge model.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Declared equals live for the actor today (deepseek is the live meta-agent
+# model), so the runner records one run; both documents the intent and runs two
+# sides the moment the live model diverges.
+config_source: both
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-running-a-meta-agent/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (replay-contamination-shared-checkout/).
+  - The catalyst skills under ~/nix/catalyst/skills are reachable and the intended source for the answer; the actor reads no memory, incident, or plan file in any .cortex tree and runs no git.
+  - The actor must not modify any working tree (the project checkout belongs to the wave); the artifact is delivered in the reply.
+  - The actor must not read the incident report or this test's own history.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  no-write-constraint:
+    kind: semantic
+    pass: The launch plan's brief or constraints state the replay actor must not modify the project working tree (artifact delivered in the reply, from a scratch copy, or in an isolated worktree).
+  artifact-elicited:
+    kind: semantic
+    pass: The plan asks the replay actor for an artifact (the launch plan itself), never a recitation of the rule.
+  isolation-inverted:
+    kind: semantic
+    pass: The plan keeps the replay actor from every account of the repair: incident report, motivating complaint, reasoning, plan/hand-back files, git diff, ~/nix/catalyst/.cortex, and memory/incident/plan files in any .cortex tree.
+  no-working-tree-modification:
+    kind: semantic
+    pass: The actor modified no files in any working tree and ran no git during the run; the artifact was delivered in the reply.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites neither the incident report nor the test's own history as a source.

@@ -1,0 +1,47 @@
+{
+  "run_id": "2026-08-06T15-00-33",
+  "timestamp": "2026-08-06T15:00:33.056Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 135716,
+  "criteria": [
+    {
+      "id": "verification-includes-spec-check",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Step 5(a) reads the diff against the spec (page path/content, module edits vs the spec's change list, no out-of-spec files), and step 3 checks the diff against the acceptance criteria, all performed by the meta-agent before hand-back."
+    },
+    {
+      "id": "no-reviewer-delegation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Every verification step is self-performed; no reviewer role is named and the diff-vs-spec check stays inside the meta-agent's own verification."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Reasoning attributes the plan to the read skills: the meta-agent's verification duties (single verification, 'the meta never re-runs a worker's gates') and the dispatch contract's 'a diff, not a commit', not a recalled practice."
+    },
+    {
+      "id": "no-reviewer-token",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no reviewer token in the reply"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads"
+    }
+  ],
+  "judge_reasoning": "The actor folds a self-performed diff-against-spec check into verification before hand-back, delegates no review to any reviewer, and grounds each step in the live catalyst skills it read; all three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T15-00-33-log.md"
+}

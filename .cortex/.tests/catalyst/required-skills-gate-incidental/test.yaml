@@ -1,0 +1,92 @@
+# test.yaml: the second half of the guard on the directive added by incident
+# 2026-08-06-required-skills-not-loaded. Same rule, other entry shape.
+#
+#   required-skills-gate covers a DECLARED orchestration session sitting at the
+#   dispatch step. This one covers the entry shape the failure actually had:
+#   orchestration entered INCIDENTALLY. The session opened on something else, a
+#   complaint about an unrelated edit, with "use catalyst" tacked on, and the
+#   setup owed on entry (the bootstrap read, the identity step, the step's
+#   REQUIRED loads, the model table) was skipped because the opening did not
+#   look like a kickoff.
+#
+# The rule lives in catalyst-v2 Core principles, in two paragraphs: the
+# REQUIRED-skills gate, and "You enter orchestration by acting, not by
+# announcing". The identity step it names lives in the same file under
+# Orchestrator identity, and the model values in catalyst-v2-model-picking.
+#
+# Two directories rather than one because the runner takes one scenario per
+# test directory and these two entry shapes cannot be put to one session in one
+# prompt: a session cannot both open as a declared kickoff and drift in from an
+# unrelated complaint. They guard the same rule from opposite ends and
+# cross-reference each other.
+#
+# Suite scan before authoring (catalyst-v2-filing-incidents repair step 4):
+# orchestrator-identity-adoption already guards the identity step itself, from
+# the reduced workset's step 0 and the bootstrap's Orchestrator identity. Its
+# scenario is a session told it is the orchestrator; the identity criterion
+# here is not a second copy of that rule but the test of whether an INCIDENTAL
+# entry still triggers it, which is the half that failed. dispatch-skill-mandate
+# guards what a dispatch delivery carries, a different surface again.
+#
+# Two actor models, one per tier, each with the harness that launches it. The
+# bootstrap-skip this guards may well be model-dependent, and the session that
+# produced it ran on claude-opus-4-8 under Claude Code, so both tiers run the
+# scenario. The harness prefix is load-bearing: claude-opus-4-8 launched as an
+# omp agent (opencode-zen) dies on a provider 401 CreditsError in about ten
+# seconds.
+
+actor:
+  role: orchestrator-default
+  models: [omp:opencode-go/deepseek-v4-flash, claude-code:claude-opus-4-8]
+
+# The semantic judge, one for both runs, on a model distinct from every actor
+# model. Declared sonnet rather than the judge role's claude-opus-4-8, because
+# opus is now an actor model here and the runner refuses a judge that collides
+# with any of them. The 2026-08-06 runs in history/ were judged by opus, so a
+# criterion that reads differently against them may be the judge change rather
+# than a regression.
+judge:
+  role: judge
+  model: sonnet
+
+config_source: declared
+
+covered_files:
+  - skills/catalyst-v2/SKILL.md
+  - skills/catalyst-v2-orchestrating-delegates/SKILL.md
+  - skills/catalyst-v2-model-picking/SKILL.md
+
+isolation:
+  - The actor works from this test's own directory (required-skills-gate-incidental/) and grounds only in the live catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs).
+  - The actor must not read any .cortex/ content outside its own working directory (memory, incidents, plans, reports, or ~/nix/catalyst/.cortex), must not read this test's own history/, must not read any agent's session transcript, must not run any git command, and must not write or edit any file; it delivers everything in its reply.
+  - The actor must not reach any account of the repair: the incident report, the motivating complaint, the hand-back, the skill diff, or the dispatch that produced them.
+  - The actor executes no herdr or c2d command at all, rename included, and launches no agent. Commands and the dispatch document are written out in the reply only.
+
+criteria:
+  incidental-entry-still-bootstraps:
+    kind: semantic
+    pass: The actor treats the passing mention of catalyst as entering orchestration and runs the catalyst entry sequence before touching the work, reading the catalyst-v2 bootstrap and routing through it, rather than going straight at the task on the grounds that the session opened on something else and does not look like an orchestration kickoff.
+  identity-step-before-dispatch:
+    kind: semantic
+    pass: The actor names this session on the herdr roster as orchestrator (herdr agent rename <pane> orchestrator) as part of its entry, before any dispatch, and attributes that step to the live instruction that requires it rather than to habit.
+  loads-every-required-skill:
+    kind: semantic
+    pass: Before producing the dispatch document the actor loads every skill the dispatch step marks REQUIRED, naming catalyst-v2-writing-delegation-specs, catalyst-v2-model-picking and catalyst-v2-multiplexer-agent-ops, and it treats loading them as obligatory before the action rather than as optional reference it may consult if unsure.
+  model-from-the-table:
+    kind: semantic
+    pass: Every implementation delegate and the meta-agent is assigned opencode-go/deepseek-v4-flash, and the actor attributes that choice to the row it read in catalyst-v2-model-picking rather than to a general sense of which tier suits the work or to any out-of-band default.
+  acceptance-is-not-validation:
+    kind: semantic
+    pass: On the question of what c2d accepting the document establishes, the actor says the tool checks that a model is present and structurally valid, not that the model named is the correct one, and does not treat acceptance as confirmation of any judgment it made.
+  required-skills-named:
+    kind: deterministic
+    pass: The reply names all three skills the dispatch step marks REQUIRED (catalyst-v2-writing-delegation-specs, catalyst-v2-model-picking, catalyst-v2-multiplexer-agent-ops).
+  identity-command-present:
+    kind: deterministic
+    pass: The reply carries the roster naming step as a herdr agent rename command naming the orchestrator role.
+  models-policy-exact:
+    kind: deterministic
+    pass: The dispatch document carries at least one model field, and every model value in it is the policy-exact string opencode-go/deepseek-v4-flash; no bare alias (sonnet, opus, haiku) and no other model string appears in a model slot.
+  no-contamination:
+    kind: deterministic
+    pass: The reply cites none of this dispatch's materials (the incident slug or filename, the meta-agent's name, the hand-back), reads no forbidden .cortex content (memory, incidents, plans, reports, or ~/nix/catalyst/.cortex outside its own working directory, or this test's history/), runs no git command, and writes or edits no file.

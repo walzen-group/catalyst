@@ -1,0 +1,44 @@
+# test.yaml: guards the rule repaired in incident
+# 2026-08-04-spec-pointer-delivery-text-only.md. The rule: a spec_pointer
+# brief delivers its text verbatim and never the spec_path, so the brief text
+# names the absolute spec path the delegate must read.
+
+# The agent under test: the brief author (orchestrator) row. The failing
+# effort's orchestrator session ran omp deepseek-v4-flash, so the declared
+# model pins that; the live orchestrator-default row (kimi k3) is a different
+# session shape, so this test runs the declared side only. The actor model
+# must differ from the judge model.
+actor:
+  role: orchestrator-default
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-writing-delegation-specs/SKILL.md
+  - skills/catalyst-v2-dispatch/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (spec-pointer-delivery-text-only/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report, the 2026-08-04-test-history-logs plan, the repair diff, or this test's own history.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  names-spec-path:
+    kind: semantic
+    pass: The brief text the actor writes contains the exact absolute spec path from the scenario, so a delegate receiving only that text can locate and read the spec.
+  no-pointer-assumption:
+    kind: semantic
+    pass: The brief text stands alone: it does not refer to the spec as delivered separately (a pointer field, "the given path", or a placeholder), and it does not send the delegate searching for the spec.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites neither the incident report, the 2026-08-04-test-history-logs plan, the repair diff, nor the test's own history as a source; other cortex content is allowed.

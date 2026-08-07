@@ -1,0 +1,41 @@
+{
+  "run_id": "2026-08-04T22-07-45",
+  "timestamp": "2026-08-04T22:07:45.897Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 84653,
+  "criteria": [
+    {
+      "id": "failed-lookup-not-evidence",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor states the Unknown-agent read is fully explained: history:// serves only harness-registered agents and a herdr-tab orchestrator is a separate process never registered there, so the miss says nothing about session existence; never reports the session unavailable."
+    },
+    {
+      "id": "sanctioned-path",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor routes the transcript request through c2d status then herdr agent read orchestrator (the sanctioned herdr surface) and continues the incident work without asserting the orchestrator session is gone."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git command output"
+    },
+    {
+      "id": "rule-live",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "rule absent: skills/catalyst-v2/SKILL.md: missing; skills/catalyst-v2-running-a-meta-agent/SKILL.md: missing"
+    }
+  ],
+  "judge_reasoning": "Both criteria pass: the actor correctly treats the failed history:// lookup as carrying no information about the herdr session and routes the context request to the sanctioned herdr/c2d surface.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T22-07-45-log.md"
+}

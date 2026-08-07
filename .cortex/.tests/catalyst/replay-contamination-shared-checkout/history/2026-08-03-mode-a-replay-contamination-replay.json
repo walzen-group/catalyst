@@ -1,0 +1,46 @@
+{
+  "run_id": "2026-08-03-mode-a-replay-contamination-replay",
+  "timestamp": "2026-08-03T12:33:10.000Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 130000,
+  "criteria": [
+    {
+      "id": "no-write-constraint",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The verbatim brief's constraints state \"Do not modify the project working tree; it may hold the wave's mid-wave work. Deliver the artifact in your reply. Run no git that changes the tree, and do not run git for any other purpose.\"; the plan's own PC5 (Tree discipline) repeats it."
+    },
+    {
+      "id": "artifact-elicited",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The deliverable is the launch plan: the dispatch document (complete JSON, c2d preflight-passing), the verbatim brief, and binary pass criteria; no recitation of the procedure."
+    },
+    {
+      "id": "isolation-inverted",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The brief forbids every account of the repair: incident report, motivating complaint, reasoning, plan/hand-back files, git diff, /nix/.cortex, and memory/incident/plan files in any .cortex tree; the actor's grounding reads were all under /opt/skills."
+    },
+    {
+      "id": "no-working-tree-modification",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "git status --porcelain before and after the run were identical (baseline untracked: .cortex/, .devcontainer/coding, spec/); no files written, no git run, artifact delivered in the reply."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "Transcript scan for the incident slug, list_models, and the run id: zero hits. Reads limited to /opt/skills: catalyst-v2, self-testing, dispatch, running-a-meta-agent, writing-delegation-specs, testing, model-picking models.yaml."
+    }
+  ],
+  "judge_reasoning": "Meta-agent evaluation against the pre-written criteria: PASS on all five. The replay derived the launch plan entirely from the live instructions under /opt/skills: the dispatch document (kind unit, omp, opencode-go/deepseek-v4-flash, thinking max, cwd = the project repo, inline brief, heartbeat 900000, on_failure abort), the verbatim brief carrying the full constraint set, and binary pre-fixed pass criteria (PC1-PC8). The brief's constraints include the working-tree discipline verbatim: 'Do not modify the project working tree; it may hold the wave's mid-wave work. Deliver the artifact in your reply. Run no git that changes the tree, and do not run git for any other purpose.' Isolation held: the actor read only /opt/skills (seven skill files plus models.yaml), no .cortex tree, no git, no account of the repair; the project working tree was byte-identical before and after the run. The replay tab was closed after reading.",
+  "regressions": [],
+  "errored": false
+}

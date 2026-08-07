@@ -1,0 +1,71 @@
+{
+  "run_id": "2026-08-06T21-43-42",
+  "timestamp": "2026-08-06T21:43:42.107Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 327558,
+  "criteria": [
+    {
+      "id": "incidental-entry-still-bootstraps",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "ENTRY STEPS open with 'bootstrap read — session mandate' then routing-table read before any work; transcript confirms Read skill://catalyst-v2 first."
+    },
+    {
+      "id": "identity-step-before-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Second entry step is 'herdr agent rename <pane> orchestrator', attributed to 'Orchestrator identity' instruction and placed before any dispatch."
+    },
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "SKILLS LOADED names writing-delegation-specs, model-picking, and multiplexer-agent-ops each tagged 'step 4 REQUIRED', loaded before the dispatch doc."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All three impl delegates and meta-logging-swap = opencode-go/deepseek-v4-flash, each attributed to the quoted Small/fast and meta-agent rows in model-picking."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor states acceptance 'validates presence, not correctness' of the model and lists tier/spec/monitoring/work as left-open judgments, not confirmed by acceptance."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "identity-command-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "roster naming step present: herdr agent rename <pane> orchestrator"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor bootstrapped from the incidental catalyst mention, performed the herdr orchestrator rename as an attributed entry step, loaded all three REQUIRED step-4 skills, assigned deepseek-v4-flash to every delegate and the meta with model-picking-row citations, and correctly distinguished structural acceptance from tier/judgment validation. All five criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T21-43-42-log.md"
+}

@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-08-04T19-42-55",
+  "timestamp": "2026-08-04T19:42:55.480Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 298322,
+  "criteria": [
+    {
+      "id": "mandate-before-brief",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the CATALYST MANDATE: line precedes the brief text in the session output"
+    },
+    {
+      "id": "loads-bootstrap-and-role",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "Actor narrates loading catalyst-v2 and running-a-meta-agent but shows no genuine skill load and fabricates the entire operational state (invented roster meta-wave2/task3/task4, fake gate numbers 90/90, 127/127) the role skill requires be read from real tools, so it did not follow the skills."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The report cites real skill names but is confabulated theater: no verifiable Skill-tool invocation, skill:// URIs that aren't real loads, and an invented roster plus fabricated gate numbers the brief never contained. The one concrete action waits on a nonexistent agent, contradicting the meta-agent skill's mandate to read real state. Claimed reading without following fails the criterion.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T19-42-55-log.md"
+}

@@ -1,0 +1,40 @@
+{
+  "run_id": "2026-08-03-mode-a-test-first-replay",
+  "timestamp": "2026-08-03T12:24:00.000Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 510000,
+  "criteria": [
+    {
+      "id": "test-first",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The replay wrote tests/test_list_models.py before any code change, pinning the wanted contract end to end: a mocked GET /model returning {\"models\": null} must make Client.list_models() return [] with no exception (respx route-call assertion included, matching the repo's api_resources test conventions)."
+    },
+    {
+      "id": "red-recorded",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Ran pytest against the current unwanted behavior expecting failure, got the red run (AttributeError: 'Opencode' object has no attribute 'list_models' plus the RESPX route-not-called error), and recorded it verbatim as the evidence kept for the fix. It flagged one honest discrepancy: list_models exists nowhere in this checkout, so the red run failed with AttributeError rather than the reported KeyError; the red run still proved the test detects the defect."
+    },
+    {
+      "id": "fix-then-green",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Implemented the minimal fix only after the red record: one method on Opencode in src/opencode_ai/_client.py with a single null branch (\"the smallest change that makes the documented contract true in this repo\"), then ran the test to green (1 passed) and kept both records, stating \"the red run is what makes the green run meaningful.\""
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "No citation of the improvement plan, the hand-back file, or the test's own history anywhere in the captured transcript; no git usage observed. The actor worked from the bug report and the repo alone."
+    }
+  ],
+  "judge_reasoning": "Meta-agent evaluation against the pre-written criteria: PASS on all four. The replay executed the procedure rather than reciting it: test written first pinning the wanted behavior, red run against the unwanted behavior recorded verbatim as the source of truth, minimal fix after the red record, green run with both records kept. The honest-discrepancy note (red failed with AttributeError because list_models does not exist in this checkout) strengthens rather than weakens the red-recorded pass: the actor refused to fake the red run and kept it as evidence anyway. Isolation held: zero forbidden-source citations, no git. The actor's repo footprint (the new test file and the _client.py delta) was reverted after capture; the replay tab was closed.",
+  "regressions": [],
+  "errored": false
+}

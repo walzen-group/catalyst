@@ -1,0 +1,57 @@
+# test.yaml: guards the rule tightened from the architect's complaint of
+# 2026-08-04 ("we again have catalyst specific things in the memory storage"):
+# a catalyst directive belongs in the skill that governs it, the skill is its
+# single home, and once codified the memory entry is removed, not reduced to a
+# pointer. The Curator enforces the rule while draining its inbox and pruning
+# the store, and names every enforcement action in its hand-back so the
+# orchestrator can tell the user. The rule lives in
+# catalyst-v2-in-repo-agent-memory (Skill content vs memory); the enforcement
+# lives in catalyst-v2-curator (Pass, and the hand-back rule-enforcement
+# section). The guarded failure: pointer-only catalyst-directive entries
+# accumulated in the kit memory tree because the old rule permitted "reduced to
+# a pointer" and nothing rejected them at promotion or pruned them at a pass.
+
+# The agent under test is the Curator running a pass. Its model must differ
+# from the judge.
+actor:
+  role: curator
+  model: sonnet
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side: the curator model above equals models.yaml today, so
+# one recorded run.
+config_source: declared
+
+# The catalyst files whose tightened rule and enforcement this test guards.
+covered_files:
+  - skills/catalyst-v2-in-repo-agent-memory/SKILL.md
+  - skills/catalyst-v2-curator/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory; the catalyst skills under skills/catalyst-v2-* are the intended source for procedure.
+  - The inbox notes and store entries are given inline in the scenario; the actor decides from those, and runs no c2m command against a real tree.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex, must not cite this dispatch's incident report or this test's history, and must not run any git command.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  directive-not-promoted:
+    kind: semantic
+    pass: The Curator promotes neither catalyst-directive note into the durable store; it records the already-codified directive as rejected and names the skill that owns it, and records the not-yet-codified directive as owed to a skill and names the skill that should hold it, leaving the landing to the orchestrator.
+  fact-promotes:
+    kind: semantic
+    pass: The environment fact (the staging database rejecting writes between 02:00 and 03:00 UTC) is promoted into the store as a normal keeper, never rejected or held as a directive.
+  store-pointer-pruned:
+    kind: semantic
+    pass: The Curator drives the existing durable entry that only points at a skill-codified directive out of the store (never named relevant, so it decays and tombstones through prune), while the genuine reference entry is kept.
+  handback-enforcement-section:
+    kind: semantic
+    pass: The hand-back to the orchestrator carries a rule-enforcement section that names, per item, what the note or entry said, which skill owns the directive, and the disposition (rejected as already codified, owed to a skill, or pruned from the store), so the orchestrator can tell the user what fired.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident slug, the plan dir or spec filename, the complaint wording), reads no forbidden .cortex content (memory, incidents, plans, reports, or ~/nix/catalyst/.cortex), and runs no git command.

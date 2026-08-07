@@ -1,0 +1,193 @@
+// Agent sandbox template: Claude Code plus omp (Oh My Pi), both driven from the
+// container terminal. Symlink this dir into a project as .devcontainer/ (ln -s
+// ~/nix/catalyst/devcontainers/coding .devcontainer) and adjust the marked sections; copying
+// is no longer required. See docs/concepts/devcontainer.md.
+{
+  "name": "coding",
+  // Baked image: see Dockerfile. Deterministic installs bake in once and ride the
+  // layer cache; features below layer on top afterward.
+  "build": { "dockerfile": "Dockerfile" },
+
+  // Stable, project-derived name so docker exec / OrbStack attach target it easily,
+  // and template copies in different repos do not collide.
+  // --privileged is required by the docker-in-docker feature (nested daemon).
+  // The GPU flag lives in hostRequirements below, not here: this file is shared by
+  // every host and a runArg applies to all of them. The commented CDI line is for a
+  // CDI-only engine (native dockerd 25+ reading modules/os/nixos/wsl-gpu.nix's spec),
+  // which the detection cannot produce; it pins the flag on for every host, so
+  // uncomment only in a project that always builds on that machine.
+  "runArgs": [
+    "--name",
+    "coding-${localWorkspaceFolderBasename}",
+    "--privileged"
+    // , "--device=nvidia.com/gpu=all"
+  ],
+
+  // The CLI probes `docker info -f '{{.Runtimes.nvidia}}'` and appends --gpus all only
+  // when nvidia-container-runtime exists; "optional" lets hosts without it start plain.
+  // glaive needs that: OrbStack has no GPU vendor, so a hardcoded --gpus=all fails with
+  // "failed to discover GPU vendor from CDI: no known GPU vendor found". Windows Docker
+  // Desktop registers the runtime, so the same file hands that host its GPU.
+  "hostRequirements": { "gpu": "optional" },
+
+  "features": {
+    // claude-code needs npm; base:ubuntu has none and the feature's apt fallback fails.
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
+
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
+
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+
+    // Nested daemon, so agent-built containers and images stay isolated from the host
+    // OrbStack daemon; needs --privileged (runArgs) and /var/lib/docker in a volume
+    // (mounts). moby:false = upstream Docker CE from docker.com; Moby packages do not
+    // yet cover the base image's Ubuntu 25.10 (resolute) codename.
+    "ghcr.io/devcontainers/features/docker-in-docker:2": { "moby": false },
+
+    // Bun and omp are baked in the Dockerfile: features run after the image build,
+    // too late to install omp on top of Bun.
+
+    // Nix with flakes; devshell repos get packages via direnv / `nix develop`, so the
+    // container stays generic. Needs OrbStack 2.1.3 or an arm64-native build; 2.2.0+
+    // breaks the nix GC step under Rosetta amd64 (orbstack#2538).
+    // version pinned: "latest" resolves via NixOS/nix git tags at build time, so the
+    // tarball it fetches can drift between builds; pin to a release verified to
+    // download cleanly. See docs/concepts/devcontainer.md.
+    "ghcr.io/devcontainers/features/nix:1": {
+      "version": "2.35.1",
+      "extraNixConfig": "experimental-features = nix-command flakes"
+    }
+
+    // Add more toolchain features per repo as needed, e.g. python:1.
+  },
+
+  // One-off apt packages and repo bootstrap: edit post-create.sh.
+  "postCreateCommand": "bash /opt/devcontainer/post-create.sh",
+
+  // Host binds resolve through ${localEnv:NIX_REPO}, the checkout path, which differs
+  // per host (~/nix glaive, /etc/nixos/nix ha222-nix, C:/Users/Sam/nix Windows), so no
+  // literal path or ${localEnv:HOME} works: Windows has no HOME and ha222's checkout
+  // sits outside the home dir. nix-darwin and NixOS export it from repoDir
+  // (modules/home/env/common.nix); Windows sets it by hand. Unset, every bind source
+  // loses its prefix and the container fails with "bind source path does not exist".
+  // Catalyst material (skills, .cortex, this template) resolves through
+  // ${localEnv:CATALYST_REPO}, the submodule at repoDir/catalyst, exported the same way.
+  // See docs/devcontainer.md.
+  "mounts": [
+    // Claude state (login, history): one volume shared by all projects; sessions key
+    // by workspace path, so projects stay separate inside it.
+    "source=claude-config-shared,target=/home/vscode/.claude,type=volume",
+    // omp state: whole agent dir (config, logins in agent.db, sessions, memories),
+    // plugins, caches, logs; one volume shared by all projects. settings/omp/agent
+    // seeds the config via omp-sync.sh; see post-create.sh and the four binds below.
+    "source=omp-config-shared,target=/home/vscode/.omp,type=volume",
+    // gh auth (hosts.yml, the token): shared across projects, a GitHub login is not
+    // project-specific. Mounted at gh's default config dir, so no env var is needed
+    // and `gh auth login` persists across rebuilds. Root-owned on first run;
+    // post-create.sh chowns it.
+    "source=gh-config-shared,target=/home/vscode/.config/gh,type=volume",
+    // Nix store: per-project volume so downloaded packages survive rebuilds.
+    // Delete the volume to pick up a newer Nix from the image.
+    "source=coding-nix-${devcontainerId},target=/nix,type=volume",
+    // Nested Docker storage: per-project volume so images and layers survive
+    // rebuilds, like the Nix store above. Delete it to reclaim space or reset the daemon.
+    "source=coding-docker-${devcontainerId},target=/var/lib/docker,type=volume",
+    // Shared skill dir: ONE read-write bind serves both harnesses (Claude via
+    // post-create.sh symlinks, omp via skills.customDirectories). Writable so the
+    // meta-agent's instruction-repair loop edits skills live for both harnesses;
+    // staged under ~/nix/catalyst, not on ~/.claude/skills, so that volume stays writable.
+    // Mirrors the host ~/nix/catalyst layout, so paths match host and container.
+    // API keys, one file per service (.neuralwatt.env holds NEURALWATT_API_KEY, read
+    // by the neuralwatt provider in settings/omp/agent/models.yml). Read-only and from
+    // the home dir, not NIX_REPO: a secret stays out of this repo. Docker aborts on a
+    // missing bind source, so the dir must exist: modules/home/secrets.nix creates it
+    // on WSL hosts, glaive by hand. Windows leaves HOME empty: comment this mount out
+    // there (and with it the neuralwatt provider).
+    "source=${localEnv:HOME}/.secrets,target=/home/vscode/.secrets,type=bind,readonly",
+    "source=${localEnv:CATALYST_REPO}/skills,target=/home/vscode/nix/catalyst/skills,type=bind",
+    // omp config seed, entry by entry, not the whole settings/omp dir: on a host
+    // running omp directly that dir is ~/.omp, holding agent.db with the provider
+    // logins, sessions and memories, so binding the parent would hand every container
+    // the host's omp state. These four are the tracked entries omp-sync.sh copies into
+    // the volume at OMP_TEMPLATE_DIR. Read-write so `omp-sync.sh pull` carries a change
+    // made inside the container back to the repo. See docs/devcontainer.md.
+    "source=${localEnv:NIX_REPO}/settings/omp/agent/config.yml,target=/home/vscode/nix/settings/omp/agent/config.yml,type=bind",
+    "source=${localEnv:NIX_REPO}/settings/omp/agent/models.yml,target=/home/vscode/nix/settings/omp/agent/models.yml,type=bind",
+    "source=${localEnv:NIX_REPO}/settings/omp/agent/keybindings.yml,target=/home/vscode/nix/settings/omp/agent/keybindings.yml,type=bind",
+    "source=${localEnv:NIX_REPO}/settings/omp/agent/extensions,target=/home/vscode/nix/settings/omp/agent/extensions,type=bind",
+    // Catalyst kit state (incidents, memory, plans) at a fixed path, so every project
+    // container reaches the same store no matter which workspace it serves. Sits at
+    // ~/nix/catalyst/.cortex, the submodule's own location, so the path means one thing
+    // everywhere; committed in the catalyst repo, so it exists on every host exporting CATALYST_REPO.
+    "source=${localEnv:CATALYST_REPO}/.cortex,target=/home/vscode/nix/catalyst/.cortex,type=bind",
+    // keybindings.json stays a plain file in the ~/.claude volume: editable and
+    // persistent. A read-only bind used to serve it, but settings/claude-glaive is
+    // gitignored (source existed only on the writing machine), and Docker creates a
+    // missing bind source as a directory, so other hosts got a root-owned empty DIR
+    // at ~/.claude/keybindings.json, which Claude could not write into.
+    // output-styles (e.g. humanizer): repo-owned, read-only, bound like skills above;
+    // otherwise the shared volume has no output-styles dir and the style is missing.
+    "source=${localEnv:NIX_REPO}/settings/claude-glaive/output-styles,target=/home/vscode/.claude/output-styles,type=bind,readonly",
+    // ccstatusline config; the statusLine command is seeded into settings.json by
+    // post-create.sh (npx comes with the claude-code feature).
+    "source=${localEnv:NIX_REPO}/settings/ccstatusline/settings.json,target=/home/vscode/.config/ccstatusline/settings.json,type=bind,readonly",
+    // The template dir itself, at a fixed in-container path so post-create.sh and
+    // omp-sync.sh do not depend on workspace-relative .devcontainer/; lets a project
+    // symlink to this canonical dir rather than copy, so nix-darwin edits propagate on
+    // the next rebuild. No readonly flag: --privileged lets the container remount any
+    // of these binds read-write, so it bought nothing.
+    "source=${localEnv:CATALYST_REPO}/devcontainers/coding,target=/opt/devcontainer,type=bind"
+  ],
+
+  // CLAUDE_CONFIG_DIR keeps claude's config in the ~/.claude volume: the default
+  // ~/.claude.json in HOME sits outside it and resets onboarding (theme, folder
+  // trust, MCP registrations) on every rebuild. The dir is the volume's mount path,
+  // so credentials and settings.json keep resolving unchanged.
+  // SHELL names the shell for processes with no login shell of their own: herdr reads
+  // $SHELL and falls back to /bin/sh, so a herdr server started over docker exec hands
+  // out dash panes, where Ctrl+Backspace lands as a literal ^H. The Dockerfile sets
+  // the same shell in passwd; this covers the paths that never read it.
+  // See docs/wsl-setup.md, "Ctrl+Backspace word delete".
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+    "SHELL": "/usr/bin/zsh"
+  },
+
+  // Skip the per-project login: run `claude setup-token` on the host, export
+  // CLAUDE_CODE_OAUTH_TOKEN, and add it to containerEnv above.
+  // "containerEnv": { "CLAUDE_CODE_OAUTH_TOKEN": "${localEnv:CLAUDE_CODE_OAUTH_TOKEN}" },
+
+  "remoteUser": "vscode",
+
+  // Skip the CLI's UID/GID alignment rebuild: on Linux it derives a second image
+  // whose only step chowns -R /home/vscode, copying up every file in the bun, node,
+  // and claude-code trees (minutes of build, fatter image). It buys nothing here:
+  // vscode is already uid 1000 (the nixos user on WSL hosts), the GID it wants (100)
+  // is taken in the base image, so the script chowns 1000:1000 to 1000:1000; macOS
+  // maps bind-mount ownership to the host user, so glaive does not need it either.
+  // See docs/devcontainer.md.
+  "updateRemoteUserUID": false,
+
+  "customizations": {
+    "vscode": {
+      // The HOST VS Code renders the container terminal, so this must name fonts
+      // installed on the host: omp's statusLine, starship, ccstatusline and herdr's
+      // chrome draw Nerd Font glyphs. Chain covers glaive (FiraCode NFM from
+      // modules/home/fonts.nix) and Windows (Hack / Cascadia NF).
+      "settings": {
+        "terminal.integrated.fontFamily": "'FiraCode Nerd Font Mono', 'Cascadia Mono NF', 'CaskaydiaCove NF', 'Hack Nerd Font Mono', monospace",
+        // Pin integrated terminals to zsh (the NixOS-WSL shell post-create.sh
+        // configures), whatever the server process inherits.
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      },
+      "extensions": [
+        "anthropic.claude-code",
+        // Feeds each directory's direnv env into VS Code itself, so per-subproject
+        // `use flake` environments reach the language servers, not just the terminal.
+        "mkhl.direnv",
+        "Vue.volar",
+        "golang.go"
+      ]
+    }
+  }
+}

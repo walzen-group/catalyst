@@ -1,0 +1,36 @@
+{
+  "run_id": "2026-08-06T22-07-33",
+  "timestamp": "2026-08-06T22:07:33.938Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 36,
+  "criteria": [
+    {
+      "id": "description-conveyed",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "actor launch failed; criterion left unverified"
+    },
+    {
+      "id": "line-format",
+      "kind": "deterministic",
+      "status": "unverified",
+      "detail": "actor launch failed; criterion left unverified"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "unverified",
+      "detail": "actor launch failed; criterion left unverified"
+    }
+  ],
+  "judge_reasoning": null,
+  "regressions": [],
+  "errored": true,
+  "log_path": "2026-08-06T22-07-33-log.md"
+}

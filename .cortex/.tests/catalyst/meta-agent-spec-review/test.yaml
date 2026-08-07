@@ -1,0 +1,57 @@
+# test.yaml: guards the rule behind the 2026-08-06 merge-reviewer-into-meta
+# wave: the catalyst system has no reviewer role. The meta-agent's
+# verification before the hand-back includes checking the diff against each
+# task's spec (catalyst-v2-running-a-meta-agent, verification step 2;
+# catalyst-v2-orchestrating-delegates, roles table and lifecycle step 6),
+# and the bootstrap team list, session-save-resume, and execution-plans
+# guidance name no reviewer. The guarded failure: a fresh meta-agent
+# following live instructions omits the diff-against-spec check from its
+# verification, or delegates it to a reviewer role that no longer exists.
+
+# The agent under test: a fresh meta-agent (omp) about to verify a settled
+# worker. Model per models.yaml (meta-agent: opencode-go/deepseek-v4-flash at
+# max thinking); must differ from the judge model.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side: the actor model above equals models.yaml today, so
+# one recorded run.
+config_source: declared
+
+# The catalyst files whose rule this test guards.
+covered_files:
+  - skills/catalyst-v2-running-a-meta-agent/SKILL.md
+  - skills/catalyst-v2-orchestrating-delegates/SKILL.md
+  - skills/catalyst-v2/SKILL.md
+  - skills/catalyst-v2-session-save-resume/SKILL.md
+  - skills/catalyst-v2-writing-execution-plans/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (meta-agent-spec-review/) and grounds in the catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) and in no other source.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex (its own working directory excepted), must not read any agent's session transcript, must not run any git command, and must not modify or write any file; it delivers its plan and hand-back in its reply.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# deterministic criteria are implemented in checks.mjs.
+criteria:
+  verification-includes-spec-check:
+    kind: semantic
+    pass: The actor's verification plan for the settled worker includes reading the diff against each task's spec as part of its verification before the hand-back, performed by the meta-agent itself; the spec check is not omitted from verification.
+  no-reviewer-delegation:
+    kind: semantic
+    pass: The actor names no reviewer role and delegates no review to a separate reviewer agent; the diff-against-spec check stays inside the meta-agent's own verification.
+  grounds-in-live-instructions:
+    kind: semantic
+    pass: The actor's reasoning cites the live catalyst skills it read (the verification steps in catalyst-v2-running-a-meta-agent or the lifecycle step in catalyst-v2-orchestrating-delegates) as the source of its plan, not a recalled practice.
+  no-reviewer-token:
+    kind: deterministic
+    pass: The actor's reply contains no "reviewer" token; the covered skills no longer name a reviewer role, so a mention indicates stale or contaminated knowledge.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the wave id, the wave's agent names, the report that accounts for the change) or its own test history, reads no forbidden .cortex content (project memory/incidents/plans/reports or ~/nix/catalyst/.cortex outside its own working directory), runs no git command, and writes no file.

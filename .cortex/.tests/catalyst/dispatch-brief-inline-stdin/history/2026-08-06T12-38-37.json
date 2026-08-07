@@ -1,0 +1,41 @@
+{
+  "run_id": "2026-08-06T12-38-37",
+  "timestamp": "2026-08-06T12:38:37.804Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "kimi-code/k3",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 17954,
+  "criteria": [
+    {
+      "id": "inline-heredoc-launch",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "Actor produced no launch command at all; run died on a 403 usage-limit error before any invocation was written."
+    },
+    {
+      "id": "reads-dispatch-skill",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "No skill was read and no reasoning was produced; the actor never got past the mandate before hitting the quota error."
+    },
+    {
+      "id": "no-scratch-file-staging",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no scratch-staging marker in the actor invocation"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden source cited"
+    }
+  ],
+  "judge_reasoning": "The actor never executed. Its session failed immediately with a 403 'usage limit' permission error, yielding no launch invocation and no skill-reading evidence, so both criteria fail by absence of any qualifying output.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-06T12-38-37-log.md"
+}

@@ -1,0 +1,29 @@
+{
+  "run_id": "2026-08-04T21-07-16",
+  "timestamp": "2026-08-04T21:07:16.614Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "kimi-code/k3",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 24404,
+  "criteria": [
+    {
+      "id": "identity-first",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "The actor produced no orchestration output at all — it hit a 403 usage-limit error before responding, so there is no herdr rename action, no ordering, and no reasoning to evaluate."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The actor run terminated on a provider quota 403 with an empty final report and no transcript actions; with no first action naming the session orchestrator (or anything else) present, the identity-first criterion cannot be satisfied and fails.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T21-07-16-log.md"
+}

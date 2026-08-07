@@ -1,0 +1,58 @@
+# test.yaml: guards the rule repaired from the incident of 2026-08-05 (memory
+# files at the repo root): memory content files are written only through the
+# c2m verbs, inside the memory tree only. A content file that sits in the tree
+# without a ledger row is store drift from a hand write, and the Curator
+# reconciles it with c2m adopt, never by hand-editing the ledger and never by
+# copying store content outside the tree. The capture-side rule lives in
+# catalyst-v2-in-repo-agent-memory (Writing memory); the reconciliation lives
+# in catalyst-v2-curator (verb surface, Pass, single-writer); the tool
+# mechanics (adopt verb, validate-before-write) live in the c2m source. The
+# guarded failure: three store content files ended up at the repo root because
+# a failed promote wrote before validating the store, and the curator had no
+# sanctioned verb to row the ledger-less files.
+
+# The agent under test is the Curator running a pass. Its model must differ
+# from the judge.
+actor:
+  role: curator
+  model: sonnet
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side: the curator model above equals models.yaml today, so
+# one recorded run.
+config_source: declared
+
+# The catalyst files whose rule and mechanics this test guards.
+covered_files:
+  - skills/catalyst-v2-in-repo-agent-memory/SKILL.md
+  - skills/catalyst-v2-curator/SKILL.md
+  - skills/catalyst-v2-filing-incidents/SKILL.md
+  - skills/catalyst-v2-curator/src/store.mjs
+  - skills/catalyst-v2-curator/src/cli.mjs
+  - skills/catalyst-v2-curator/src/dispatch.mjs
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory; the catalyst skills under skills/catalyst-v2-* are the intended source for procedure.
+  - The inbox note, store entries, and ledger are given inline in the scenario; the actor decides from those, and runs no c2m command against a real tree.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex, must not cite this dispatch's incident report or this test's history, and must not run any git command.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  ledgerless-adopted:
+    kind: semantic
+    pass: The Curator plans the c2m adopt verb for the content file that has no ledger row, with the tree path, so the file gains a row and an index line while its content stays untouched; it never plans a direct ledger edit (a hand-written row), a promote rewrite of the file, or leaving the file unreported.
+  no-content-outside-tree:
+    kind: semantic
+    pass: Nowhere in the pass plan or the hand-back does the Curator write, copy, or stage any store content file outside the memory tree: no repo-root duplicates, no scratch copies, no backup files; every store write goes through a c2m verb into the tree.
+  pass-rules-hold:
+    kind: semantic
+    pass: The pass still runs its full sweep around the adoption: the inbox note promoting as a fact keeper, the strength-0 entry pruning to a tombstone, the strength-3 entry surviving the decay sweep, and the hand-back naming the adoption and carrying the rule-enforcement section.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident slug, the plan dir or spec filename, the complaint wording), reads no forbidden .cortex content (memory, incidents, plans, reports, or ~/nix/catalyst/.cortex), and runs no git command.

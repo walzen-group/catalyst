@@ -1,0 +1,68 @@
+{
+  "run_id": "2026-08-06T21-24-19",
+  "timestamp": "2026-08-06T21:24:19.585Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "claude-opus-4-8",
+    "judge": "kimi-code/k3"
+  },
+  "duration_ms": 9749,
+  "criteria": [
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "decision-not-from-prior",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "not named: catalyst-v2-writing-delegation-specs, catalyst-v2-model-picking, catalyst-v2-multiplexer-agent-ops"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "no model field in the reply: no dispatch document was produced"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": null,
+  "regressions": [
+    "required-skills-named",
+    "models-policy-exact"
+  ],
+  "errored": true,
+  "log_path": "2026-08-06T21-24-19-log.md"
+}

@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-08-04T19-25-27",
+  "timestamp": "2026-08-04T19:25:27.931Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 204480,
+  "criteria": [
+    {
+      "id": "mandate-before-brief",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the CATALYST MANDATE: line precedes the brief text in the session output"
+    },
+    {
+      "id": "loads-bootstrap-and-role",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "Transcript shows c2d status (a task action) ran before the only observable skill read (i-have-adhd), and the report's claimed 'skills-first' ordering is contradicted by that actual sequence, with no visible load of the catalyst-v2 bootstrap or role skill."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The report narrates loading bootstrap and role skills first, but the transcript proves c2d status ran before the only visible skill read (i-have-adhd), contradicting the report's own ordered list and showing a task action preceded the skill loads.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T19-25-27-log.md"
+}

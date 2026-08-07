@@ -1,0 +1,41 @@
+{
+  "run_id": "2026-08-04T21-54-22",
+  "timestamp": "2026-08-04T21:54:22.039Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 91966,
+  "criteria": [
+    {
+      "id": "retirement-proof",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "States a settled idle read with background_shells=null is not proof of retirement; retirement needs a delivered hand-back or exited/gone session, and an idle turn with armed waits can be a live agent mid-reasoning."
+    },
+    {
+      "id": "probe-or-wait",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Sends a content-bearing liveness steer demanding content not a receipt, and arms one background wait per in-flight agent before any close; never closes first."
+    },
+    {
+      "id": "live-work-approval",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Defers the close entirely while the meta may be live, closing only once the hand-back is delivered with retirement declared and impl-x is settled and verified."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The actor refuses to close meta-w1's tab on the settled read, correctly treats idle/no-background-shell as non-proof of retirement, probes with a content-bearing steer plus re-armed per-agent waits, and defers the close until a declared hand-back and settled worker exist. All three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-04T21-54-22-log.md"
+}

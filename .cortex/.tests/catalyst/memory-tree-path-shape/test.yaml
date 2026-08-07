@@ -1,0 +1,54 @@
+# test.yaml: guards the rule repaired from the incident of 2026-08-05
+# (memory files at the repo root): a c2m --tree value is the memory tree
+# directory itself, never the project root. The value is stated with the
+# .cortex/memory suffix at every call site an orchestrator reads, and c2m
+# refuses a tree that is not a memory tree but contains one, naming the
+# intended path. The rule lives in catalyst-v2-curator (verb surface) and the
+# call sites in the orchestrator-facing skills; the tool guard lives in
+# src/cli.mjs. The guarded failure: the orchestrator passed /workspaces/catalyst
+# on every c2m call, reading an inbox that never existed and driving three
+# promote attempts that wrote store content to the repo root.
+
+# The agent under test is an orchestrator closing an effort. Model must
+# differ from the judge.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side: the actor model above equals models.yaml today, so
+# one recorded run.
+config_source: declared
+
+# The catalyst files whose rule and call sites this test guards.
+covered_files:
+  - skills/catalyst-v2-curator/SKILL.md
+  - skills/catalyst-v2-curator/src/cli.mjs
+  - skills/catalyst-v2-in-repo-agent-memory/SKILL.md
+  - skills/catalyst-v2-orchestrating-delegates/SKILL.md
+  - skills/catalyst-v2-running-a-reduced-workset/SKILL.md
+  - skills/catalyst-v2-session-save-resume/SKILL.md
+  - skills/catalyst-v2-consolidating-plans/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory; the catalyst skills under skills/catalyst-v2-* are the intended source for procedure.
+  - The actor states commands; it runs no c2m command against a real tree and executes nothing.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex, must not cite this dispatch's incident report or this test's history, and must not run any git command.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  tree-is-memory-dir:
+    kind: semantic
+    pass: Both stated c2m commands carry a --tree value that is the memory tree directory itself, ending in .cortex/memory (the absolute /workspaces/catalyst/.cortex/memory or a <project>/.cortex/memory shape); neither command passes the project root (/workspaces/catalyst) as the tree value.
+  shape-stated:
+    kind: semantic
+    pass: The actor states, in its own words, that the --tree value is the memory tree, never the project root, so the shape is unmistakable at a glance.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident slug, the complaint wording, the stray root-file slugs), reads no forbidden .cortex content (memory, incidents, plans, reports, or ~/nix/catalyst/.cortex), and runs no git command.
