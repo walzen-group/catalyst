@@ -24,7 +24,7 @@ function numericOption(value, fallback) {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-function boundedTail(text, limit) {
+export function boundedTail(text, limit) {
   const s = String(text ?? '');
   return s.length > limit ? s.slice(s.length - limit) : s;
 }

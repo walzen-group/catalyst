@@ -13,7 +13,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadRoles } from './config.mjs';
 import { loadTestSpec, semanticCriteria, deterministicCriteria } from './testspec.mjs';
 import { resolveRuns } from './resolve.mjs';
-import { buildDispatchInput, deliveredBriefText, makeRealInvoker, DEFAULT_HEARTBEAT_MS } from './dispatch.mjs';
+import { buildDispatchInput, deliveredBriefText, makeRealInvoker, boundedTail, DEFAULT_HEARTBEAT_MS, REPORT_TAIL_LIMIT } from './dispatch.mjs';
 import { buildJudgePrompt, parseJudgeReport, validateJudgeOutput } from './judge.mjs';
 import { runDeterministicChecks } from './deterministic.mjs';
 import { aggregate, detectRegressions, passCount, FAIL, UNVERIFIED } from './verdict.mjs';
@@ -42,8 +42,32 @@ Usage:
 run launches the actor and judge through the c2d CLI. new refuses an existing slug.
 `;
 
+/**
+ * The failure block the -log.md carries when a launch failed: exit code plus
+ * whatever the invoker observed, so the run is diagnosable post-hoc.
+ */
+function launchFailureText(role, launchError) {
+  return [
+    `(${role} launch failed: exit ${launchError.code})`,
+    'stderr:',
+    launchError.stderr || '(none)',
+    'stdout tail:',
+    launchError.stdout_tail || '(none)',
+  ].join('\n');
+}
+
 function judgeOutcome(judgeRes, semantic) {
-  if (judgeRes.code !== 0) return { errored: true };
+  if (judgeRes.code !== 0) {
+    return {
+      errored: true,
+      launch_error: {
+        role: 'judge',
+        code: judgeRes.code,
+        stderr: String(judgeRes.stderr ?? ''),
+        stdout_tail: boundedTail(judgeRes.stdout ?? '', REPORT_TAIL_LIMIT),
+      },
+    };
+  }
   const parsed = parseJudgeReport(judgeRes.report ?? '');
   if (!parsed.ok) return { errored: true };
   const validated = validateJudgeOutput(parsed.value, semantic);
@@ -111,10 +135,17 @@ export async function runTest(slug, deps = {}) {
     let judgeReasoning = null;
     let judgeRes = null;
     let judgeErrored = false;
+    let launchError = null;
     let current;
 
     if (actorRes.code !== 0) {
       errored = true;
+      launchError = {
+        role: 'actor',
+        code: actorRes.code,
+        stderr: String(actorRes.stderr ?? ''),
+        stdout_tail: boundedTail(actorRes.stdout ?? '', REPORT_TAIL_LIMIT),
+      };
       current = spec.criteria.map((c) => ({
         id: c.id,
         kind: c.kind,
@@ -152,8 +183,12 @@ export async function runTest(slug, deps = {}) {
         judgeRes = await invoke(judgeInput, { role: 'judge', side: run.side, slug });
         judge = judgeOutcome(judgeRes, semantic);
         judgeErrored = judge.errored;
-        if (judge.errored) errored = true;
-        else judgeReasoning = judge.judge_reasoning;
+        if (judge.errored) {
+          errored = true;
+          launchError = judge.launch_error ?? null;
+        } else {
+          judgeReasoning = judge.judge_reasoning;
+        }
       }
       current = aggregate({ criteria: spec.criteria, checkResults, judge });
     }
@@ -171,15 +206,24 @@ export async function runTest(slug, deps = {}) {
       judge_reasoning: judgeReasoning,
       regressions,
       errored,
+      // Present only on a failed launch: the exit code, stderr, and a stdout
+      // tail the invoker observed, so an errored run is diagnosable post-hoc.
+      // Old records without the field still load.
+      ...(launchError ? { launch_error: launchError } : {}),
     };
 
     // The per-run raw LLM output log, pinned shape: header, side and models,
     // then the verbatim actor transcript and judge report under fixed section
     // headers, with marker lines where nothing was captured.
     const actorText = actorRes.transcript ?? actorRes.report ?? '';
+    const actorSection = launchError?.role === 'actor'
+      ? launchFailureText('actor', launchError)
+      : (actorText || '(no actor output captured)');
     let judgeOutput;
     if (semantic.length === 0) {
       judgeOutput = '(no judge run: no semantic criteria)';
+    } else if (judgeErrored && launchError?.role === 'judge') {
+      judgeOutput = launchFailureText('judge', launchError);
     } else if (judgeErrored || !judgeRes) {
       judgeOutput = '(judge launch failed or produced no report)';
     } else {
@@ -194,7 +238,7 @@ export async function runTest(slug, deps = {}) {
       `- Judge model: ${record.models_used.judge}`,
       '',
       '## Actor output',
-      actorText || '(no actor output captured)',
+      actorSection,
       '',
       '## Judge output',
       judgeOutput,

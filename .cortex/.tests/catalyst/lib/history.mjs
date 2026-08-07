@@ -53,6 +53,7 @@ export function renderMarkdown(record) {
   lines.push(`- Judge model: ${record.models_used.judge}`);
   lines.push(`- Duration: ${record.duration_ms} ms`);
   lines.push(`- Errored: ${record.errored ? 'yes' : 'no'}`);
+  if (record.launch_error) lines.push(`- Launch error: ${record.launch_error.role} launch exited ${record.launch_error.code}`);
   lines.push(`- Regressions: ${record.regressions.length}`);
   if (record.log_path) lines.push(`- Log: ${record.log_path}`);
   lines.push('');
@@ -63,6 +64,23 @@ export function renderMarkdown(record) {
     lines.push(`| ${c.id} | ${c.kind} | ${c.status} | ${detail} |`);
   }
   lines.push('');
+  if (record.launch_error) {
+    const e = record.launch_error;
+    lines.push('## Launch error');
+    lines.push('');
+    lines.push(`${e.role} launch exited ${e.code}`);
+    lines.push('');
+    lines.push('stderr:');
+    lines.push('```');
+    lines.push(e.stderr || '(none)');
+    lines.push('```');
+    lines.push('');
+    lines.push('stdout tail:');
+    lines.push('```');
+    lines.push(e.stdout_tail || '(none)');
+    lines.push('```');
+    lines.push('');
+  }
   lines.push('## Judge reasoning');
   lines.push('');
   lines.push(record.judge_reasoning ? record.judge_reasoning : '(no semantic criteria judged)');

@@ -301,7 +301,7 @@ test('a clean run writes a per-run -log.md holding the actor transcript and judg
   assert.match(md, /- Log: .*-log\.md/);
 });
 
-test('an errored judge run still writes the log: canned actor transcript and the judge failure marker', async () => {
+test('an errored judge run still writes the log: canned actor transcript and the judge launch detail', async () => {
   const suite = tempSuite();
   writeTestDir(suite, 'guarded-rule');
   const { invoke } = fakeInvoker({
@@ -319,5 +319,51 @@ test('an errored judge run still writes the log: canned actor transcript and the
   const log = readFileSync(logPath, 'utf8');
   assert.match(log, /## Actor output/);
   assert.match(log, /CANNED ACTOR TRANSCRIPT: routed the reply through the delegate channel\./);
-  assert.match(log, /\(judge launch failed or produced no report\)/);
+  assert.match(log, /\(judge launch failed: exit 1\)/, 'the log names the exit code');
+  assert.match(log, /launch failed/, 'the stderr text lands in the log');
+});
+
+test('a failed judge launch records exit code, stderr, and a stdout tail on the run record, its JSON, the log, and the md', async () => {
+  const suite = tempSuite();
+  writeTestDir(suite, 'guarded-rule');
+  const { invoke } = fakeInvoker({
+    actor: { code: 0, report: 'ACTOR FINAL REPORT: delegate channel used.', transcript: 'CANNED ACTOR TRANSCRIPT: routed the reply through the delegate channel.' },
+    judge: { code: 7, report: '', stderr: 'c2d: dispatch refused: provider 401', stdout: 'noise\nlaunch-plan-line' },
+  });
+
+  const result = await runTest('guarded-rule', deps(suite, { invoke }));
+  assert.equal(result.ok, false, 'errored run makes the overall result fail');
+  const run = result.runs[0];
+  assert.equal(run.errored, true);
+  // The record must be diagnosable post-hoc: exit code, stderr, stdout tail.
+  assert.deepEqual(run.launch_error, {
+    role: 'judge',
+    code: 7,
+    stderr: 'c2d: dispatch refused: provider 401',
+    stdout_tail: 'noise\nlaunch-plan-line',
+  });
+
+  const doc = JSON.parse(readFileSync(run.jsonPath, 'utf8'));
+  assert.deepEqual(doc.launch_error, run.launch_error, 'the JSON record carries the launch detail');
+
+  const log = readFileSync(run.jsonPath.replace(/\.json$/, '-log.md'), 'utf8');
+  assert.match(log, /judge launch failed: exit 7/, 'the log names the exit code');
+  assert.match(log, /provider 401/, 'the log carries the stderr verbatim');
+
+  const md = readFileSync(run.mdPath, 'utf8');
+  assert.match(md, /Launch error/, 'the human-readable record renders the launch error');
+  assert.match(md, /provider 401/);
+});
+
+test('a failed actor launch records its exit code, stderr, and stdout tail on the run record', async () => {
+  const suite = tempSuite();
+  writeTestDir(suite, 'guarded-rule');
+  const { invoke } = fakeInvoker({ actor: { code: 127, report: '', stderr: 'c2d: command not found', stdout: '' } });
+
+  const result = await runTest('guarded-rule', deps(suite, { invoke }));
+  assert.equal(result.ok, false);
+  const run = result.runs[0];
+  assert.equal(run.errored, true);
+  assert.equal(run.criteria.find((c) => c.id === 'c1').status, 'unverified');
+  assert.deepEqual(run.launch_error, { role: 'actor', code: 127, stderr: 'c2d: command not found', stdout_tail: '' });
 });
