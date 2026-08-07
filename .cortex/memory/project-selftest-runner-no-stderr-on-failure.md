@@ -1,0 +1,1 @@
+The .cortex/.tests self-test runner records no stderr or exit detail when a judge launch fails, so errored runs (test-first-fix-discipline 2026-08-07T21-19-02 and 21-24-34) are undiagnosable from the record. Known gap, unfixed; incident filing declined by the user.

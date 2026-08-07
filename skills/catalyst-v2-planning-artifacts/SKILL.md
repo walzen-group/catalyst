@@ -59,6 +59,14 @@ the close-out emission stage in `catalyst-v2-orchestrating-delegates` only.
   `.cortex/reports/`, written with `catalyst-v2-writing-docs`; the plan dir
   holds drafts and run artifacts. Global constraints state the report path per
   task so the spec and the hand-back carry it.
+- **Slug renames are the user's call, settled before dispatch.** When a plan
+  proposes renaming or merging skills, the exact new slug strings are a taste
+  call the plan presents to the user for confirmation before any dispatch; the
+  task doc records the user's chosen slugs. Grounding: on 2026-08-07 a plan
+  proposed `catalyst-v2-test-first-fixes`/`catalyst-v2-self-tests`, the user
+  overrode with `catalyst-v2-sdd-rules` and kept `catalyst-v2-self-testing` —
+  a delegate dispatched on the proposals would have churned the test corpus
+  twice.
 
 ## Delegation spec
 

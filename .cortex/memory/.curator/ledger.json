@@ -1,11 +1,23 @@
 {
   "version": 1,
   "entries": {
-    "project-opus-tier-test-actor-credits-error": {
+    "project-node24-test-glob-arg": {
       "strength": 3,
+      "pin": false,
+      "created": "2026-08-07T22:09:00.903Z",
+      "last_relevant": "2026-08-07T22:09:17.320Z"
+    },
+    "project-opus-tier-test-actor-credits-error": {
+      "strength": 2,
       "pin": false,
       "created": "2026-08-06T22:23:20.694Z",
       "last_relevant": "2026-08-06T22:23:46.690Z"
+    },
+    "project-selftest-runner-no-stderr-on-failure": {
+      "strength": 3,
+      "pin": false,
+      "created": "2026-08-07T22:09:05.554Z",
+      "last_relevant": "2026-08-07T22:09:17.320Z"
     }
   }
 }
