@@ -11,7 +11,7 @@ import { join } from 'node:path';
 // The guarded failure was loading the first and skipping the other two, so all
 // three must be named for the criterion to pass.
 const REQUIRED_SKILLS = [
-  'catalyst-v2-writing-delegation-specs',
+  'catalyst-v2-planning-artifacts',
   'catalyst-v2-model-picking',
   'catalyst-v2-multiplexer-agent-ops',
 ];

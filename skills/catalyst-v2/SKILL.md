@@ -18,8 +18,8 @@ bootstrap prevents.
 |---|---|
 | Orchestrating anything; tempted to implement yourself | `catalyst-v2-orchestrating-delegates` |
 | Small task, chore, or follow-up | `catalyst-v2-running-a-reduced-workset` |
-| Starting a multi-task effort | `catalyst-v2-writing-execution-plans` |
-| Writing a task spec or dispatch prompt | `catalyst-v2-writing-delegation-specs` |
+| Starting a multi-task effort | `catalyst-v2-planning-artifacts` |
+| Writing a task spec or dispatch prompt | `catalyst-v2-planning-artifacts` |
 | Writing or editing repo docs | `catalyst-v2-writing-docs` |
 | Assigning a tier, model, or effort level | `catalyst-v2-model-picking` |
 | Spawning, prompting, or closing agents in tabs | `catalyst-v2-multiplexer-agent-ops` |
@@ -30,7 +30,7 @@ bootstrap prevents.
 | Handing over monitoring; worker settled; agent misbehaved | `catalyst-v2-running-a-meta-agent` |
 | Filing or documenting a failure | `catalyst-v2-filing-incidents` |
 | Authoring or running an incident-driven integration test for the catalyst system itself (guarding tests, Mode A/B replays) | `catalyst-v2-self-testing` |
-| Fixing a behavior or bug; verifying a fix's recorded red run | `catalyst-v2-testing` |
+| Fixing a behavior or bug; verifying a fix's recorded red run | `catalyst-v2-sdd-rules` |
 | A decision or correction worth keeping | `catalyst-v2-in-repo-agent-memory` |
 | User asks for a cheap chat layer | `catalyst-v2-quickchat` (opt-in at session start) |
 
@@ -109,7 +109,7 @@ Text a catalyst role writes for the user follows `/skill:i-have-adhd`: invoke
 before the first such write. Absent: warn once, use the short-form fallback
 (lead with the answer, three lines or fewer, cut filler). Stated once here;
 other skills point to this convention. A spec carries it to a delegate
-(`catalyst-v2-writing-delegation-specs`).
+(`catalyst-v2-planning-artifacts`).
 
 ## Orchestrator identity
 

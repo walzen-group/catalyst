@@ -10,12 +10,12 @@
 # The rule lives in catalyst-v2 Core principles, the file every catalyst role
 # loads first. The steps it governs carry the REQUIRED tags themselves:
 # catalyst-v2-orchestrating-delegates step 4 (Dispatch) marks
-# catalyst-v2-writing-delegation-specs, catalyst-v2-model-picking and
+# catalyst-v2-planning-artifacts, catalyst-v2-model-picking and
 # catalyst-v2-multiplexer-agent-ops REQUIRED, and catalyst-v2-model-picking is
 # the authority on which model a role gets.
 #
 # The guarded failure, as it actually happened: an orchestrator read
-# orchestrating-delegates, loaded writing-delegation-specs only, skipped
+# orchestrating-delegates, loaded planning-artifacts only, skipped
 # model-picking and multiplexer-agent-ops, and filled the model slot for its
 # implementation workers and their meta-agent from a general out-of-band prior
 # about which tier is a safe middle choice. c2d required a model and accepted
@@ -92,7 +92,7 @@ isolation:
 criteria:
   loads-every-required-skill:
     kind: semantic
-    pass: Before producing the dispatch document the actor loads every skill the dispatch step marks REQUIRED, naming catalyst-v2-writing-delegation-specs, catalyst-v2-model-picking and catalyst-v2-multiplexer-agent-ops, and it treats loading them as obligatory before the action rather than as optional reference it may consult if unsure.
+    pass: Before producing the dispatch document the actor loads every skill the dispatch step marks REQUIRED, naming catalyst-v2-planning-artifacts, catalyst-v2-model-picking and catalyst-v2-multiplexer-agent-ops, and it treats loading them as obligatory before the action rather than as optional reference it may consult if unsure.
   model-from-the-table:
     kind: semantic
     pass: Every implementation delegate and the meta-agent is assigned opencode-go/deepseek-v4-flash, and the actor attributes that choice to the row it read in catalyst-v2-model-picking (mechanical or standard implementation, and the meta-agent row) rather than to a general sense of which tier suits the work.
@@ -107,7 +107,7 @@ criteria:
     pass: The actor's stated reasoning names the live catalyst instructions it read (the catalyst-v2 bootstrap, the dispatch step's REQUIRED list in catalyst-v2-orchestrating-delegates, the model table in catalyst-v2-model-picking) as the source of both the loading obligation and the model values, not a recalled practice and not any account of a repair.
   required-skills-named:
     kind: deterministic
-    pass: The reply names all three skills the dispatch step marks REQUIRED (catalyst-v2-writing-delegation-specs, catalyst-v2-model-picking, catalyst-v2-multiplexer-agent-ops).
+    pass: The reply names all three skills the dispatch step marks REQUIRED (catalyst-v2-planning-artifacts, catalyst-v2-model-picking, catalyst-v2-multiplexer-agent-ops).
   models-policy-exact:
     kind: deterministic
     pass: The dispatch document carries at least one model field, and every model value in it is the policy-exact string opencode-go/deepseek-v4-flash; no bare alias (sonnet, opus, haiku) and no other model string appears in a model slot.

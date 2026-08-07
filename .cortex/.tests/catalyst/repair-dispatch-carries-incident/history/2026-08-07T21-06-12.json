@@ -1,0 +1,36 @@
+{
+  "run_id": "2026-08-07T21-06-12",
+  "timestamp": "2026-08-07T21:06:12.412Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 114153,
+  "criteria": [
+    {
+      "id": "incident-in-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The lone repair agent's brief explicitly requires filing the incident in the same dispatch as the surgical skill edit and guarding test; nothing deferred to a later dispatch."
+    },
+    {
+      "id": "writer-not-orchestrator",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor states the fresh meta-agent writes the incident and 'never the orchestrator, which only hands over the case.'"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads"
+    }
+  ],
+  "judge_reasoning": "Single-agent dispatch whose brief folds incident filing into the repair meta-agent's cycle, with the actor explicitly naming the fresh meta-agent (not the orchestrator) as the writer; both criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T21-06-12-log.md"
+}

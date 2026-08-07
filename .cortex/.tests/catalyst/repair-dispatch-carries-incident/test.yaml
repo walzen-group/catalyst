@@ -8,7 +8,7 @@
 # alone, with the incident filed later on a user prompt, is the failure
 # recurring. The rule lives in catalyst-v2-orchestrating-delegates
 # (behavior-complaint routing) and the spec anatomy in
-# catalyst-v2-writing-delegation-specs. The guarded failure: the orchestrator
+# catalyst-v2-planning-artifacts. The guarded failure: the orchestrator
 # dispatched a skill repair (meta-index-format) without filing the incident,
 # and the incident was filed only after the user asked.
 
@@ -30,7 +30,7 @@ config_source: declared
 # The catalyst files whose rule this test guards.
 covered_files:
   - skills/catalyst-v2-orchestrating-delegates/SKILL.md
-  - skills/catalyst-v2-writing-delegation-specs/SKILL.md
+  - skills/catalyst-v2-planning-artifacts/SKILL.md
   - skills/catalyst-v2-filing-incidents/SKILL.md
 
 # Rules the actor runs under; the judge applies them to the transcript.

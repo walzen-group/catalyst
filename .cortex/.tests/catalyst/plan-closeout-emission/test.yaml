@@ -1,0 +1,78 @@
+# test.yaml: guards the close-out emission stage added by the
+# skill-consolidation plan task 4 (2026-08-07-skill-consolidation,
+# task-4-fold-consolidation-into-memory.md). The rule:
+#
+#   When the orchestrator sets a plan's Status line to a terminal value at
+#   close-out, it extracts the plan's durable signals — settled decisions and
+#   resolved questions from the index doc, gotchas delegates reported, feedback
+#   the user gave mid-flight — and drops each as
+#   `c2m note "<fact>" --source plan:<plan-dir> --tree <tree>` into the memory
+#   inbox, BEFORE removing the plan directory. An incident report inside the
+#   plan survives the removal. Plan-derived candidates get no weaker rules:
+#   the curator weighs the `source:` provenance field during promote/decay
+#   like any other signal.
+#
+# The stage lives in catalyst-v2-orchestrating-delegates step 7; the --source
+# flag lives in c2m (curator src/cli.mjs, src/inbox.mjs); the terminal-token
+# list moved there with it. The guarded failure this test would have caught:
+# close-out emitted no candidates at all (consolidation was a separate manual
+# pass outside the curator pipeline), so a completed plan's durable signal
+# never entered the inbox and plan-derived notes carried no provenance.
+
+# The agent under test: the orchestrator closing out a completed effort. The
+# small model is the stricter read of whether the instruction text carries on
+# its own; must differ from the judge model.
+actor:
+  role: orchestrator-default
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side only: the declared actor model is a deliberate choice
+# rather than an echo of models.yaml, so the live side would test the model
+# table, not the rule.
+config_source: declared
+
+# The catalyst files whose rule this test guards.
+covered_files:
+  - skills/catalyst-v2-orchestrating-delegates/SKILL.md
+  - skills/catalyst-v2-curator/SKILL.md
+  - skills/catalyst-v2-curator/src/cli.mjs
+  - skills/catalyst-v2-curator/src/inbox.mjs
+  - skills/catalyst-v2-planning-artifacts/SKILL.md
+  - skills/catalyst-v2-curator/src/housekeeping.mjs
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (plan-closeout-emission/) and grounds only in the live catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs).
+  - The actor must not read any .cortex/ content outside its own working directory (memory, incidents, plans, reports, or ~/nix/catalyst/.cortex) — the sample plan is fictional and described in the scenario, never read — and must not read this test's own history/.
+  - The actor must not run any git command, must not write or edit any file, and launches or executes nothing: no c2d dispatch, no real c2m command, no herdr command. It states commands in its reply only.
+  - The actor must not reach this test's own materials: the implementation task spec (task-4-fold-consolidation-into-memory.md) or this test's history.
+
+# Pass criteria, fixed before any output was read. Semantic criteria go to the
+# judge with their pass definition; deterministic criteria are in checks.mjs.
+criteria:
+  emission-at-closeout:
+    kind: semantic
+    pass: The actor states that setting the plan's Status line to a terminal value at close-out is followed by dropping the plan's durable signals into the memory inbox as c2m note candidates, before the plan directory is removed.
+  signal-classes:
+    kind: semantic
+    pass: The actor treats settled decisions and resolved questions from the plan's index doc, gotchas delegates reported, and feedback the user gave mid-flight as memory candidates, and states that run artifacts and restatements of repo-derivable facts are not candidates.
+  source-provenance:
+    kind: semantic
+    pass: Every c2m note the actor states for a plan-derived candidate carries a --source plan:<plan-dir> provenance flag naming the plan directory, and a --tree value naming a .cortex/memory tree, chosen by the curator's kit-vs-project rule (system knowledge to the kit tree, project knowledge to the project tree).
+  removal-with-incident-survival:
+    kind: semantic
+    pass: The actor removes the plan directory only after its candidates sit in the inbox, and an incident report inside the plan directory survives the removal (the directory is left holding the incident).
+  terminal-list:
+    kind: semantic
+    pass: The actor states the terminal status tokens as the closed list COMPLETE, DONE, CANCELLED, SUPERSEDED, ABANDONED, and a qualifier that reopens work (e.g. COMPLETE - INTEGRATION OPEN) as not terminal.
+  emission-commands:
+    kind: deterministic
+    pass: The reply states at least three c2m note commands (one per signal class the scenario names), and every stated c2m note command carries both --source plan:<plan-dir> and a --tree value naming a .cortex/memory tree.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the task spec slug, this test's history), reads no forbidden .cortex content, runs no git command, and writes or edits no file.

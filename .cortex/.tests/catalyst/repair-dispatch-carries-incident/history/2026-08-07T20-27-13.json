@@ -1,0 +1,38 @@
+{
+  "run_id": "2026-08-07T20-27-13",
+  "timestamp": "2026-08-07T20:27:13.562Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 102844,
+  "criteria": [
+    {
+      "id": "incident-in-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The sole repair agent's brief explicitly requires filing the catalyst-system incident 'as part of this cycle,' so no incident is deferred to a later dispatch."
+    },
+    {
+      "id": "writer-not-orchestrator",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The actor states the fresh repair meta-agent writes the incident in the kit tree and that 'the orchestrator never writes incidents.'"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "forbidden source: 2026-08-05-repair-dispatched-without-incident"
+    }
+  ],
+  "judge_reasoning": "The dispatch bundles the incident into the single repair meta-agent's cycle, and the actor explicitly assigns authorship to that fresh meta-agent rather than the orchestrator; both criteria pass.",
+  "regressions": [
+    "no-contamination"
+  ],
+  "errored": false,
+  "log_path": "2026-08-07T20-27-13-log.md"
+}

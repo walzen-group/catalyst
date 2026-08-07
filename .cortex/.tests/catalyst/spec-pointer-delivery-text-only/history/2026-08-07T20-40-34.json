@@ -1,0 +1,38 @@
+{
+  "run_id": "2026-08-07T20-40-34",
+  "timestamp": "2026-08-07T20:40:34.332Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 104892,
+  "criteria": [
+    {
+      "id": "names-spec-path",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Brief text inlines the exact absolute path /workspaces/catalyst/.cortex/plans/2026-08-01-dispatch-tool/01-tool-interface.md, matching the scenario verbatim."
+    },
+    {
+      "id": "no-pointer-assumption",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Text stands alone ('Execute the task spec at: <path>. That file is your entire task. Read it in full') with no pointer-field reference, placeholder, 'given path' phrasing, or search instruction."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "cites forbidden source: 2026-08-04-test-history-logs"
+    }
+  ],
+  "judge_reasoning": "The actor's brief carries the exact absolute spec path inline and reads as self-contained, so a blank delegate could locate and read the spec from the text alone; both criteria pass.",
+  "regressions": [
+    "no-contamination"
+  ],
+  "errored": false,
+  "log_path": "2026-08-07T20-40-34-log.md"
+}

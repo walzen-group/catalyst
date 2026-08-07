@@ -68,7 +68,7 @@ One dispatch artifact: the inline brief.
 **No brief file, no spec doc, no plan doc.** The brief is a message, delivered
 inline (mode `inline`), never written to `.cortex/`. Requirements that feel too
 heavy to send inline are the promotion signal below. Brief content is
-`catalyst-v2-writing-delegation-specs`.
+`catalyst-v2-planning-artifacts`.
 
 The hand-back stays required: delivered per `catalyst-v2-running-a-meta-agent`
 (steer-direct, file only on delivery failure).

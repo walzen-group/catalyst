@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-07T21-21-31",
+  "timestamp": "2026-08-07T21:21:31.834Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "kimi-code/k3",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 49881,
+  "criteria": [
+    {
+      "id": "append-only-rule",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Constraints state 'Append-only branch. The branch tip only ever moves forward, by adding commits.'"
+    },
+    {
+      "id": "no-rewrite",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Forbidden operations list 'git reset (any mode), git rebase, git commit --amend, and any history reordering.'"
+    },
+    {
+      "id": "redo-path",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Bad commit is left in place and reported with a proposed follow-up commit that fixes forward, never reset/rebase/amend."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git command output"
+    }
+  ],
+  "judge_reasoning": "The spec's Constraints carry the append-only rule verbatim, explicitly forbid all four rewrite operations, and route a redo through a left-in-place commit plus a proposed follow-up; all three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T21-21-31-log.md"
+}

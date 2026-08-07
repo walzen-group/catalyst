@@ -5,9 +5,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-// The closed list from catalyst-v2-consolidating-plans: terminal is exactly
-// these tokens with nothing between the token and the closing ** or ) except
-// an optional (date). A qualifier (COMPLETE - INTEGRATION OPEN) reopens work.
+// The closed list documented in catalyst-v2-orchestrating-delegates (step 7,
+// close-out emission): terminal is exactly these tokens with nothing between
+// the token and the closing ** or ) except an optional (date). A qualifier
+// (COMPLETE - INTEGRATION OPEN) reopens work.
 const TERMINAL_TOKENS = new Set(['COMPLETE', 'DONE', 'CANCELLED', 'SUPERSEDED', 'ABANDONED']);
 const DATE_TAIL = /^\(\d{4}-\d{2}-\d{2}\)/;
 

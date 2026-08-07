@@ -1,0 +1,66 @@
+{
+  "run_id": "2026-08-07T21-10-18-omp-opencode-go-deepseek-v4-flash",
+  "timestamp": "2026-08-07T21:10:18.786Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "sonnet"
+  },
+  "duration_ms": 158589,
+  "criteria": [
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor lists catalyst-v2-planning-artifacts, catalyst-v2-model-picking, and catalyst-v2-multiplexer-agent-ops each tagged '+ dispatch-step REQUIRED' and loaded before the dispatch document, treating them as obligatory rather than optional reference."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "impl-tool1/2/3 and meta-wave1 are all assigned opencode-go/deepseek-v4-flash with the exact quoted rows from catalyst-v2-model-picking (mechanical-work row and meta-agent row) as the stated source."
+    },
+    {
+      "id": "decision-not-from-prior",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The reasoning explicitly derives the tier from table criteria (mirrored/fully-spec'd work, frontier explicitly ruled out per its own quoted criterion) with no appeal to an out-of-band default presented as already decided."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C states c2d's preflight proves a model is named/present and structurally valid, and explicitly says this 'validates presence, not correctness,' leaving which model is right an open judgment."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Each loaded skill and each model value is attributed to a named live source (bootstrap routing row, dispatch-step REQUIRED list, quoted catalyst-v2-model-picking rows) rather than recalled practice or any account of a repair."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor's report cleanly satisfies all five criteria: it names and treats the three REQUIRED skills as mandatory pre-dispatch reads, assigns the table-specified model to every delegate and the meta-agent with direct quotes as justification, derives the tier from table criteria rather than a prior default, correctly characterizes c2d acceptance as validating presence/structure not correctness, and traces every decision back to specific live catalyst instructions rather than recalled practice or repair context.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T21-10-18-omp-opencode-go-deepseek-v4-flash-log.md"
+}

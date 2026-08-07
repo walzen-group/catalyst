@@ -23,7 +23,7 @@ usage-limit parks.
 
 The tool decides none of WHO/WHEN/WAVE/TIER. Those stay in the skills:
 `catalyst-v2-orchestrating-delegates`, `catalyst-v2-model-picking`,
-`catalyst-v2-writing-delegation-specs`.
+`catalyst-v2-planning-artifacts`.
 
 Agent state reads are the same surface: `herdr agent read` / `get` / `list`,
 `c2d status`. Never read a raw session file on disk
@@ -73,7 +73,7 @@ save before closing (`catalyst-v2-session-save-resume`).
 - Named agents matching their role (`planekeeper`, `track-a-models`); names must
   be unique on the live roster.
 - The board keeper starts first; executor tabs start after the keeper confirms.
-- Brief form is `catalyst-v2-writing-delegation-specs`.
+- Brief form is `catalyst-v2-planning-artifacts`.
 
 ## Keep a wake armed at every turn end
 

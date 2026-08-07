@@ -25,7 +25,7 @@ config_source: both
 
 # The catalyst files whose repaired rule this test guards.
 covered_files:
-  - skills/catalyst-v2-writing-delegation-specs/SKILL.md
+  - skills/catalyst-v2-planning-artifacts/SKILL.md
 
 # Rules the actor runs under; the judge applies them to the transcript.
 isolation:

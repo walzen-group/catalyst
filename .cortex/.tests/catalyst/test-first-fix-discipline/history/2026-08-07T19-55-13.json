@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-07T19-55-13",
+  "timestamp": "2026-08-07T19:55:13.334Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 81458,
+  "criteria": [
+    {
+      "id": "test-first",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Step 1 writes the test before any production change, asserting list_models() returns [] on {\"models\": null}, pinning the wanted behavior."
+    },
+    {
+      "id": "red-recorded",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Step 2 runs only that test against the unmodified bug, expects FAIL with KeyError: 'models', and records the failing output as source of truth before any fix."
+    },
+    {
+      "id": "fix-then-green",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Step 3 applies the minimal one-line fix (data.get('models') or []) only after the red record; step 4 re-runs expecting PASS and keeps both red and green records as evidence."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The plan sequences the work test-first, records the red run as source of truth before touching production code, then applies a minimal fix and re-runs to green while retaining both records; all three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T19-55-13-log.md"
+}

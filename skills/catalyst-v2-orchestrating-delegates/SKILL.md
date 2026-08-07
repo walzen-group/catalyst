@@ -33,14 +33,14 @@ Small tasks use the reduced workset instead (`catalyst-v2-running-a-reduced-work
    confirm. Routine, fully specified work skips this; it is a formalization
    step, not a rule that every brief is user-driven. A delegate or meta-agent
    is never handed a problem the orchestrator has not pinned down.
-2. **Plan.** Index doc + per-task spec docs. REQUIRED: `catalyst-v2-writing-execution-plans`.
+2. **Plan.** Index doc + per-task spec docs. REQUIRED: `catalyst-v2-planning-artifacts`.
 3. **Pre-work: board.** Board keeper creates tracking before implementation starts.
    REQUIRED: `catalyst-v2-status-board-keeping`.
 4. **Dispatch: workers *and* their meta-agent, one act.** Spawn implementers
    through `c2d`, which brings each agent up verified and hands
    back a wake per agent for you to run backgrounded yourself. Each delegate gets
    only its own spec doc plus global constraints. REQUIRED:
-   `catalyst-v2-writing-delegation-specs`, `catalyst-v2-model-picking`,
+   `catalyst-v2-planning-artifacts`, `catalyst-v2-model-picking`,
    `catalyst-v2-multiplexer-agent-ops`.
 
    **A dispatch wave is N workers plus one meta-agent, both live before
@@ -104,10 +104,27 @@ Small tasks use the reduced workset instead (`catalyst-v2-running-a-reduced-work
    **If a fallback hand-back file exists** (steer delivery failed), read and
    delete it. The durable records are incidents, board, and memory.
 
-   **Set the plan's Status line to a terminal value**
-   (`catalyst-v2-consolidating-plans` holds the terminal list;
-   `catalyst-v2-writing-execution-plans` holds the format). A plan left ACTIVE
-   is skipped forever by consolidation.
+   **Set the plan's Status line to a terminal value, then run the close-out
+   emission stage** (`catalyst-v2-planning-artifacts` holds the Status format).
+   Terminal is the closed list COMPLETE, DONE, CANCELLED, SUPERSEDED,
+   ABANDONED; a qualifier that reopens work (COMPLETE - INTEGRATION OPEN) is
+   not terminal. A plan left ACTIVE is skipped by the emission stage forever.
+
+   At terminal status, extract the plan's durable signals: settled decisions
+   and resolved questions from the index doc, gotchas delegates reported, and
+   feedback the user gave mid-flight. Run artifacts and restatements of
+   repo-derivable facts are not candidates (what is worth keeping: a fact is
+   memory material only when the repo cannot derive it). Drop each candidate
+   as `c2m note "<fact>" --source plan:<plan-dir> --tree <tree>`. The tree
+   choice follows the curator's kit-vs-project rule
+   (`catalyst-v2-in-repo-agent-memory`): system knowledge to the kit tree,
+   project knowledge to the project tree. After the candidates sit in the
+   inbox, remove the plan directory; an incident report inside the plan
+   survives — remove the rest, leave the directory holding the incident, say
+   so in the close-out. The `c2m housekeeping --tree <p>` call above then
+   spawns the Curator, which promotes or decays the candidates by the normal
+   pass rules; provenance stays visible to the pass through the `source:`
+   field, with no weaker path for plan-derived notes.
 
 Behavior complaints route to the meta-agent's repair workflow
 (`catalyst-v2-running-a-meta-agent`). The orchestrator never patches instruction

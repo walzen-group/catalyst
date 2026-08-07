@@ -27,7 +27,7 @@ mandate_mode: caller_owned
 covered_files:
   - skills/catalyst-v2-dispatch/src/deliver.mjs
   - skills/catalyst-v2-dispatch/SKILL.md
-  - skills/catalyst-v2-writing-delegation-specs/SKILL.md
+  - skills/catalyst-v2-planning-artifacts/SKILL.md
 
 # Rules the actor runs under; the judge applies them to the transcript.
 isolation:

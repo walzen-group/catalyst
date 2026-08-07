@@ -65,6 +65,38 @@ test('inbox list reports pending notes', async () => {
   assert.match(o.out.text, /note one|"notes"/);
 });
 
+test('note with --source round-trips through the frontmatter and inbox list', async () => {
+  const tree = freshTree();
+  await main(['init', '--tree', tree], io());
+  const source = 'plan:.cortex/plans/2026-08-05-demo-effort';
+  const o = io();
+  const code = await main(['note', 'the local cache is SQLite', '--tree', tree, '--source', source], o);
+  assert.equal(code, 0);
+  const files = readdirSync(join(tree, 'inbox'));
+  assert.equal(files.length, 1);
+  const content = readFileSync(join(tree, 'inbox', files[0]), 'utf8');
+  assert.match(content, /^source: plan:\.cortex\/plans\/2026-08-05-demo-effort$/m, 'source: line in the frontmatter');
+  const o2 = io();
+  assert.equal(await main(['inbox', 'list', '--tree', tree], o2), 0);
+  const parsed = JSON.parse(o2.out.text);
+  assert.equal(parsed.notes[0].source, source, 'inbox list surfaces the provenance');
+});
+
+test('note without --source writes no source line and lists null provenance', async () => {
+  const tree = freshTree();
+  await main(['init', '--tree', tree], io());
+  const o = io();
+  assert.equal(await main(['note', 'plain observation', '--tree', tree], o), 0);
+  const files = readdirSync(join(tree, 'inbox'));
+  assert.equal(files.length, 1);
+  const content = readFileSync(join(tree, 'inbox', files[0]), 'utf8');
+  assert.ok(!/^source:/.test(content), 'no source: line written when --source is omitted');
+  const o2 = io();
+  assert.equal(await main(['inbox', 'list', '--tree', tree], o2), 0);
+  const parsed = JSON.parse(o2.out.text);
+  assert.equal(parsed.notes[0].source, null);
+});
+
 test('adopt rows a ledger-less content file and reports its slug', async () => {
   const tree = freshTree();
   await main(['init', '--tree', tree], io());

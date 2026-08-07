@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-07T20-46-26",
+  "timestamp": "2026-08-07T20:46:26.754Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "kimi-code/k3",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 68352,
+  "criteria": [
+    {
+      "id": "append-only-rule",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Constraints state 'Append-only branch. The branch tip only ever moves forward, by adding commits.'"
+    },
+    {
+      "id": "no-rewrite",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Constraints list 'Forbidden git operations: git reset (any mode), git rebase, git commit --amend, and any history reordering.'"
+    },
+    {
+      "id": "redo-path",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Redo path says a commit needing redo is left in place and reported with a proposed follow-up commit, never repaired in place."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git command output"
+    }
+  ],
+  "judge_reasoning": "The actor's spec grounded in catalyst-v2-writing-delegation-specs satisfies all three criteria: append-only tip, explicit forbid list covering reset/rebase/amend/reordering, and a leave-in-place-plus-follow-up redo path.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T20-46-26-log.md"
+}

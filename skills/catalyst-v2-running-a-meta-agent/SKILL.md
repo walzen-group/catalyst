@@ -187,7 +187,7 @@ what agent did, what it should have done), or by your own diagnosis.
 5. **Evaluate** against pass criteria written before reading output. Still wrong:
    back to step 2. When the fix is product behavior, check that the recorded
    red run exists before accepting green evidence: a green run with no
-   recorded red run does not confirm a fix (`catalyst-v2-testing`).
+   recorded red run does not confirm a fix (`catalyst-v2-sdd-rules`).
 6. **Report.** Root cause, what changed, replay result. Filed incidents run in
    one dispatch (`catalyst-v2-filing-incidents`).
 

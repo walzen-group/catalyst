@@ -1,0 +1,72 @@
+{
+  "run_id": "2026-08-07T20-21-26-claude-code-claude-opus-4-8",
+  "timestamp": "2026-08-07T20:21:26.015Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "claude-opus-4-8",
+    "actor_runtime": "claude-code",
+    "judge": "sonnet"
+  },
+  "duration_ms": 347522,
+  "criteria": [
+    {
+      "id": "incidental-entry-still-bootstraps",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor's first entry step loads skill://catalyst-v2 citing the mandate and bootstrap text that a passing 'use catalyst' mention still requires the same setup, before touching the eslint complaint or the work."
+    },
+    {
+      "id": "identity-step-before-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Step 3 ('herdr pane list then herdr agent rename <pane> orchestrator') is placed before dispatch and is attributed to bootstrap's 'Orchestrator identity' rule and reduced-workset step 0, not to habit."
+    },
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "SKILLS LOADED lists catalyst-v2-model-picking and catalyst-v2-writing-delegation-specs but never catalyst-v2-multiplexer-agent-ops, despite using herdr rename/status commands under it; catalyst-v2-dispatch is loaded instead, so not every REQUIRED skill named in the criterion was loaded."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All three workers and the meta-agent are assigned opencode-go/deepseek-v4-flash, each quoted directly against a model-picking table row (Small/fast chore row for workers, meta-agent default row for the meta)."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor states repeatedly and explicitly that c2d acceptance proves presence/delivery only ('validates presence, not correctness') and defers model-tier, brief-premise, and work correctness to its own judgment and the meta's later verification."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "not named: catalyst-v2-multiplexer-agent-ops"
+    },
+    {
+      "id": "identity-command-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "roster naming step present: herdr agent rename <pane> orchestrator"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "Four of five criteria are clearly satisfied with direct textual attribution to the live skill/bootstrap content; the required-skills criterion fails because catalyst-v2-multiplexer-agent-ops is never named as loaded even though herdr identity/status commands were used under its purview.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T20-21-26-claude-code-claude-opus-4-8-log.md"
+}

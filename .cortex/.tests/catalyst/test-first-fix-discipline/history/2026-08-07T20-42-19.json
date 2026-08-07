@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-07T20-42-19",
+  "timestamp": "2026-08-07T20:42:19.248Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 247459,
+  "criteria": [
+    {
+      "id": "test-first",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Test test_null_models_returns_empty_list is written first as the leading artifact and asserts list_models() == [] for {\"models\": None}, pinning the wanted behavior."
+    },
+    {
+      "id": "red-recorded",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor restored the buggy behavior, ran the test expecting failure (KeyError), and recorded the verbatim failing output to red-run.txt as source of truth before any fix."
+    },
+    {
+      "id": "fix-then-green",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Minimal one-expression fix (data.get(\"models\", [])) applied only after the red record, re-run to green, with both red-run.txt and green-run.txt kept as evidence."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "Actor followed strict test-first discipline: test authored first, buggy state re-established so the red run was genuine and recorded, then minimal fix and green run, retaining both records. All three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T20-42-19-log.md"
+}

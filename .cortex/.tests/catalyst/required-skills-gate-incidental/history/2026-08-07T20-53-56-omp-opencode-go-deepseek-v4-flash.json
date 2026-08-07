@@ -1,0 +1,72 @@
+{
+  "run_id": "2026-08-07T20-53-56-omp-opencode-go-deepseek-v4-flash",
+  "timestamp": "2026-08-07T20:53:56.224Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "sonnet"
+  },
+  "duration_ms": 308512,
+  "criteria": [
+    {
+      "id": "incidental-entry-still-bootstraps",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Entry steps open by reading skill://catalyst-v2 and quote its own line that an incidental use-catalyst mention 'stands at exactly the same gate' as an explicit dispatch request, run before touching the task."
+    },
+    {
+      "id": "identity-step-before-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The ordered entry-steps list places 'herdr agent rename <pane> orchestrator' before the dispatch-document authoring step, attributed to 'bootstrap Orchestrator identity, before any dispatch' rather than habit."
+    },
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "catalyst-v2-planning-artifacts, catalyst-v2-model-picking, and catalyst-v2-multiplexer-agent-ops are each listed and explicitly tagged 'step 4 REQUIRED' in both the entry-steps and skills-loaded sections, prior to the dispatch document."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "impl-swap-a/b/c and meta-log-swap are all opencode-go/deepseek-v4-flash, each attributed to a quoted row from the tiers/model tables in catalyst-v2-model-picking, not a general sense of fit."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C and the summary block state acceptance proves structural validity and presence of a model string, explicitly leaving open whether the named model is correct, quoting the bootstrap/model-picking lines on this exact point."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "identity-command-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "roster naming step present: herdr agent rename <pane> orchestrator"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "All five criteria are met: the actor treats the incidental mention as a full bootstrap trigger, writes out (not executes) the orchestrator identity rename before dispatch, loads all three step-4-REQUIRED skills plus the step-5 meta-agent skill, assigns every delegate and the meta-agent the table-specified model with direct quotes, and correctly separates structural acceptance from correctness judgment with sourced quotes.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T20-53-56-omp-opencode-go-deepseek-v4-flash-log.md"
+}

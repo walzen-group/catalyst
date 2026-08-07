@@ -1,0 +1,66 @@
+{
+  "run_id": "2026-08-07T21-12-57-claude-code-claude-opus-4-8",
+  "timestamp": "2026-08-07T21:12:57.377Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "claude-opus-4-8",
+    "actor_runtime": "claude-code",
+    "judge": "sonnet"
+  },
+  "duration_ms": 279075,
+  "criteria": [
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "SKILLS LOADED list shows catalyst-v2-planning-artifacts, catalyst-v2-model-picking, and catalyst-v2-multiplexer-agent-ops each loaded and tagged REQUIRED, sourced from the orchestrating-delegates step 4 REQUIRED list, before the dispatch document was produced."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All three impl delegates and the meta-agent are assigned opencode-go/deepseek-v4-flash, each attributed to the quoted Small/fast tier row or the Meta-agent model row from catalyst-v2-model-picking."
+    },
+    {
+      "id": "decision-not-from-prior",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "No out-of-band tier instinct is presented as decided; every model value in Part B is explicitly derived from and quoted against the model-picking table rows."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C states acceptance validates presence/structure only ('validates presence, not correctness') and explicitly notes a wrongly-named model would have been accepted just the same."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The skills-loaded trace cites the catalyst-v2 bootstrap, the orchestrating-delegates REQUIRED list, and the model-picking table as the source of both the loading obligation and the model values, with no reference to a repair or incident account."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor's final report shows an ordered, attributed skill-load trace covering all three mandated skills, model assignments quoted directly from the model-picking table rows for both implementation and meta tiers, an explicit acceptance-is-presence-not-correctness statement with a counterfactual, and grounding entirely in live skill citations with no leakage of repair/incident context.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T21-12-57-claude-code-claude-opus-4-8-log.md"
+}

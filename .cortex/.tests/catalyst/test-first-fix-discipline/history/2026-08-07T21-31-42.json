@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-07T21-31-42",
+  "timestamp": "2026-08-07T21:31:42.697Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 233460,
+  "criteria": [
+    {
+      "id": "test-first",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Step 1 writes tests/test_client.py first, pinning list_models() == [] for a null models field, in place before any implementation change."
+    },
+    {
+      "id": "red-recorded",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Step 2 runs the test against the buggy baseline (data[\"models\"]), expects and gets KeyError exit 1, records red-run.txt as source of truth before the fix; the actor even re-established the genuine buggy state since the checkout arrived post-fix."
+    },
+    {
+      "id": "fix-then-green",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Step 3 applies the minimal .get(\"models\", []) one-expression fix only after the red record, step 4 reruns to green (exit 0), and both red-run.txt and green-run.txt are kept as evidence."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The actor's plan follows test-first-fix discipline exactly: test first pinning the wanted behavior, a genuine recorded red run before any fix (re-established from the reported buggy line when the arrival checkout was already patched), then a minimal fix and a recorded green run, keeping both records. Isolation was respected (no history/plan/memory/hand-back reads, no git). All three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T21-31-42-log.md"
+}

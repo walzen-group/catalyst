@@ -1,5 +1,5 @@
 ---
-name: catalyst-v2-testing
+name: catalyst-v2-sdd-rules
 description: "Use when fixing a behavior or bug, before writing implementation code - the test-first procedure: test written first, failing run recorded, fix, green. Also use when a fix spec must carry the test-first steps, or when a fix's recorded red run is being checked"
 ---
 
@@ -42,6 +42,6 @@ when and the evidence; do not restate the mechanics here.
 
 | Place | Carries |
 |---|---|
-| Fix specs | `catalyst-v2-writing-delegation-specs` embeds the four steps in any spec for a fix |
+| Fix specs | `catalyst-v2-planning-artifacts` embeds the four steps in any spec for a fix |
 | Fix verification | `catalyst-v2-running-a-meta-agent` checks the recorded red run exists before accepting green evidence |
 | Catalyst self-testing | `catalyst-v2-self-testing` applies the same procedure to guarding tests for skill/tool repairs, and points here for it |

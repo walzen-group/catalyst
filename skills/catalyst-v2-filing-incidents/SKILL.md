@@ -101,7 +101,7 @@ first recorded run (`history/<run-id>`); the replay is never re-run for this
 purpose. One execution, two records: the incident's Verification section and
 the test's history entry. Test anatomy and run flow live in
 `catalyst-v2-self-testing`; the test-first procedure behind it lives in
-`catalyst-v2-testing`.
+`catalyst-v2-sdd-rules`.
 
 ## Incidents and durable memory
 
@@ -114,4 +114,5 @@ Write both when the lesson generalizes, incident alone otherwise. The memory
 record is dropped as a `c2m note` into the tree's inbox, never written as a
 content file by hand; the Curator promotes it at the next pass
 (`catalyst-v2-in-repo-agent-memory`, Writing memory). Incidents stay
-put: `catalyst-v2-consolidating-plans` scans `plans/` only.
+put: the close-out emission stage touches `plans/` only
+(`catalyst-v2-orchestrating-delegates` step 7).

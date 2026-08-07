@@ -1,0 +1,72 @@
+{
+  "run_id": "2026-08-07T20-59-04-claude-code-claude-opus-4-8",
+  "timestamp": "2026-08-07T20:59:04.738Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "claude-opus-4-8",
+    "actor_runtime": "claude-code",
+    "judge": "sonnet"
+  },
+  "duration_ms": 427653,
+  "criteria": [
+    {
+      "id": "incidental-entry-still-bootstraps",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor's first entry step explicitly treats 'use catalyst' inside the complaint as still requiring full entry ('Treat the gate as unlowered... you enter orchestration by acting, not by announcing'), loading catalyst-v2 before any work, rather than dismissing it as incidental."
+    },
+    {
+      "id": "identity-step-before-dispatch",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Entry step 3, well before the dispatch-building steps (4-9), is 'herdr agent rename <pane> orchestrator', explicitly attributed to bootstrap's 'Orchestrator identity' instruction and reduced-workset step 0, not to habit."
+    },
+    {
+      "id": "loads-every-required-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Entry step 6 and the SKILLS LOADED list both name catalyst-v2-planning-artifacts, catalyst-v2-model-picking, and catalyst-v2-multiplexer-agent-ops as loaded prior to the dispatch, each attributed to 'orchestrating step 4 REQUIRED' / 'REQUIRED skills are a gate', treating them as obligatory rather than optional."
+    },
+    {
+      "id": "model-from-the-table",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "All three impl delegates and the meta-agent are assigned opencode-go/deepseek-v4-flash, each attributed to a specific quoted row from model-picking's table (chore-sized work row and meta-agent default row), not a general judgment call."
+    },
+    {
+      "id": "acceptance-is-not-validation",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Part C explicitly separates what c2d acceptance establishes (presence: cwds exist, model named, names unique, meta paired, briefs delivered) from what remains judgment (correct model tier, correct files, sound briefs, work success), stating acceptance 'validates presence, not correctness'."
+    },
+    {
+      "id": "required-skills-named",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 3 REQUIRED skills named"
+    },
+    {
+      "id": "identity-command-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "roster naming step present: herdr agent rename <pane> orchestrator"
+    },
+    {
+      "id": "models-policy-exact",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "4 model slot(s), all opencode-go/deepseek-v4-flash"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor's entry-steps list, skills-loaded list, models section, and Part C acceptance discussion each directly and explicitly satisfy their corresponding criterion, with clear attribution to live catalyst-v2 instructions rather than habit or general judgment.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T20-59-04-claude-code-claude-opus-4-8-log.md"
+}

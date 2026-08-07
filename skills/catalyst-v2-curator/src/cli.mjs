@@ -15,7 +15,7 @@ const USAGE = `c2m: deterministic memory-store mechanics for The Curator
 
 Usage:
   c2m init --tree <p>
-  c2m note "<text>" [--agent <name>] [--tree <p>]
+  c2m note "<text>" [--agent <name>] [--source <string>] [--tree <p>]
   c2m inbox list --tree <p>
   c2m inbox done <id> --tree <p>
   c2m promote <slug> --desc "<line>" [--from-inbox <id>] --tree <p>   (else content on stdin)
@@ -188,13 +188,13 @@ const HANDLERS = {
     return ok(io.out, initTree(tree, { now: io.now ?? new Date() }));
   },
   note: async (rest, io) => {
-    const parsed = parse(rest, ['tree', 'agent']);
+    const parsed = parse(rest, ['tree', 'agent', 'source']);
     if (parsed.error) return failed(io.out, parsed.error);
     const tree = requireTree(parsed.flags, io.out);
     if (tree === null) return 1;
     const text = parsed.positional.join(' ');
     if (text.trim() === '') return failed(io.out, 'note: "<text>" is required');
-    return ok(io.out, note(tree, text, { agent: parsed.flags.agent, now: io.now ?? new Date() }));
+    return ok(io.out, note(tree, text, { agent: parsed.flags.agent, source: parsed.flags.source, now: io.now ?? new Date() }));
   },
   inbox: runInbox,
   promote: async (rest, io) => {

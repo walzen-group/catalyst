@@ -1,11 +1,11 @@
 # test.yaml: guards the test-first fix procedure codified in the new
-# catalyst-v2-testing skill (improvement plan 2026-08-03-testing-skill-split).
+# catalyst-v2-sdd-rules skill (improvement plan 2026-08-03-testing-skill-split).
 # The rule: a fix is proven by a test written FIRST capturing the wanted
 # behavior, run against the current unwanted behavior and recorded as FAILING
 # (the source of truth), then a minimal fix, then the green run. Writing a test
 # after implementing the fix is dishonest: the test gets shaped by the code
 # that exists instead of pinning the wanted behavior. The procedure is carried
-# into fix specs by catalyst-v2-writing-delegation-specs and into fix
+# into fix specs by catalyst-v2-planning-artifacts and into fix
 # verification by catalyst-v2-running-a-meta-agent (a green run with no
 # recorded red run does not confirm a fix).
 
@@ -27,8 +27,8 @@ config_source: both
 
 # The catalyst files whose repaired rule this test guards.
 covered_files:
-  - skills/catalyst-v2-testing/SKILL.md
-  - skills/catalyst-v2-writing-delegation-specs/SKILL.md
+  - skills/catalyst-v2-sdd-rules/SKILL.md
+  - skills/catalyst-v2-planning-artifacts/SKILL.md
   - skills/catalyst-v2-running-a-meta-agent/SKILL.md
 
 # Rules the actor runs under; the judge applies them to the transcript.

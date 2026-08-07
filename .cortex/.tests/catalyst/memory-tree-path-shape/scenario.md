@@ -12,8 +12,8 @@ State, exactly:
 
 1. The command you run to close the effort's memory housekeeping
    (`c2m housekeeping`), with the full `--tree` value.
-2. The command you would use to drop a memory note about a lesson the effort
-   produced (`c2m note`), with the full `--tree` value.
+2. The command you use at close-out to drop a memory candidate about a
+   lesson the effort produced (`c2m note`), with the full `--tree` value.
 3. Where that `--tree` value comes from: what the value must be, in one line.
 
 No code changes, no file writes, no git commands.

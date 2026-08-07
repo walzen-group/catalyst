@@ -1,9 +1,66 @@
 ---
-name: catalyst-v2-writing-delegation-specs
-description: Use when writing per-task spec documents or dispatch prompts for implementation agents that start with no conversation context
+name: catalyst-v2-planning-artifacts
+description: Use when planning a multi-task effort that will be dispatched to implementation agents (before writing task specs or spawning delegates), or when writing per-task spec documents or dispatch prompts for implementation agents that start with no conversation context
 ---
 
-# Writing delegation specs (v2)
+# Planning artifacts (v2)
+
+A plan produces two artifacts in strict sequence: the execution plan (the
+index doc), then one delegation spec per task.
+
+## Execution plan
+
+A plan is a directory: `.cortex/plans/<date>-<name>/` with one `00-index.md` and
+one `task-N-<slug>.md` per task.
+
+### The index doc
+
+- **Status line**: first line, `> **Status: ACTIVE** (<date>)`. See below.
+- **Header note**: which execution skill to use; the rule that each implementer
+  receives only its own task doc plus global constraints.
+- **Goal / Architecture / Tech stack**: short, enough for a spec check.
+- **Source spec and resolved questions**: link design doc; record every answered
+  question so delegates never re-ask.
+- **Revision notes**: dated block if revised mid-flight.
+- **Global constraints**: invariants every task includes. Write once here.
+- **Task table**: doc, task name, repo/area, dependencies.
+- **Tracks**: parallel groupings (the unit of parallel dispatch).
+- **Agent allocation**: task to executor kind to model tier
+  (`catalyst-v2-model-picking`). Lock before dispatching.
+- **Pre-work**: board setup step if a keeper is used. Runs FIRST.
+- **Out of scope**: explicit non-goals.
+- **Whole-change verification**: exact commands per repo, in pinned toolchains.
+- **Smoke test**: the end-to-end scenario with expected observable output.
+
+### Status line
+
+**Every plan carries a Status line from creation, initial value ACTIVE.** Without
+one, the close-out emission stage skips it forever
+(`catalyst-v2-orchestrating-delegates` step 7).
+
+| Plan shape | Line | Where |
+|---|---|---|
+| directory | `> **Status: ACTIVE** (2026-07-31)` | first line of `00-index.md` |
+| single-file | `**Status:** ACTIVE (2026-07-31)` | header block |
+
+Task docs carry no Status of their own; the index doc's line covers the plan.
+The orchestrator sets terminal value at close-out
+(`catalyst-v2-orchestrating-delegates` step 7). Terminal tokens are defined by
+the close-out emission stage in `catalyst-v2-orchestrating-delegates` only.
+
+### Rules
+
+- Plan docs are the source of truth. On disagreement the plan wins.
+- Every acceptance criterion must be satisfiable by the listed tasks.
+- **Verify where the subject runs in production.** A verification environment
+  that cannot run the subject is a planning bug.
+- **A plan's user-facing deliverable is a report, not a run artifact.** An
+  audit, findings, or recommendation the user will read goes to
+  `.cortex/reports/`, written with `catalyst-v2-writing-docs`; the plan dir
+  holds drafts and run artifacts. Global constraints state the report path per
+  task so the spec and the hand-back carry it.
+
+## Delegation spec
 
 A delegate starts blank: no conversation history, no memory. The spec doc is its
 entire world. Delivered by pointer (`spec_pointer`) for a full workset or inline
@@ -16,7 +73,7 @@ the right file.
 The dispatch tool injects the catalyst skill-loading mandate on every dispatch
 delivery; brief authors still name the task-specific skills for the work.
 
-## Anatomy
+### Anatomy
 
 1. **Context**: two to four sentences. What system, why the task exists, where it
    sits in the larger change.
@@ -30,7 +87,7 @@ delivery; brief authors still name the task-specific skills for the work.
    parses proves the delegate typed it, not that it does anything. Where no gate
    can observe the purpose, name the experiment that would and record the gap.
 
-## Rules
+### Rules
 
 - **Self-contained.** Paths are absolute or repo-relative-from-stated-root.
   Facts are quoted, not referenced by "see the discussion".
@@ -81,7 +138,7 @@ delivery; brief authors still name the task-specific skills for the work.
   first, capturing the wanted behavior; run it against the current, unwanted
   behavior and record the failing run; implement the minimal fix; run the test
   to green. The failing run is the source of truth, and its record is part of
-  the delegate's report. Point at `catalyst-v2-testing` for the procedure.
+  the delegate's report. Point at `catalyst-v2-sdd-rules` for the procedure.
 - **A spec for a catalyst instruction or tool repair carries its incident.**
   The failure it repairs is fileable when the root cause sits in the
   instruction file (`catalyst-v2-filing-incidents`); the spec names the

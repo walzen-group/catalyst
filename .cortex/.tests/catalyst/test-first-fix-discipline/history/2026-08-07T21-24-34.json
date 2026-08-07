@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-07T21-24-34",
+  "timestamp": "2026-08-07T21:24:34.955Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 144737,
+  "criteria": [
+    {
+      "id": "test-first",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "red-recorded",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "fix-then-green",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": null,
+  "regressions": [],
+  "errored": true,
+  "log_path": "2026-08-07T21-24-34-log.md"
+}

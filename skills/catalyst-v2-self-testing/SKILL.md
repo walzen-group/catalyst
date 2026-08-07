@@ -19,7 +19,7 @@ runner mechanics live in the runner code.
 The procedure here is the same one product fixes use: write the test first so
 it captures the wanted behavior, record its failing run against the unwanted
 behavior (the source of truth), implement the minimal fix, then check the fix
-against the test. `catalyst-v2-testing` states that procedure in full; use it
+against the test. `catalyst-v2-sdd-rules` states that procedure in full; use it
 as the reference rather than restating it here. The difference is only the
 subject: a guarding test pins a repaired catalyst rule, and the fix's
 verification replay is the test's first recorded run.

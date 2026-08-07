@@ -62,7 +62,7 @@ ledger from any existing content files; it is idempotent.
 
 | Verb | Caller | Does |
 |---|---|---|
-| `c2m note "<text>" [--agent <name>] --tree <p>` | any agent | drop one inbox candidate, attributed and timestamped |
+| `c2m note "<text>" [--agent <name>] [--source <string>] --tree <p>` | any agent | drop one inbox candidate, attributed and timestamped; `--source` adds a provenance line (close-out emission uses `--source plan:<plan-dir>`) |
 | `c2m inbox list --tree <p>` | Curator | list pending notes, oldest first |
 | `c2m inbox done <id> --tree <p>` | Curator | delete a processed note |
 | `c2m promote <slug> --desc "<line>" [--from-inbox <id>] --tree <p>` (else content on stdin) | Curator | add a keeper at full strength; writes the content file, a ledger row, and its index line |
@@ -82,6 +82,14 @@ or failure. `curate` and `summon` return c2d's result verbatim, including the
 wake the caller owes; `housekeeping` carries c2d's result in its `curator`
 field, null when no pass spawned.
 
+Plan-derived candidates arrive through close-out emission, not a manual
+consolidation pass: when the orchestrator sets a plan's Status line to a
+terminal value it drops the plan's durable signals into the inbox as
+`c2m note "<fact>" --source plan:<plan-dir> --tree <p>` and removes the plan
+directory (`catalyst-v2-orchestrating-delegates` step 7). The old
+manual-trigger consolidation skill is retired; emission is automatic at
+close-out, and plan-derived notes get no weaker rules than any other note.
+
 ## Pass
 
 ```
@@ -92,15 +100,18 @@ ADOPT     each content file that sits in the tree without a ledger row
           hand write; adoption reconciles it without rewriting content,
           giving the ledger the row the decay sweep can act on.
 
-CLASSIFY  each inbox note before promoting it. A note that states a catalyst
-          directive (a rule about how agents work: dispatch conventions, role
-          behavior, monitoring, verification ownership, memory handling) is
-          never promoted into the durable store, whatever tree it targets. The
-          test is behavior vs fact: a directive tells an agent how to behave; a
-          fact tells it about the world it works in (an environment quirk, an
-          external-system gotcha, a project decision), and a fact promotes as
-          any other note. Two directive sub-cases, each closed with
-          c2m inbox done <id> --tree <p>:
+CLASSIFY  each inbox note before promoting it. An entry may carry a
+          `source: plan:<dir>` provenance line from close-out emission; weigh
+          it during promote/decay like any other signal — it is evidence
+          about where the note came from, never a pass. A note that states a
+          catalyst directive (a rule about how agents work: dispatch
+          conventions, role behavior, monitoring, verification ownership,
+          memory handling) is never promoted into the durable store, whatever
+          tree it targets. The test is behavior vs fact: a directive tells an
+          agent how to behave; a fact tells it about the world it works in
+          (an environment quirk, an external-system gotcha, a project
+          decision), and a fact promotes as any other note. Two directive
+          sub-cases, each closed with c2m inbox done <id> --tree <p>:
             already codified in a skill -> record it rejected, name the skill.
             not yet codified            -> record it owed to a skill, name the
                                            skill that should hold it. Landing it
@@ -216,7 +227,7 @@ Rule enforcement. Directives belong in a skill; the store holds facts.
   Rejected.  "Meta hand-backs steer by name." Already codified in
              running-a-meta-agent.
   Owed.      "Briefs name the plan dir in full." No skill holds it yet; it
-             belongs in writing-delegation-specs. The orchestrator must land it.
+             belongs in planning-artifacts. The orchestrator must land it.
   Pruned.    feedback-verification-ownership. A pointer at a skill; redundant.
 
 Net: one entry lighter, two directives routed to their skills.

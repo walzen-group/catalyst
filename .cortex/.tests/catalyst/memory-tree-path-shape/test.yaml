@@ -32,7 +32,6 @@ covered_files:
   - skills/catalyst-v2-orchestrating-delegates/SKILL.md
   - skills/catalyst-v2-running-a-reduced-workset/SKILL.md
   - skills/catalyst-v2-session-save-resume/SKILL.md
-  - skills/catalyst-v2-consolidating-plans/SKILL.md
 
 # Rules the actor runs under; the judge applies them to the transcript.
 isolation:

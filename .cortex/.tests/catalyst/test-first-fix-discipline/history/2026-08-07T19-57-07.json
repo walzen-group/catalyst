@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-07T19-57-07",
+  "timestamp": "2026-08-07T19:57:07.726Z",
+  "config_source": "both",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 542800,
+  "criteria": [
+    {
+      "id": "test-first",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Test tests/test_client.py written first, pinning Client.list_models() returns [] on {\"models\": null}, with no implementation touched beforehand."
+    },
+    {
+      "id": "red-recorded",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Ran the test against the buggy code before any fix, expected failure, and recorded the KeyError red run to red-run.txt as source of truth."
+    },
+    {
+      "id": "fix-then-green",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Applied the minimal data.get(\"models\", []) fix only after the red record, re-ran to green (exit 0), and kept both red-run.txt and green-run.txt as evidence."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The actor's plan follows strict test-first fix discipline: test written first, red run recorded before touching code, minimal fix applied, green run recorded, both records kept. All three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T19-57-07-log.md"
+}

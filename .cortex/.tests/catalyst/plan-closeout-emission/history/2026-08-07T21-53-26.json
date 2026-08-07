@@ -1,0 +1,60 @@
+{
+  "run_id": "2026-08-07T21-53-26",
+  "timestamp": "2026-08-07T21:53:26.006Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 108400,
+  "criteria": [
+    {
+      "id": "emission-at-closeout",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "States Status→terminal, then emit durable signals as c2m note candidates into the inbox, before removing the plan dir."
+    },
+    {
+      "id": "signal-classes",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Treats the decision, resolved question, gotcha, and feedback as candidates and states run artifacts and repo-derivable restatements are not."
+    },
+    {
+      "id": "source-provenance",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Every note carries --source plan:<plan-dir> and --tree, with the project tree chosen via the kit-vs-project rule (all four classed project knowledge)."
+    },
+    {
+      "id": "removal-with-incident-survival",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Removes the plan dir only after candidates sit in the inbox and keeps the directory shell holding the incident report."
+    },
+    {
+      "id": "terminal-list",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Quotes the closed list COMPLETE, DONE, CANCELLED, SUPERSEDED, ABANDONED and states a reopening qualifier (COMPLETE - INTEGRATION OPEN) is not terminal."
+    },
+    {
+      "id": "emission-commands",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "2 note command(s) without --source plan:2026-08-05-demo-effort; 10 note command(s) without a --tree naming a .cortex/memory tree"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "The actor grounded correctly and hit all five criteria: terminal-list quoted exactly, emission ordered before removal, four signal classes with correct exclusions, provenance flags on every note with kit-vs-project tree selection, and incident survival on removal.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-07T21-53-26-log.md"
+}
