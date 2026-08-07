@@ -193,9 +193,16 @@ the plan dir holds drafts and run artifacts only.
 
 ## Memory setup and migration
 
-Make `.cortex/memory/` the one memory of record: pull in any existing memory from
-a repo-root `memory/` or Claude Code's built-in project memory. Read
-`catalyst-v2-in-repo-agent-memory` for layout and the Claude Code redirect.
+`.cortex/memory/`, written only through the `c2m` verbs, is the one memory of
+record for every catalyst session, in whatever harness it runs. When the harness
+ships its own file memory (Claude Code keeps one at
+`~/.claude/projects/<slug>/memory/`), catalyst memory takes precedence: the
+harness store gets a single `reference-*` pointer naming `.cortex/memory/` as the
+real one, and every capture goes through `c2m note` into the inbox. The harness
+exposes no switch to register a different memory backend, so that pointer plus the
+write discipline is the redirect. On adoption, pull any prior memory (a repo-root
+`memory/`, the harness store) into `.cortex/memory/`. Read
+`catalyst-v2-in-repo-agent-memory` for layout, the redirect steps, and the c2m verbs.
 
 **Superpowers compatibility:** if the project uses superpowers skills, plans go
 under `.cortex/plans/`, memory under `.cortex/memory/`. State paths explicitly
