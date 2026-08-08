@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspaces/nix/catalyst/.cortex/.tests/catalyst/test-first-fix-discipline/tests/test_client.py", line 34, in <module>
+    main()
+    ~~~~^^
+  File "/workspaces/nix/catalyst/.cortex/.tests/catalyst/test-first-fix-discipline/tests/test_client.py", line 29, in main
+    test_null_models_returns_empty_list()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/workspaces/nix/catalyst/.cortex/.tests/catalyst/test-first-fix-discipline/tests/test_client.py", line 23, in test_null_models_returns_empty_list
+    assert client.list_models() == [], (
+           ~~~~~~~~~~~~~~~~~~^^
+  File "/workspaces/nix/catalyst/.cortex/.tests/catalyst/test-first-fix-discipline/opencode_sdk/client.py", line 31, in list_models
+    return [Model.from_dict(m) for m in data["models"]]
+                                        ~~~~^^^^^^^^^^
+KeyError: 'models'
+exit_code=1

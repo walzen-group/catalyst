@@ -187,7 +187,8 @@
         // `use flake` environments reach the language servers, not just the terminal.
         "mkhl.direnv",
         "Vue.volar",
-        "golang.go"
+        "golang.go",
+        "jnoortheen.nix-ide"
       ]
     }
   }

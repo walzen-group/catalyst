@@ -1,0 +1,2 @@
+PASS: test_null_models_returns_empty_list
+exit_code=0
