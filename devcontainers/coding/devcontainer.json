@@ -137,7 +137,13 @@
     // symlink to this canonical dir rather than copy, so nix-darwin edits propagate on
     // the next rebuild. No readonly flag: --privileged lets the container remount any
     // of these binds read-write, so it bought nothing.
-    "source=${localEnv:CATALYST_REPO}/devcontainers/coding,target=/opt/devcontainer,type=bind"
+    "source=${localEnv:CATALYST_REPO}/devcontainers/coding,target=/opt/devcontainer,type=bind",
+    // The same template dir a second time, under the mirrored ~/nix/catalyst layout, so
+    // omp-sync.sh and claude-sync.sh are reachable at the path they have on the host and
+    // a session inside the container finds them by looking where the submodule lives:
+    // `bash ~/nix/catalyst/devcontainers/coding/omp-sync.sh pull`. The whole devcontainers
+    // dir is bound rather than coding alone, so a second template added there shows up too.
+    "source=${localEnv:CATALYST_REPO}/devcontainers,target=/home/vscode/nix/catalyst/devcontainers,type=bind"
   ],
 
   // CLAUDE_CONFIG_DIR keeps claude's config in the ~/.claude volume: the default

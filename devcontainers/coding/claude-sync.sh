@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Move Claude Code's tracked config between this template and the ~/.claude volume, where
-# Claude Code's config lives. The template dir is bind-mounted at /opt/devcontainer, so the
-# repo copy is reachable from inside the container.
+# Claude Code's config lives. The template dir is bind-mounted twice, at /opt/devcontainer
+# and at ~/nix/catalyst/devcontainers/coding, so the repo copy is reachable from inside the
+# container either way; the script reads the copy it was run from.
 #
 #   seed    copy in whatever the live dir is missing, leaving what is already there
 #           (post-create.sh runs this, so a fresh container starts on the repo config)
@@ -12,7 +13,9 @@
 set -euo pipefail
 
 _mode="${1:-seed}"
-_tpl="${CLAUDE_TEMPLATE_DIR:-/opt/devcontainer}/claude-config"
+# Default to the dir holding this script, so both mounts of the template resolve their own
+# claude-config and the script works whichever path it was invoked through.
+_tpl="${CLAUDE_TEMPLATE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}/claude-config"
 _live="${CLAUDE_LIVE_DIR:-$HOME/.claude}"
 _entries="settings.json hooks"
 
