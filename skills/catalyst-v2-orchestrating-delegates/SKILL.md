@@ -144,7 +144,22 @@ on a user prompt, is the failure recurring
 **A user complaint that something was not done or not working is a filing
 request.** Route it to a fresh meta-agent for an incident even when the behavior
 is already fixed. A memory note is not a substitute; the meta-agent decides
-whether repair is warranted and records that decision.
+whether repair is warranted and records that decision. **Check the kit incident
+log first.** On any user correction or complaint, scan the kit incident log
+(`.cortex/incidents/`) for a prior incident covering the same failure before
+recording anything: a recurrence changes the root cause to the earlier fix not
+having taken. **Ask the user for the routing.** Whether the failure is filed as
+a catalyst incident or captured as a memory is the user's decision, never the
+orchestrator's to self-select: ask, and record only per the answer.
+
+**A cancel is a stop the orchestrator verifies, never a keystroke.** When the
+user tells you to cancel or stop a task, inform the wave's meta-agent
+immediately (A2A:) so it stops the task, verify the stop actually happened — a
+settled status read is not a stopped worker, and a fire-and-forget interrupt
+(send-keys ESCAPE) is not a halt — close the tabs when the worker did not
+stop, then tell the user what changed and recommend how to revert (git or
+otherwise). The protocol lives in `catalyst-v2-multiplexer-agent-ops`
+(Stopping a running agent).
 
 **Hand the whole case to the fresh meta-agent; do not engage the material
 yourself.** The case travels as the original prompt, what happened, and what
@@ -215,6 +230,10 @@ tooling. This is sequential with the meta-agent, never parallel.
   (`.cortex/incidents/2026-07-28-claude-launch-mode-override.md`,
   `.cortex/incidents/2026-07-28-devbox-followups-unauthorized-work.md`).
   A meta-agent's hold is released only by the user's explicit yes.
+  Dispatching a wave is a launch: a user go-ahead that enumerates specific
+  activities (write the plan docs, create the issues) authorizes those
+  activities, and the dispatch offered beyond them waits for its own explicit
+  go.
 - **User instruction vs agent belief: ask, never silently override.** The core
   principle in `catalyst-v2` (Core principles section).
 - **Attribution is quoted, never inferred.** What you pass to a delegate or user

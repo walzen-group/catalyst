@@ -120,7 +120,11 @@ reaches nobody. That is the recorded failure:
 true`) so the session stays free. A shell `sleep` is never a wait: no status
 check may be delayed with one, foreground or in a loop. A foreground blocking wait
 (blocking `hub wait`, blocking shell wait) is the same failure: the session stays
-blocked on one agent while the others go unwatched. There is exactly one wait
+blocked on one agent while the others go unwatched. Enforcement is mechanical:
+the `foreground-wait-guard` omp extension
+(`~/.omp/agent/extensions/foreground-wait-guard/`) blocks foreground `herdr
+agent wait` bash calls (`async: true` required) and `hub wait` calls without a
+process name, in every session started after install. There is exactly one wait
 mechanism: a background job your own harness owns, a backgrounded `herdr agent
 wait` or an in-harness background subagent. A tool-reported wake is a command you
 still have to run. A launch list is never a wait mechanism: a dispatched wave
@@ -221,6 +225,28 @@ reports `status: "blocked"` with a herdr hint rather than answering it; answerin
 the question is your decision, made directly through herdr (`herdr agent
 send-keys`, one key at a time, or `herdr agent attach`), after which you re-run
 `steer` to deliver the directive.
+
+## Stopping a running agent
+
+A stop is a protocol, never a keystroke. When the user cancels or stops a
+task, an interrupt (`herdr agent send-keys` ESCAPE, a signal) is only the
+first move — and a fire-and-forget interrupt is never a completed halt: the
+worker's background shells keep running and the work can finish unseen, so the
+user ends up aborting it themselves.
+
+1. **Inform the meta-agent immediately.** Steer the wave's meta-agent (`A2A:`
+   prefix) naming the task to stop; stopping the task is the meta-agent's
+   watch, not a keystroke you fire and forget.
+2. **Verify the stop.** Read the agent (`herdr agent read` / `get`, `c2d
+   status`); probe when the read is ambiguous. A settled status read is not a
+   stopped worker — a worker can sit idle while its shells run.
+3. **Close the tabs when it did not stop.** Only after the stop is confirmed
+   do you close the worker's tab(s) (Teardown gate), and verify the closure.
+4. **Report to the user.** Tell the user what changed and recommend the revert
+   (git or otherwise).
+
+Never report the wave as halted on the strength of an interrupt you did not
+verify.
 
 ## Teardown
 

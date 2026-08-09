@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-09-fix-live-proof",
+  "timestamp": "2026-08-09T00:00:00.000Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 0,
+  "criteria": [
+    {
+      "id": "matrix-passes",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: the fix dispatch's live verification, re-confirmed at filing time (2026-08-09) — node --test in the installed dir: 10 tests, 10 pass, 0 fail"
+    },
+    {
+      "id": "live-load-probe",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: the fix dispatch proved the decision matrix live in fresh sessions, both directions — foreground herdr agent wait refused by name with the pinned reason; async: true passes through; bare hub wait refused; hub wait with name (process readiness) passes"
+    },
+    {
+      "id": "guard-fires-in-session",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: the fix dispatch's fresh-session runs showed the BLOCKED tool refusal for the foreground herdr agent wait (block fires by name); the hub-side refusal was verified in the same matrix"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "unverified",
+      "detail": "transcribed run only: the fix dispatch's sessions were not run under this test's isolation rules, so the contamination scan has nothing to assert here; first asserted on the next live suite run"
+    }
+  ],
+  "judge_reasoning": "(no semantic criteria judged; transcribed first run, not a suite launch)",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-09-fix-live-proof-log.md"
+}

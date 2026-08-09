@@ -20,9 +20,15 @@ The rationalizations that end in a direct edit, each already rejected:
 - "I did this last time." An uncorrected direct edit is an unflagged violation.
 - "It is a skill file (or a doc), not product code." Any repo file outside
   `.cortex/` counts; the file type never changes the role split.
+- "It is inside the kit tree's `.cortex/`, so it is my artifact." The kit tree
+  is not the orchestrator's working tree: skills, guarding tests, incidents,
+  and kit memory are catalyst system work, for a delegate or a meta-agent; a
+  `.cortex/` in the path is not the license.
 
-The boundary: if the next Edit/Write would touch any repo file outside `.cortex/`
-(code, a skill file, a doc, a config), stop and dispatch
+The boundary: if the next Edit/Write would touch anything but the
+orchestrator's own working artifacts in the project's `.cortex/` (plan docs,
+memory, reports) — a project repo file, a skill file, or any file in the
+catalyst kit tree, the kit's `.cortex/` included — stop and dispatch
 (`catalyst-v2-orchestrating-delegates`).
 
 ## The steps

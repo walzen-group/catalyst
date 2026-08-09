@@ -1,0 +1,66 @@
+# test.yaml: guards the mechanical enforcement of the foreground-wait ban —
+# the foreground-wait-guard omp extension, the fix for incident
+# 2026-08-09-foreground-blocking-wait (built by dispatch
+# 2026-08-09-foreground-wait-guard). The guarded rule is mechanical, not
+# intent: the extension must keep blocking foreground agent-settle waits at
+# the tool boundary (bash `herdr agent wait` without async: true; `hub wait`
+# without a `name`), while passing the sanctioned shapes (async: true waits,
+# named process-readiness waits).
+#
+# Why no Mode A intent simulation: the failure class was the agent choosing a
+# banned shape despite the prose ban (the instructions-ignored pattern), and
+# the fix removed the choice at the tool boundary instead of restating the
+# rule. A replay of "does the agent pick a sanctioned wait" tests the prose,
+# which was already proven insufficient; the durable guard is the mechanics:
+# the extension's own decision matrix still passes (its test.mjs), the
+# installed factory still enforces the pinned refusals (live-load probe in
+# checks.mjs), and the guard fires through a real herdr session (actor
+# transcript). The first recorded run (history/2026-08-09-fix-live-proof)
+# transcribes the fix dispatch's live proof — both directions, fresh
+# sessions; the replay is never re-run for this purpose.
+#
+# The actor is a probe, not an intent simulation: the guard is role-agnostic,
+# so the actor role is the suite-proven cheap row.
+
+# The agent under test: a catalyst agent (meta-agent row) running a herdr
+# session with the guard live. Its model must differ from the judge model.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor. Declared but
+# never launched: this test has no semantic criteria.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - omp/agent/extensions/foreground-wait-guard/index.js
+  - omp/agent/extensions/foreground-wait-guard/test.mjs
+  - skills/catalyst-v2-multiplexer-agent-ops/SKILL.md
+
+# Rules the actor runs under.
+isolation:
+  - The actor works from this test's own directory (foreground-wait-guard/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report (2026-08-09-foreground-blocking-wait), the fix dispatch's materials, or this test's own history.
+  - The actor must not modify the project working tree (/workspaces/catalyst) in any way, and runs no git commands.
+
+# Pass criteria. All deterministic; each is implemented in checks.mjs. The
+# judge is not launched (no semantic criteria).
+criteria:
+  matrix-passes:
+    kind: deterministic
+    pass: The extension's own decision matrix still passes: node --test in the installed foreground-wait-guard directory runs at least the 10 pinned cases with zero failures.
+  live-load-probe:
+    kind: deterministic
+    pass: Importing the installed extension factory and driving tool_call events reproduces the decision matrix with the pinned refusals: foreground herdr agent wait blocked, bare/ids/from hub wait blocked, async:true herdr wait and named hub wait pass, unrelated calls pass.
+  guard-fires-in-session:
+    kind: deterministic
+    pass: The actor's transcript shows both pinned BLOCKED refusals (foreground `herdr agent wait`; `hub wait` without a `name`) from live tool calls, so the guard fires through the real harness event path.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of the dispatch materials (the incident report, the fix dispatch, the test's own history) as a source; other cortex content is allowed.

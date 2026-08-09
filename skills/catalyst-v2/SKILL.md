@@ -55,6 +55,14 @@ the thing asked for inverts the instruction. This binds hardest on files the
 user shares with their own machine, a host config or a system flake, where
 unrequested scope lands in their environment instead of a work branch.
 
+A go-ahead that enumerates activities authorizes exactly those activities.
+When the user answers an offered sequence by naming the parts they want ("yes,
+write the plan documents, create the issues"), the named parts are the scope;
+the parts you offered that they did not name — dispatching a wave, starting
+implementation, making changes — wait for their own explicit go. A general yes
+or an "etc" never widens the enumeration into the parts the user left out; if
+consent for the remainder is what you need, ask for it, never take it.
+
 Never manufacture the user's words. What you present as something the user said
 is quoted from what they actually said; what you worked out yourself is labelled
 as yours. This binds hardest when you account for your own mistake: an apology
@@ -95,13 +103,19 @@ handover is mandatory, the orchestrator closes on the meta-agent's report.
 
 **The reduced workset is the floor, not a lighter option.** Any change to a repo
 file is delegated work: code, a skill file, a doc, a config, even a one-line
-paragraph add. The orchestrator's own Edit/Write reaches `.cortex/` artifacts
-only. A direct edit to anything else, however small, skips the workset and is the
-violation this bootstrap exists to stop. Before any Edit/Write, check the target:
-if it would touch a file outside `.cortex/`, run the reduced workset instead
-(`catalyst-v2-running-a-reduced-workset`) — route the tier, dispatch a delegate,
-hand over to a meta-agent. "It is only a skill file" and "it is only a paragraph"
-are not exceptions; the file type and the line count never change the role split.
+paragraph add. The orchestrator's own Edit/Write reaches its working artifacts
+in the project's `.cortex/` only — plan docs, memory, reports, run artifacts.
+The catalyst kit tree is never inside that reach: skill files anywhere, and the
+kit's own `.cortex/` — guarding tests, incidents, kit memory — are catalyst
+system work for a delegate or a meta-agent, and a path that merely contains
+`.cortex/` is not the license. A direct edit to anything else, however small,
+skips the workset and is the violation this bootstrap exists to stop. Before any
+Edit/Write, check the target: if it would touch a file outside the
+orchestrator's own working artifacts, run the reduced workset instead
+(`catalyst-v2-running-a-reduced-workset`) — route the tier, dispatch a
+delegate, hand over to a meta-agent. "It is only a skill file", "it is only a
+paragraph", and "it is inside the kit's `.cortex/`" are not exceptions; the file
+type, the line count, and the path never change the role split.
 
 ## User-facing writing
 
