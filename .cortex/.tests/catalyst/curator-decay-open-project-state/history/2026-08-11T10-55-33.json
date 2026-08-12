@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-11T10-55-33",
+  "timestamp": "2026-08-11T10:55:33.642Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "sonnet",
+    "actor_runtime": "claude-code",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 52674,
+  "criteria": [
+    {
+      "id": "exempt-entries-kept",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Both project-cv-devserver-to-native-port and project-gamestate-payload-versioning are named in --relevant; neither decays and neither is planned for prune/tombstone."
+    },
+    {
+      "id": "reasons-from-exemption",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Stated reason is the CLAUDE.md-deferral / open-project-state exemption applying 'regardless of this effort's focus', not that they were relevant to the closing bug fix."
+    },
+    {
+      "id": "obsolete-still-decays",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "project-old-launcher-flags is deliberately left out of --relevant and allowed to decay/tombstone, showing the exemption is scoped to CLAUDE.md-deferred state, not blanket-keep."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "Actor kept both CLAUDE.md-deferred open-project entries relevant on the correct exemption grounds (independent of the closing effort), while letting the non-deferred obsolete launcher-flags entry decay. All three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-11T10-55-33-log.md"
+}

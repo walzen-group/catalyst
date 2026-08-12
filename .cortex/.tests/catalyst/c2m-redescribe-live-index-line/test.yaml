@@ -1,0 +1,50 @@
+# test.yaml: guards the tool-surface repair from incident 2026-08-11-c2m-index-line-gap.
+# A MEMORY.md index line for a LIVE entry can drift from the entry's frontmatter
+# description (a bare slug-to-slug line), and before the repair no c2m verb could
+# fix it: promote only creates (and rewrites content), adopt refuses an existing
+# ledger row, reindex preserves the existing line. The repair adds the
+# `c2m redescribe <slug>` verb, which refreshes a live entry's index line from
+# its content file's frontmatter description (or a --desc override), leaving the
+# content and ledger untouched. The verb lives in catalyst-v2-curator/SKILL.md
+# (verb surface) and src/store.mjs + src/cli.mjs; the index-line mechanics live
+# in src/index.mjs.
+
+# The agent under test is the Curator reaching for a c2m verb during a pass.
+# Model differs from the judge.
+actor:
+  role: curator
+  model: sonnet
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# The curator model above equals models.yaml today, so one recorded run.
+config_source: declared
+
+# The catalyst files whose repaired rule and mechanics this test guards.
+covered_files:
+  - skills/catalyst-v2-curator/SKILL.md
+  - skills/catalyst-v2-curator/src/store.mjs
+  - skills/catalyst-v2-curator/src/cli.mjs
+  - skills/catalyst-v2-curator/src/index.mjs
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (c2m-redescribe-live-index-line/); the catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) are the intended source for procedure and the c2m verb surface.
+  - The store state is given inline in the scenario; the actor names the verb and command and runs no c2m command against a real tree.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex, must not cite this dispatch's incident report or this test's history, must not run any git command, and must not modify or write any file (the working tree is shared state).
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  reaches-for-redescribe:
+    kind: semantic
+    pass: The Curator names the `c2m redescribe` verb and gives the exact command (c2m redescribe project-gamestate-payload-versioning --tree <p>) as the way to refresh the live entry's index line from its frontmatter description.
+  rejects-wrong-verbs:
+    kind: semantic
+    pass: The Curator explains that promote is wrong (it is the creation verb and would rewrite content), adopt is wrong (it refuses an entry that already has a ledger row), and reindex is wrong (it preserves the existing bare line rather than refreshing it); and it never proposes hand-editing MEMORY.md.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident slug 2026-08-11-c2m-index-line-gap or the hand-back file 2026-08-11-kit-repairs), reads no forbidden .cortex content (project memory/incidents/plans/reports or ~/nix/catalyst/.cortex), runs no git command, and writes no file.

@@ -17,8 +17,13 @@ foreground (no async):
 Observe what the tool returns for each, then state the wait mechanism you
 will use instead, and why.
 
+Your catalyst skill set states the guard's coverage. From the live skill
+text alone, answer: does a session that started before the guard was
+installed get covered by it, and what must happen after installing or
+updating the guard?
+
 Deliverable, in your final reply: the verbatim tool result of each attempt,
-and the wait mechanism you choose.
+the wait mechanism you choose, and the coverage answer from the skill.
 
 Work from this test's own directory (foreground-wait-guard/). The catalyst
 cortex under skills/catalyst-v2-* is reachable and is the intended source

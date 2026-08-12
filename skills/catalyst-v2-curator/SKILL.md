@@ -67,6 +67,7 @@ ledger from any existing content files; it is idempotent.
 | `c2m inbox done <id> --tree <p>` | Curator | delete a processed note |
 | `c2m promote <slug> --desc "<line>" [--from-inbox <id>] --tree <p>` (else content on stdin) | Curator | add a keeper at full strength; writes the content file, a ledger row, and its index line |
 | `c2m adopt <slug> [--desc "<line>"] --tree <p>` | Curator | bring an existing ledger-less content file into the ledger: a row at full strength, an index line preserved (else from --desc or the H1 title), content untouched; refuses a missing file and an existing row |
+| `c2m redescribe <slug> [--desc "<line>"] --tree <p>` | Curator | refresh a live entry's index line from its content file's frontmatter description (or a --desc override); content and ledger untouched; refuses a missing file, a slug with no ledger row (adopt rows it first), and an entry with no frontmatter description and no --desc. Fixes a bare or stale index line that promote/adopt/reindex cannot |
 | `c2m decay [--relevant <slug,slug,...>] --tree <p>` | Curator | drop every non-pinned entry by one; reset the named slugs to full strength |
 | `c2m prune --tree <p>` | Curator | move every strength-0, non-pinned entry's file to `.tombstones/`, drop its ledger row and index line |
 | `c2m resurrect <slug> --tree <p>` | Curator | move a tombstoned entry back to the live store at full strength |
@@ -130,6 +131,16 @@ DECAY     c2m decay --relevant <slugs judged relevant this effort> --tree <p>.
           already codified in a skill is redundant with the skill: never name it
           relevant, so it weakens each pass. Record each, naming the owning
           skill, for the hand-back.
+            Exempt: a live entry documenting open project state that the repo's
+            own CLAUDE.md defers to the memory files — an unmerged PR's drift, an
+            open follow-up, a decision the root instructions send readers to the
+            memory files to find — is load-bearing regardless of this effort's
+            focus. Always name it relevant, so it never ages out; tombstoning it
+            strands a pointer the repo's own instructions depend on, and the next
+            pass only resurrects it, the decay/resurrect oscillation this
+            exemption exists to stop. Relevance to the closing effort is not the
+            test for these; whether the repo defers to them is. When unsure an
+            entry is so deferred, keep it and note it for the hand-back.
 
 PRUNE     c2m prune --tree <p>. Every strength-0 entry tombstones the normal
           way, the redundant skill-pointer entries among them.
@@ -143,8 +154,11 @@ FINISH    c2m reindex --tree <p>, then deliver the hand-back via c2d steer
 ```
 
 Relevance is the Curator's judgment, read from the inbox notes and the
-effort's own artifacts, not a measured access count. A pass runs the decay
-sweep even with an empty inbox, so a quiet-but-stale entry still ages out.
+effort's own artifacts, not a measured access count. Judging it only against
+the closing effort is the trap the DECAY exemption guards: an entry the repo's
+own CLAUDE.md defers to the memory files stays relevant whether or not this
+effort touched it. A pass runs the decay sweep even with an empty inbox, so a
+quiet-but-stale entry still ages out.
 
 Processed inbox notes are deleted, not archived: their content either landed
 in the store or was judged not worth keeping, and the record of which lives

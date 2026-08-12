@@ -16,16 +16,17 @@ import { pathToFileURL } from 'node:url';
 // in the kit tree, so the extension path is resolved from the home dir.
 const EXT_DIR = join(homedir(), '.omp', 'agent', 'extensions', 'foreground-wait-guard');
 
-// Forbidden sources: the incident report, the fix dispatch, and this test's
-// own history. The scenario names none of these identifiers, so an echo of
-// the scenario's isolation text cannot trip the scan. The guard's own
-// language is NOT forbidden: the pinned refusal reasons quote the extension
-// name ("(foreground-wait-guard)") and the sanctioned shapes, so quoting
-// them is evidence of the guard firing, not of reading this dispatch. The
-// bare extension name is therefore never a forbidden marker; only the dated
+// Forbidden sources: the incident reports (original and the 2026-08-11
+// coverage-gap recurrence), the fix dispatch, and this test's own history.
+// The scenario names none of these identifiers, so an echo of the scenario's
+// isolation text cannot trip the scan. The guard's own language is NOT
+// forbidden: the pinned refusal reasons quote the extension name
+// ("(foreground-wait-guard)") and the sanctioned shapes, so quoting them is
+// evidence of the guard firing, not of reading this dispatch. The bare
+// extension name is therefore never a forbidden marker; only the dated
 // incident/dispatch ids and the history path are.
 const FORBIDDEN_SOURCES =
-  /2026-08-09-foreground-blocking-wait|2026-08-09-foreground-wait-guard|foreground-wait-guard\/history\//;
+  /2026-08-09-foreground-blocking-wait|2026-08-09-foreground-wait-guard|2026-08-11-foreground-wait-guard-session-coverage|foreground-wait-guard\/history\//;
 
 // The guard's pinned refusal reasons, from the installed index.js. They
 // appear in no live skill and no scenario text, so a match means the guard
@@ -130,6 +131,45 @@ export async function liveLoadProbe() {
     detail: failures.length === 0
       ? 'installed factory reproduces the decision matrix with the pinned refusals'
       : failures.join('; '),
+  };
+}
+
+// Criterion skill-coverage-restart-rule: the installed multiplexer skill
+// must state the guard's coverage limitation and the restart mandate. The
+// 2026-08-11 recurrence
+// (2026-08-11-foreground-wait-guard-session-coverage) happened because the
+// guard loads at session start only and the offending orchestrator session
+// predated the install: the skill claimed coverage ("in every session
+// started after install") without the load-at-start caveat, so nothing told
+// anyone that pre-install sessions stay unguarded and must be restarted.
+// The pins are exact sentences a reworded text must keep. Matching runs on
+// whitespace-collapsed text so a prose line wrap never breaks a pin.
+const SKILL_PATH = join(homedir(), 'nix', 'catalyst', 'skills', 'catalyst-v2-multiplexer-agent-ops', 'SKILL.md');
+const COVERAGE_LIMIT_PINS = [
+  'in every session started after install',
+  'loads at session start only',
+  'restart every long-lived agent session',
+];
+
+export function skillCoverageRestartRule() {
+  let raw = '';
+  try {
+    raw = readFileSync(SKILL_PATH, 'utf8');
+  } catch {
+    return {
+      criterion: 'skill-coverage-restart-rule',
+      pass: false,
+      detail: `cannot read installed skill at ${SKILL_PATH}`,
+    };
+  }
+  const text = raw.replace(/\s+/g, ' ');
+  const missing = COVERAGE_LIMIT_PINS.filter((pin) => !text.includes(pin));
+  return {
+    criterion: 'skill-coverage-restart-rule',
+    pass: missing.length === 0,
+    detail: missing.length === 0
+      ? 'skill states the guard loads at session start only, pre-install sessions are uncovered, and long-lived sessions must be restarted after install/update'
+      : `skill text missing pins: ${missing.join('; ')}`,
   };
 }
 

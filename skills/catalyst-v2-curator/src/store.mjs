@@ -144,6 +144,41 @@ export function adopt(tree, slug, { desc, now = new Date() } = {}) {
 }
 
 /**
+ * Refresh a live entry's MEMORY.md index line from its content file's
+ * frontmatter description (or an explicit --desc override). The reconciliation
+ * verb for an index line that drifted from the entry's description: promote only
+ * creates, adopt refuses an existing row, reindex preserves the existing line,
+ * so a live entry's bare or stale index line has no other verb to fix it.
+ * Refuses a missing content file (promote is the creation verb), a slug with no
+ * ledger row (adopt rows a ledger-less file first), and an entry carrying
+ * neither a frontmatter description nor a --desc override. Content and the
+ * ledger are untouched; only the index line moves.
+ */
+export function redescribe(tree, slug, { desc } = {}) {
+  const paths = treePaths(tree);
+  if (!slug || slug.trim() === '') throw new Error('redescribe: a slug is required');
+  const file = `${slug}.md`;
+  const live = join(paths.root, file);
+  if (!existsSync(live)) throw new Error(`redescribe: no content file "${file}" in the tree`);
+  const ledger = readLedger(tree);
+  if (!Object.prototype.hasOwnProperty.call(ledger.entries, slug)) {
+    throw new Error(`redescribe: "${slug}" has no ledger row; adopt it first`);
+  }
+  let line;
+  if (desc != null && String(desc).trim() !== '') {
+    line = desc.trim();
+  } else {
+    const { meta } = splitFrontmatter(readFileSync(live, 'utf8'));
+    line = (meta.description ?? '').trim();
+    if (line === '') {
+      throw new Error(`redescribe: "${slug}" has no frontmatter description and no --desc given`);
+    }
+  }
+  upsertIndexLine(tree, file, line);
+  return { slug, desc: line };
+}
+
+/**
  * The decay sweep. Every non-pinned entry drops by one (floored at zero); every
  * slug named relevant resets to full strength with a fresh last_relevant. Pinned
  * entries are never touched.

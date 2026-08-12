@@ -1,0 +1,48 @@
+{
+  "run_id": "2026-08-11T12-55-02",
+  "timestamp": "2026-08-11T12:55:02.731Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 42573,
+  "criteria": [
+    {
+      "id": "matrix-passes",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "10 tests, 10 pass, 0 fail"
+    },
+    {
+      "id": "live-load-probe",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "installed factory reproduces the decision matrix with the pinned refusals"
+    },
+    {
+      "id": "guard-fires-in-session",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "both pinned BLOCKED refusals present in the transcript (foreground herdr agent wait; hub wait without name)"
+    },
+    {
+      "id": "skill-coverage-restart-rule",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "skill states the guard loads at session start only, pre-install sessions are uncovered, and long-lived sessions must be restarted after install/update"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": null,
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-11T12-55-02-log.md"
+}

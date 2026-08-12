@@ -1,0 +1,6 @@
+{
+  "criterion": "skill-coverage-restart-rule",
+  "pass": true,
+  "detail": "skill states the guard loads at session start only, pre-install sessions are uncovered, and long-lived sessions must be restarted after install/update"
+}
+GREEN_EXPECTED_PASS=true

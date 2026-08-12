@@ -1,0 +1,13 @@
+✔ redescribe refreshes a live entry index line from its frontmatter description (2.411836ms)
+✔ redescribe honours an explicit --desc override over the frontmatter (0.778018ms)
+✔ redescribe refuses a slug with no ledger row (adopt is the row verb) (0.887431ms)
+✔ redescribe refuses an entry whose content file has no frontmatter description (0.625782ms)
+✔ redescribe refuses a missing content file (0.472067ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.473852

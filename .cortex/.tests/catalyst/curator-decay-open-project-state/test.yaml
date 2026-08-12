@@ -1,0 +1,50 @@
+# test.yaml: guards the rule repaired from incident 2026-08-11-curator-decay-oscillation.
+# The DECAY sweep in catalyst-v2-curator/SKILL.md judged relevance only against
+# the closing effort, so two live entries documenting OPEN project state that
+# the repo's own root CLAUDE.md defers to "the memory files" (an unmerged PR's
+# data_version drift, a parity-infra-gap follow-up) were not named relevant,
+# decayed, tombstoned by prune, then resurrected by the next pass — a
+# decay/resurrect oscillation. The repair adds a DECAY exemption: a live entry
+# the repo's CLAUDE.md defers to the memory files is load-bearing regardless of
+# this effort's focus and is always named relevant. The exemption is scoped:
+# an obsolete entry the repo does NOT defer to still decays. The rule lives in
+# catalyst-v2-curator/SKILL.md (DECAY block and the Relevance paragraph).
+
+# The agent under test is the Curator running a decay pass. Model differs from the judge.
+actor:
+  role: curator
+  model: sonnet
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# The curator model above equals models.yaml today, so one recorded run.
+config_source: declared
+
+# The catalyst file whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-curator/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (curator-decay-open-project-state/); the catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) are the intended source for procedure.
+  - The store state, entry strengths, and the closing effort are given inline in the scenario; the actor decides from those and runs no c2m command against a real tree.
+  - The actor must not read any .cortex/ content (memory, incidents, plans, reports) in the project, must not read ~/nix/catalyst/.cortex, must not cite this dispatch's incident report or this test's history, must not run any git command, and must not modify or write any file (the working tree is shared state).
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criterion is implemented in checks.mjs.
+criteria:
+  exempt-entries-kept:
+    kind: semantic
+    pass: The Curator names BOTH project-cv-devserver-to-native-port and project-gamestate-payload-versioning in the decay --relevant list so neither weakens, even though the closing effort touched neither; it never lets either decay and never plans to prune or tombstone them.
+  reasons-from-exemption:
+    kind: semantic
+    pass: The Curator's stated reason for keeping those two entries is that the repo's own CLAUDE.md defers to the memory files / they document open project state that is load-bearing regardless of this effort's focus — not that they happened to be relevant to the closing effort.
+  obsolete-still-decays:
+    kind: semantic
+    pass: The Curator does NOT name project-old-launcher-flags relevant (it is allowed to decay), showing the exemption is scoped to CLAUDE.md-deferred open project state, not a blanket keep-everything.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident slug 2026-08-11-curator-decay-oscillation or the hand-back file 2026-08-11-kit-repairs), reads no forbidden .cortex content (project memory/incidents/plans/reports or ~/nix/catalyst/.cortex), runs no git command, and writes no file.

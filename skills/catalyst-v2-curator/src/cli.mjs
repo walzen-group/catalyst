@@ -6,7 +6,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { defaultModelsPath, curatorModel } from './models.mjs';
-import { initTree, promote, merge, adopt, decay, prune, resurrect, pin, unpin, reindex } from './store.mjs';
+import { initTree, promote, merge, adopt, redescribe, decay, prune, resurrect, pin, unpin, reindex } from './store.mjs';
 import { note, inboxList, inboxDone } from './inbox.mjs';
 import { buildCurateDispatch, buildSummonDispatch, runC2dDispatch } from './dispatch.mjs';
 import { buildHousekeepingReport } from './housekeeping.mjs';
@@ -21,6 +21,7 @@ Usage:
   c2m promote <slug> --desc "<line>" [--from-inbox <id>] --tree <p>   (else content on stdin)
   c2m merge <target-slug> [--from-inbox <id>] --tree <p>   (else content on stdin)
   c2m adopt <slug> [--desc "<line>"] --tree <p>   (row a ledger-less content file)
+  c2m redescribe <slug> [--desc "<line>"] --tree <p>   (refresh a live entry's index line from its frontmatter description)
   c2m decay [--relevant <slug,slug,...>] --tree <p>
   c2m prune --tree <p>
   c2m resurrect <slug> --tree <p>
@@ -234,6 +235,15 @@ const HANDLERS = {
     const slug = parsed.positional[0];
     if (!slug) return failed(io.out, 'adopt: a <slug> is required');
     return ok(io.out, adopt(tree, slug, { desc: parsed.flags.desc, now: io.now ?? new Date() }));
+  },
+  redescribe: async (rest, io) => {
+    const parsed = parse(rest, ['tree', 'desc']);
+    if (parsed.error) return failed(io.out, parsed.error);
+    const tree = requireTree(parsed.flags, io.out);
+    if (tree === null) return 1;
+    const slug = parsed.positional[0];
+    if (!slug) return failed(io.out, 'redescribe: a <slug> is required');
+    return ok(io.out, redescribe(tree, slug, { desc: parsed.flags.desc }));
   },
   decay: async (rest, io) => {
     const parsed = parse(rest, ['tree', 'relevant']);

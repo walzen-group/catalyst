@@ -124,7 +124,13 @@ blocked on one agent while the others go unwatched. Enforcement is mechanical:
 the `foreground-wait-guard` omp extension
 (`~/.omp/agent/extensions/foreground-wait-guard/`) blocks foreground `herdr
 agent wait` bash calls (`async: true` required) and `hub wait` calls without a
-process name, in every session started after install. There is exactly one wait
+process name, in every session started after install. The guard loads at
+session start only: a session started before the install or update is not
+covered and keeps running unguarded until restarted, and the session that
+already violated the ban is the one most likely to be in that state. After
+installing or updating the guard, restart every long-lived agent session
+(omp resumes the session context) before further orchestration, and confirm
+the guard in a fresh session. There is exactly one wait
 mechanism: a background job your own harness owns, a backgrounded `herdr agent
 wait` or an in-harness background subagent. A tool-reported wake is a command you
 still have to run. A launch list is never a wait mechanism: a dispatched wave

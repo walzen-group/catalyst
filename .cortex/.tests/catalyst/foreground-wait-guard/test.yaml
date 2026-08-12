@@ -61,6 +61,9 @@ criteria:
   guard-fires-in-session:
     kind: deterministic
     pass: The actor's transcript shows both pinned BLOCKED refusals (foreground `herdr agent wait`; `hub wait` without a `name`) from live tool calls, so the guard fires through the real harness event path.
+  skill-coverage-restart-rule:
+    kind: deterministic
+    pass: The installed catalyst-v2-multiplexer-agent-ops SKILL.md states the guard's coverage limit and the restart mandate that close the 2026-08-11 recurrence: the guard loads at session start only, a session started before install is not covered, and long-lived sessions must be restarted after installing or updating the guard. Pins: "in every session started after install", "loads at session start only", "restart every long-lived agent session".
   no-contamination:
     kind: deterministic
     pass: The actor cites none of the dispatch materials (the incident report, the fix dispatch, the test's own history) as a source; other cortex content is allowed.

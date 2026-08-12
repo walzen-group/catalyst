@@ -1,0 +1,36 @@
+{
+  "run_id": "2026-08-11T10-55-35",
+  "timestamp": "2026-08-11T10:55:35.584Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "sonnet",
+    "actor_runtime": "claude-code",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 74937,
+  "criteria": [
+    {
+      "id": "reaches-for-redescribe",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Names the c2m redescribe verb and gives the exact command form `c2m redescribe project-gamestate-payload-versioning --tree <p>`, stating it refreshes the index line from frontmatter while leaving content file and ledger row untouched."
+    },
+    {
+      "id": "rejects-wrong-verbs",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Rejects promote as the creation verb that would overwrite content/ledger, adopt because it refuses an entry that already has a ledger row, and reindex because it cannot refresh the bare/stale index line; never proposes hand-editing MEMORY.md."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited, no git output, no forbidden .cortex reads, no file writes"
+    }
+  ],
+  "judge_reasoning": "Actor correctly reached for `c2m redescribe` with the exact command and the frontmatter-pull rationale, and cleanly rejected all three wrong verbs with defensible reasons while never proposing a manual MEMORY.md edit. Both criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-11T10-55-35-log.md"
+}

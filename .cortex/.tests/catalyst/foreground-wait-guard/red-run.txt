@@ -1,0 +1,6 @@
+{
+  "criterion": "skill-coverage-restart-rule",
+  "pass": false,
+  "detail": "skill text missing pins: loads at session start only; restart every long-lived agent session"
+}
+RED_EXPECTED_FAIL=true
