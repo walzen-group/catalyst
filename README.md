@@ -110,3 +110,14 @@ resolve catalyst material (skills, `.cortex`, `c2d`, `c2m`) through
 
 Start with `skills/catalyst-v2/SKILL.md`; it routes to the right skill for the task at
 hand, and its table lists every catalyst-v2 skill with the situation it covers.
+
+## Getting started
+
+How do I use it?
+Catalyst is still heavily in testing, as such a lot of debug tools are still there. It is also meant to be self-improving, so it needs a certain amount of agency to modify itself.
+
+I would recommend to clone the repository and keep it, as the .cortex memory will fill up on its own with more incidents.
+
+Ask it to modify the models.yaml to your liking from either claude code or oh-my-pi.
+After that, ask your agent to use catalyst and it will automatically bootstrap itself.
+If you want to try quickchat mode (say sth like "launch catalyst in quickchat")
