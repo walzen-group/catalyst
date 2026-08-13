@@ -122,16 +122,16 @@
     // everywhere; committed in the catalyst repo, so it exists on every host exporting CATALYST_REPO.
     "source=${localEnv:CATALYST_REPO}/.cortex,target=/home/vscode/nix/catalyst/.cortex,type=bind",
     // keybindings.json stays a plain file in the ~/.claude volume: editable and
-    // persistent. A read-only bind used to serve it, but settings/claude-glaive is
+    // persistent. A read-only bind used to serve it, but the claude config dir is
     // gitignored (source existed only on the writing machine), and Docker creates a
     // missing bind source as a directory, so other hosts got a root-owned empty DIR
     // at ~/.claude/keybindings.json, which Claude could not write into.
     // output-styles (e.g. humanizer): repo-owned, read-only, bound like skills above;
     // otherwise the shared volume has no output-styles dir and the style is missing.
-    "source=${localEnv:NIX_REPO}/settings/claude-glaive/output-styles,target=/home/vscode/.claude/output-styles,type=bind,readonly",
+    "source=${localEnv:NIX_REPO}/modules/home/settings/data/claude-glaive/output-styles,target=/home/vscode/.claude/output-styles,type=bind,readonly",
     // ccstatusline config; the statusLine command is seeded into settings.json by
     // post-create.sh (npx comes with the claude-code feature).
-    "source=${localEnv:NIX_REPO}/settings/ccstatusline/settings.json,target=/home/vscode/.config/ccstatusline/settings.json,type=bind,readonly",
+    "source=${localEnv:NIX_REPO}/modules/home/settings/data/ccstatusline/settings.json,target=/home/vscode/.config/ccstatusline/settings.json,type=bind,readonly",
     // The template dir itself, at a fixed in-container path so post-create.sh and
     // omp-sync.sh do not depend on workspace-relative .devcontainer/; lets a project
     // symlink to this canonical dir rather than copy, so nix-darwin edits propagate on
