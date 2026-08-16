@@ -77,10 +77,9 @@ Reports follow humanizer and i-have-adhd (`catalyst-v2`: user-facing writing).
    the incident record covers it.
 5. Record under Fix and Verification.
 
-**An incident and its repair are ONE dispatch.** Handing edits back for a
-separate cycle leaves contradicting instruction text live for the next agent.
-Report-only holds when the user explicitly scopes it. Report-only incidents
-produce no test.
+**An incident and its repair are ONE dispatch.** c2d preflight refuses a
+repair dispatch that names no existing incident. Report-only holds
+when the user explicitly scopes it. Report-only incidents produce no test.
 
 ## Verifying an incident-driven repair
 

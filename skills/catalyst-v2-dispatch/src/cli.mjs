@@ -9,6 +9,7 @@ import { fetchRoster } from './herdr.mjs';
 import { runDispatch as runDispatchPlan } from './dispatch.mjs';
 import { steerAgent } from './steer.mjs';
 import { readStatus } from './status.mjs';
+import { formatHandback, validateHandback } from './handback.mjs';
 
 const USAGE = `c2d — deterministic herdr launch wrapper
 
@@ -17,6 +18,8 @@ Usage:
   c2d steer --agent <name> --text <string>
                              [--expect <keyword>] [--wake-timeout <ms>]
   c2d steer --agent <name> --file <.cortex path>
+                             [--expect <keyword>] [--wake-timeout <ms>]
+  c2d handback --agent <name> --file <.cortex path>
                              [--expect <keyword>] [--wake-timeout <ms>]
   c2d status [--dispatch-id <id> | --agents <a,b,...>]
                               [--shared-checkout <path>]
@@ -36,6 +39,11 @@ steer     re-prompt one running agent. Reads before it sends, returns a
           pending question instead of answering it, refuses a composer holding
           text it cannot attribute to its own delivery ledger, and arms a settle
           wake so the re-prompted agent is never left unwatched.
+handback  validate a structured meta hand-back (files_changed, diffs_per_worker,
+          gate_evidence, whole_change_output, deliverable_paths) read from a
+          .cortex JSON --file, then deliver it through the steer path. Each
+          required field is refused by name when missing or empty; gate_evidence
+          must reference an existing artifact.
   status    classify a roster's health: healthy, UNWATCHED, UNBRIEFED META,
           META QUIESCENT, or META RETIRED EARLY. Detection only.
 
@@ -252,6 +260,53 @@ function runSteer(args, io) {
   return document.status === 'ok' || document.status === 'skipped' ? 0 : 1;
 }
 
+function runHandback(args, io) {
+  const { out } = io;
+  const parsed = parseFlags(args, ['agent', 'file', 'expect', 'wake-timeout']);
+  if (parsed.help) { out.write(USAGE); return 0; }
+  if (parsed.error) return failed(out, [parsed.error]);
+  const flags = parsed.value;
+  if (!flags.agent) return failed(out, ['handback: --agent <name> is required']);
+  if (flags.file === undefined) return failed(out, ['handback: --file <.cortex path> is required']);
+
+  const gate = requireCortexDoc(flags.file);
+  if (!gate.ok) return failed(out, [`handback: --file: ${gate.reason}`]);
+
+  let raw;
+  try {
+    raw = JSON.parse(readFileSync(flags.file, 'utf8'));
+  } catch (error) {
+    return failed(out, [`handback: --file: strict JSON parse error: ${error.message}`]);
+  }
+
+  const validated = validateHandback(raw);
+  if (!validated.ok) return failed(out, validated.errors);
+
+  // On a valid payload, deliver through the steer path: composer-hold refusal,
+  // attribution, and consumption checks all still apply. The A2A: attribution
+  // rides in the formatted text.
+  const text = formatHandback(validated.value);
+
+  let wakeTimeoutMs;
+  if (flags['wake-timeout'] !== undefined) {
+    wakeTimeoutMs = Number(flags['wake-timeout']);
+    if (!Number.isFinite(wakeTimeoutMs) || wakeTimeoutMs <= 0) {
+      return failed(out, ['handback: --wake-timeout must be a positive number of milliseconds']);
+    }
+  }
+
+  const document = steerAgent({
+    agent: flags.agent,
+    text,
+    expect: flags.expect ?? null,
+    ...(wakeTimeoutMs !== undefined ? { wakeTimeoutMs } : {}),
+    env: io.env ?? process.env,
+    ...(io.options ? { options: io.options } : {}),
+  });
+  emit(out, document);
+  return document.status === 'ok' || document.status === 'skipped' ? 0 : 1;
+}
+
 function runStatus(args, io) {
   const { out } = io;
   const parsed = parseFlags(args, ['dispatch-id', 'agents', 'shared-checkout']);
@@ -296,6 +351,8 @@ export async function main(argv, io = {}) {
         return await runDispatch(rest, resolved);
       case 'steer':
         return runSteer(rest, resolved);
+      case 'handback':
+        return runHandback(rest, resolved);
       case 'status':
         return runStatus(rest, resolved);
       default:

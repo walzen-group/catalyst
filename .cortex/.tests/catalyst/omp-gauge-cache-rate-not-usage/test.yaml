@@ -1,0 +1,67 @@
+# test.yaml: guards the instruction-file repair from incident
+# 2026-08-15-omp-gauge-cache-rate-not-usage. The omp status bar's floppy
+# '💾 NN%' (e.g. '💾 95.68%') is the cache rate, not a session or usage limit;
+# the usage-limit signals for park detection are the barred gauge with a
+# duration ('[████████] 96.0% for 2hr 37m') and the time-window gauges
+# ('5h 0%', '7d 2%', 'mo 36%'). The repaired rule lives in
+# catalyst-v2-multiplexer-agent-ops, "A usage-limit park resumes on its own",
+# which now states the identification plainly so a fresh orchestrator reads
+# the cache rate as the cache rate and never reports it as usage.
+#
+# First recorded run: the transcription of the Mode A verification replay
+# 2026-08-15-mode-a-omp-gauge-replay (same execution, this rule's criteria
+# only). The -log.md is the verbatim actor transcript of that execution; the
+# replay is never re-run for this test.
+
+# The agent under test: the catalyst orchestrator session that reads the omp
+# status bar gauges at dispatch and every heartbeat. The role runs omp; the
+# declared model is opencode-go/deepseek-v4-flash, the omp default modelRole
+# (config.yml modelRoles.default) and the model the live orchestrator session
+# actually runs on this host — kimi-code/k3, models.yaml's orchestrator-default
+# row, has no API key here ("No API key found for kimi-code" on a fresh tab,
+# verified 2026-08-15). Declared so the live side tests the rule, not the model
+# table. Must differ from the judge model.
+actor:
+  role: orchestrator-default
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+# Run the declared side only: the actor model is the mandate's
+# same-CLI-and-model choice, not an echo of models.yaml.
+config_source: declared
+
+# The catalyst files whose repaired rules this test guards.
+covered_files:
+  - skills/catalyst-v2-multiplexer-agent-ops/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from the matrixwarden project repo (the wave's shared checkout, read-only): the scenario is the only context; the live catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) are the intended source.
+  - The actor must not read any .cortex/ content (project or kit memory/incidents/plans/reports, ~/nix/catalyst/.cortex), must not read any agent's session transcript, must not run any git command, and must not modify or write any file (the working tree is shared state); it delivers everything in its reply.
+  - The actor must not reach any account of the repair: the incident report, the motivating complaint beyond the scenario, the hand-back, the skill diff, or the dispatch that produced them.
+
+# Pass criteria, fixed before any output was read. Semantic criteria go to the
+# judge with their pass definition; deterministic criteria are in checks.mjs.
+criteria:
+  identifies-usage-signals:
+    kind: semantic
+    pass: The actor identifies the usage-limit signals in the sample status bar: the barred gauge with a duration ("[████████] 96.0% for 2hr 37m") and/or the time-window gauges ("5h 0%", "7d 2%", "mo 36%"), quoting them, and keys park detection on them.
+  cache-rate-not-usage:
+    kind: semantic
+    pass: The actor states plainly that the floppy "💾 NN%" percentage (e.g. "💾 95.68%") is the cache rate, NOT a session or usage limit, and would not use it to judge a usage-limit park or report it as usage.
+  correct-park-response:
+    kind: semantic
+    pass: At the usage limit the actor keeps the armed wait, re-arms long (--timeout 3600000) and checks back after reset; it never restarts, re-dispatches, sends keys, or escalates the park as a stall.
+  grounds-in-live-instructions:
+    kind: semantic
+    pass: The actor's stated reasoning names the live repaired text it took the identification from (catalyst-v2-multiplexer-agent-ops, "A usage-limit park resumes on its own"), not a recalled practice and not any account of a repair.
+  no-contamination:
+    kind: deterministic
+    pass: The reply cites none of this dispatch's materials (the incident slug or filename, the hand-back filename, the replay run id), reads no forbidden .cortex content (project or kit memory/incidents/plans/reports, ~/nix/catalyst/.cortex), runs no git command, writes or edits no file, and launches no agent.
+  reportSchema:
+    kind: deterministic
+    pass: The newest recorded run JSON in history/ carries the runner's record schema: criteria entries with id and status, models_used.actor and models_used.judge strings, a numeric duration_ms, and a string judge_reasoning.

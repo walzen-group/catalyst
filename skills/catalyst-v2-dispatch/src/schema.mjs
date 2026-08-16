@@ -24,6 +24,7 @@ const AGENT_KEYS = new Set([
   'style_file',
   'user_triggered',
   'user_directive',
+  'incident_path',
 ]);
 const BRIEF_KEYS = new Set(['mode', 'spec_path', 'text']);
 
@@ -38,8 +39,10 @@ const ON_FAILURE = ['abort', 'continue'];
 const MANDATE_MODES = ['injected', 'caller_owned'];
 // A worker needs a meta present (preflight enforces it); a unit is exempt. A
 // curator is its own kind for the memory-curation loop: exempt from the meta
-// gate and held to a single-writer rule (both in preflight).
-const AGENT_KINDS = ['worker', 'unit', 'curator'];
+// gate and held to a single-writer rule (both in preflight). A repair is
+// worker-like for the meta gate and must name an existing incident report
+// (incident_path, enforced in preflight).
+const AGENT_KINDS = ['worker', 'unit', 'curator', 'repair'];
 
 const isObject = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
 // `null` is the design doc's own way of spelling "this agent has no effort /
@@ -189,12 +192,20 @@ function validateAgent(agent, index, errors) {
     styleFile = requireString(agent, 'style_file', path, errors);
   }
 
+  // Shape only: incident_path, if present, is a non-empty string. Its existence
+  // and .cortex/incidents/ location are filesystem rules, enforced in preflight.
+  let incidentPath;
+  if (!isAbsent(agent.incident_path)) {
+    incidentPath = requireString(agent, 'incident_path', path, errors);
+  }
+
   const brief = validateBrief(agent.brief, path, errors);
 
   const out = { name, cwd, cli, model, kind, brief, focus, user_triggered: userTriggered, user_directive: userDirective };
   if (hasEffort) out.effort = effort;
   if (hasThinking) out.thinking = thinking;
   if (styleFile) out.style_file = styleFile;
+  if (incidentPath) out.incident_path = incidentPath;
   return out;
 }
 

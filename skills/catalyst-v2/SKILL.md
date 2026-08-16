@@ -30,7 +30,7 @@ bootstrap prevents.
 | Handing over monitoring; worker settled; agent misbehaved | `catalyst-v2-running-a-meta-agent` |
 | Filing or documenting a failure | `catalyst-v2-filing-incidents` |
 | Authoring or running an incident-driven integration test for the catalyst system itself (guarding tests, Mode A/B replays) | `catalyst-v2-self-testing` |
-| Fixing a behavior or bug; verifying a fix's recorded red run | `catalyst-v2-sdd-rules` |
+| Implementing a change to observable behavior with a checkable outcome; verifying a fix's recorded red run | `catalyst-v2-sdd-rules` |
 | A decision or correction worth keeping | `catalyst-v2-in-repo-agent-memory` |
 | User asks for a cheap chat layer | `catalyst-v2-quickchat` (opt-in at session start) |
 
@@ -54,6 +54,15 @@ named file is the one outcome the request ruled out, and doing that instead of
 the thing asked for inverts the instruction. This binds hardest on files the
 user shares with their own machine, a host config or a system flake, where
 unrequested scope lands in their environment instead of a work branch.
+
+A gate you cannot deterministically satisfy is a question to the user. When a
+required check (a test-first red run, a hand-back's gate evidence, a tool
+refusal) cannot be met by the normal path, you name what you cannot satisfy and
+why, then ask the user to confirm the exception. A confirmed exception is
+recorded so the skip is auditable; an unconfirmed one is a hold. The default is
+to satisfy the gate; escalation is the only exit. This generalizes the
+`steer.mjs` refusal-escalation philosophy, where the exit from a refusal is
+escalation.
 
 A go-ahead that enumerates activities authorizes exactly those activities.
 When the user answers an offered sequence by naming the parts they want ("yes,

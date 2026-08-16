@@ -114,18 +114,22 @@ delivery evidence through `c2d`/herdr; the failure alone proves nothing.
 
 Once every worker is done:
 
-1. Confirm each worker's reported gate output is real.
-2. Run the end-to-end whole-change check in pinned toolchains, including reading
-   the diff against each task's spec. Do not re-run
-   each worker's own gates.
-3. Deliver the hand-back via `c2d steer --agent <orchestrator>
-   --text "<hand-back>"`, then retire. Content: files changed, user-facing
-   deliverable paths (each report the user is meant to read, stated so the
-   orchestrator can point the user at it), diff per worker,
-   gate output, whole-change output, misbehavior/repairs, unresolved holds, what
-   remains open. Follows humanizer and i-have-adhd (`catalyst-v2`). Hand-back
-   goes on `--text`, never raw `herdr agent send-keys` (incident
-   `2026-08-01-omp-delivery-raw-paste.md`). `steer --file` is only for
+1. **Read each worker's recorded gate evidence through herdr**: the
+   transcript, the gate output, the diff showing the test ran and was not
+   skipped. The record is the confirmation; the gate is not re-run (step 2).
+2. Run the end-to-end whole-change check in pinned toolchains, including
+   reading the diff against each task's spec. Do not re-run each worker's
+   own gates.
+3. **Deliver the structured hand-back via `c2d handback`, then retire.**
+   Write the payload to `.cortex/reports/handbacks/<cycle>.json`, then run
+   `c2d handback --agent <orchestrator> --file <that path>`. Required
+   fields, each refused by name when missing or empty: `files_changed`,
+   `diffs_per_worker`, `gate_evidence` (the worker's recorded run, must
+   resolve to an existing artifact), `whole_change_output` (repairs, holds,
+   and open items), `deliverable_paths` (the reports the user should read,
+   empty list valid). Follows humanizer and i-have-adhd (`catalyst-v2`).
+   Delivery never goes through raw `herdr agent send-keys` (incident
+   `2026-08-01-omp-delivery-raw-paste.md`); `c2d steer --file` is only for
    preplanned cortex spec docs.
 
    Steer traffic is agent-to-agent. Every steer you send, the hand-back
@@ -133,20 +137,22 @@ Once every worker is done:
    to the user over the user channel carries `A2U:`. An unmarked
    user-channel message is user input by default, never an agent relay
    (`catalyst-v2-multiplexer-agent-ops`).
-4. **Fallback only.** If steer delivery fails (tool error, orchestrator tab
-   gone), write the hand-back to `.cortex/reports/handbacks/<cycle>.md` so the
-   orchestrator can retrieve it on its next wake. This file is a last resort,
-   never the primary channel.
+4. **Fallback only.** If `c2d handback` delivery fails (tool error,
+   orchestrator tab gone), the payload file at
+   `.cortex/reports/handbacks/<cycle>.json` stays for the orchestrator to
+   retrieve on its next wake. This file is a last resort, never the primary
+   channel.
 5. **A held hand-back is a hold, not a failure to work around.** The
    orchestrator's omp session is the user's own input surface; when the user
-   is typing, steer refuses the delivery with the live draft as specimen
-   (incident `2026-08-03-steer-composer-interference.md`). On a refusal:
-   quarantine the hand-back to `.cortex/reports/handbacks/<cycle>.md`
-   immediately, then re-steer on a short backoff; the steer lands once the
-   user submits and the composer is quiet. Never push the hand-back through
-   another channel into the composer (raw `herdr agent send-keys`/paste stays
-   banned). If the composer stays held, retire with the hold and the file
-   path named in your report, and re-deliver on the next wake.
+   is typing, `c2d handback` refuses the delivery with the live draft as
+   specimen (incident `2026-08-03-steer-composer-interference.md`). On a
+   refusal: the payload file at `.cortex/reports/handbacks/<cycle>.json` is
+   already the quarantine; re-run `c2d handback` on a short backoff. The
+   delivery lands once the user submits and the composer is quiet. Never
+   push the hand-back through another channel into the composer (raw `herdr
+   agent send-keys`/paste stays banned). If the composer stays held, retire
+   with the hold and the file path named in your report, and re-deliver on
+   the next wake.
 
 **Verification is this role's duty, done in code.** The steps above confirm
 gate output and run the whole-change check; the hand-back reports what ran and

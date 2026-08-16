@@ -60,6 +60,7 @@ catalyst-v2-self-testing skill; every live launch goes through the c2d CLI.
 | foreground-wait-guard | the foreground-wait-guard omp extension keeps banning foreground agent-settle waits at the tool boundary: bash `herdr agent wait` without async: true is refused, `hub wait` without a `name` (bare, ids-, from-narrowed) is refused, while async: true waits and named process-readiness waits pass — mechanical enforcement of the multiplexer-agent-ops banned wait shapes (deterministic test: decision matrix + live-load probe + in-session refusals; no Mode A intent simulation, the rule is mechanical) | 2026-08-09-foreground-blocking-wait | 5/5 pass (2026-08-11, 2026-08-11T12-55-02) |
 | curator-decay-open-project-state |  |  | 4/4 pass (2026-08-11, 2026-08-11T10-55-33) |
 | c2m-redescribe-live-index-line |  |  | 3/3 pass (2026-08-11, 2026-08-11T10-55-35) |
+| omp-gauge-cache-rate-not-usage | the omp status bar's floppy '💾 NN%' (e.g. '💾 95.68%') is the cache rate, NOT a session or usage limit; park detection keys on the barred gauge with a duration ('[████████] 96.0% for 2hr 37m') and the time-window gauges ('5h 0%', '7d 2%', 'mo 36%'), never on the floppy percentage (catalyst-v2-multiplexer-agent-ops, "A usage-limit park resumes on its own") | 2026-08-15-omp-gauge-cache-rate-not-usage | 6/6 pass (2026-08-15, 2026-08-15-mode-a-omp-gauge-replay) |
 
 ## Keeping the index current
 

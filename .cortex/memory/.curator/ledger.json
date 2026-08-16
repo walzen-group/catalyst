@@ -1,4 +1,11 @@
 {
   "version": 1,
-  "entries": {}
+  "entries": {
+    "nix-develop-c-quoted-command-gotcha": {
+      "strength": 2,
+      "pin": false,
+      "created": "2026-08-16T08:40:52.035Z",
+      "last_relevant": "2026-08-16T08:40:52.035Z"
+    }
+  }
 }

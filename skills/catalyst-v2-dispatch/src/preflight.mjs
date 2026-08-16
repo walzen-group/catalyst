@@ -68,6 +68,18 @@ export function isCortexPath(path) {
 }
 
 /**
+ * Whether a path sits inside a `.cortex/incidents/` tree: a `.cortex` segment
+ * immediately followed by an `incidents` segment. A repair dispatch's incident
+ * reference must point here, and nowhere else under `.cortex/` (a plan or a
+ * report doc is not an incident record).
+ */
+export function isIncidentPath(path) {
+  const segments = String(path ?? '').split(/[\\/]+/);
+  const index = segments.indexOf('.cortex');
+  return index >= 0 && segments[index + 1] === 'incidents';
+}
+
+/**
  * A path that file mode will accept: under a `.cortex/` tree, present, a file.
  * @returns {{ok: true} | {ok: false, reason: string}}
  */
@@ -132,6 +144,26 @@ export function preflight(input, roster) {
       }
       if (!readable) {
         failures.push(`${path}style_file: "${agent.style_file}" does not exist or is not readable`);
+      }
+    }
+
+    // A repair dispatch must carry an incident: present, under a
+    // `.cortex/incidents/` tree, and an existing file. Worker-like otherwise (the
+    // meta gate below still applies, since a repair is not exempt). Same
+    // filesystem existence pattern as spec_path/style_file; one failure per fault.
+    if (agent.kind === 'repair') {
+      const incidentPath = agent.incident_path;
+      if (incidentPath === undefined || incidentPath === null || incidentPath === '') {
+        failures.push(`${path}incident_path: "${agent.name}" is a repair but names no incident; a repair dispatch must reference an incident report under a .cortex/incidents/ tree`);
+      } else if (!isIncidentPath(incidentPath)) {
+        failures.push(`${path}incident_path: "${incidentPath}" is not under a .cortex/incidents/ tree; a repair ("${agent.name}") must reference an incident report`);
+      } else {
+        const incidentStat = statOrNull(incidentPath);
+        if (incidentStat === null) {
+          failures.push(`${path}incident_path: "${incidentPath}" does not exist`);
+        } else if (!incidentStat.isFile()) {
+          failures.push(`${path}incident_path: "${incidentPath}" is not a file`);
+        }
       }
     }
 

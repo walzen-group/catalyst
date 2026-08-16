@@ -214,12 +214,14 @@ and verification, close settled tabs, complete the cycle's cleanup).
 
 | | |
 |---|---|
-| Detection | `[███████████████░] 96.0% for 2hr 37m`: output stopped at the limit. Reaching 100% with usage credits is not a park: the agent works through on paid spend |
+| Detection | `[███████████████░] 96.0% for 2hr 37m` (barred gauge with a duration) and the time-window gauges (`5h 0%`, `7d 2%`, `mo 36%`): output stopped at the limit. Reaching 100% with usage credits is not a park: the agent works through on paid spend |
 | Response | Keep the armed wait, re-arm long (`--timeout 3600000`) and check back after reset |
 | Never | Restart, re-dispatch, send keys, or escalate as a stall. A restart loses finished work and hits the same window |
 
-Read the gauge at dispatch and every heartbeat. A worker above 90% will park
-before the wave ends.
+The omp status bar's floppy `💾 NN%` (e.g. `💾 95.68%`) is the cache rate, NOT
+a session or usage limit: never read it as usage or key park detection on it.
+Read the usage gauges at dispatch and every heartbeat. A worker above 90% will
+park before the wave ends.
 
 ## Re-prompting a running agent
 

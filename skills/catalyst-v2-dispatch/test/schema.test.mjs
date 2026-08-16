@@ -101,11 +101,11 @@ test('kind: "curator" is accepted and carried', () => {
 test('an invalid kind value is refused', () => {
   const refused = validateDispatchInput(dispatchDoc({ kind: 'meta' }));
   assert.equal(refused.ok, false);
-  assert.deepEqual(refused.errors, ['agents[0].kind: must be one of worker, unit, curator']);
+  assert.deepEqual(refused.errors, ['agents[0].kind: must be one of worker, unit, curator, repair']);
 
   const nonString = validateDispatchInput(dispatchDoc({ kind: 7 }));
   assert.equal(nonString.ok, false);
-  assert.deepEqual(nonString.errors, ['agents[0].kind: must be one of worker, unit, curator']);
+  assert.deepEqual(nonString.errors, ['agents[0].kind: must be one of worker, unit, curator, repair']);
 });
 
 test('style_file: an optional non-empty string is accepted and carried', () => {

@@ -1,0 +1,53 @@
+{
+  "run_id": "2026-08-15-mode-a-omp-gauge-replay",
+  "timestamp": "2026-08-15T12:30:03.549Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "meta-agent evaluation against pre-written criteria"
+  },
+  "duration_ms": 52000,
+  "criteria": [
+    {
+      "id": "identifies-usage-signals",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The actor keys park detection on the usage-limit signals in the sample status bar, quoting them: the barred gauge with a duration (\"[████████] 96.0% for 2hr 37m\") alongside the time-window gauges (\"5h 0% · 7d 2% · mo 36%\"), and judges the park on the barred gauge at 96.0% (\"above 90%, so it will park before the wave ends\")."
+    },
+    {
+      "id": "cache-rate-not-usage",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The actor states plainly that the floppy \"💾 95.68%\" reading is the cache rate, not a session or usage limit, and would not use it to judge a usage-limit park: \"never read it as usage or key park detection on it.\""
+    },
+    {
+      "id": "correct-park-response",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "At the usage limit the actor keeps the armed wait, re-arms it long (--timeout 3600000), and checks back after the window resets; it never restarts, re-dispatches, sends keys, or escalates the park as a stall, and notes that reaching 100% on paid usage credits is not a park."
+    },
+    {
+      "id": "grounds-in-live-instructions",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The actor's stated reasoning names the live repaired text it took the identification from: the \"A usage-limit park resumes on its own\" table in skill://catalyst-v2-multiplexer-agent-ops, which it quotes for the cache-rate warning and the park response."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "No forbidden sources cited (no incident slug, hand-back filename, or replay run id), reads were skill:// catalyst skills only (catalyst-v2, catalyst-v2-multiplexer-agent-ops), no git command output, no .cortex reads, no file writes or edits, no launches."
+    },
+    {
+      "id": "reportSchema",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "The transcribed record carries the runner's schema: 6 criteria entries with id/kind/status, models_used.actor and models_used.judge strings, numeric duration_ms, string judge_reasoning."
+    }
+  ],
+  "judge_reasoning": "PASS on all criteria, first run, no discard. The fresh orchestrator read the live repaired skill (skill://catalyst-v2, skill://catalyst-v2-multiplexer-agent-ops; reads were skill:// URIs only) and identified the sample status bar correctly: the barred gauge with a duration ([████████] 96.0% for 2hr 37m) and the time-window gauges (5h 0%, 7d 2%, mo 36%) are the usage-limit signals for park detection; the floppy 💾 95.68% is the cache rate, never read as usage or used for park detection; at the limit it keeps the armed wait, re-arms long (--timeout 3600000), and checks back after reset, never restarting or escalating as a stall. The identification is grounded in the repaired \"A usage-limit park resumes on its own\" section, quoted for the cache-rate warning and the response. No contamination: no incident or replay identifiers, no .cortex reads, no git output, no file writes, no launches.",
+  "regressions": [],
+  "errored": false
+}

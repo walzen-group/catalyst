@@ -133,11 +133,10 @@ files itself. Incident filing runs in one dispatch
 
 **A catalyst-system repair dispatch carries its incident in the same
 dispatch.** When a failure's root cause sits in an instruction file or tool
-code and the repair is dispatched (a Curator-found gap, a meta-agent's
-diagnosis, a routed complaint), the wave includes the incident record: the
-repair meta-agent files it as part of its cycle, or a filing meta-agent is
-dispatched alongside. A repair dispatched alone, with the incident filed later
-on a user prompt, is the failure recurring
+code, dispatch the repair as a `repair` kind: c2d preflight refuses it
+without an `incident_path` to an existing incident report. A repair
+dispatched alone, the incident filed later on a user prompt, is the failure
+recurring
 (`catalyst-v2-filing-incidents`; incident
 `.cortex/incidents/2026-08-05-repair-dispatched-without-incident.md`).
 

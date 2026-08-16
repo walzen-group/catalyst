@@ -148,10 +148,8 @@ delivery; brief authors still name the task-specific skills for the work.
   to green. The failing run is the source of truth, and its record is part of
   the delegate's report. Point at `catalyst-v2-sdd-rules` for the procedure.
 - **A spec for a catalyst instruction or tool repair carries its incident.**
-  The failure it repairs is fileable when the root cause sits in the
-  instruction file (`catalyst-v2-filing-incidents`); the spec names the
-  incident path in the kit tree and requires the filing in the same dispatch
-  as the repair. An incident filed separately, on a user prompt, is the
-  failure recurring.
+  The spec names the incident path in the kit tree as `incident_path`, which
+  c2d preflight requires to exist at dispatch
+  (`catalyst-v2-filing-incidents`).
 - **Every spec carries the user-facing style rule.** A delegate never reads the
   bootstrap: embed the i-have-adhd convention pointer (`catalyst-v2`).

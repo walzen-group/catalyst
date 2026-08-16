@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-sdd-rules
-description: "Use when fixing a behavior or bug, before writing implementation code - the test-first procedure: test written first, failing run recorded, fix, green. Also use when a fix spec must carry the test-first steps, or when a fix's recorded red run is being checked"
+description: "Use when implementing any change to observable behavior with a checkable outcome, before writing implementation code - the test-first procedure: test written first, failing run recorded, fix, green. Also use when a fix spec must carry the test-first steps, or when a fix's recorded red run is being checked"
 ---
 
 # Test-first fixes (v2)
@@ -18,6 +18,10 @@ implement the minimal fix and run the test again to green.
 Writing a test AFTER implementing a fix, to then test that fix, is dishonest:
 the test gets shaped by the code that exists instead of pinning the wanted
 behavior. A test that never failed proves nothing.
+
+A fix with no clean red run escalates to the user for a confirmed, recorded
+exception and keeps its test, per the escalate-don't-skip principle in the
+catalyst-v2 bootstrap.
 
 ## The four steps
 
