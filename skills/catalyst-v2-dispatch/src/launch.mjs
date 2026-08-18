@@ -4,7 +4,7 @@
 // with the settle wake it owes the caller recorded and handed back.
 // Behavior contract: .cortex/plans/2026-08-01-dispatch-tool/01-tool-interface.md
 
-import { herdrRun, parseReply } from './herdr.mjs';
+import { agentSession, herdrRun, parseReply } from './herdr.mjs';
 import { modelTail } from './schema.mjs';
 import { collapse } from './ledger.mjs';
 import { deliver } from './deliver.mjs';
@@ -336,14 +336,24 @@ function runLaunchSteps(agent, ctx, result, fail) {
   }
   if (!live.agent_status) return fail('agent_get', 'agent get reported no status', transcript(info.run));
 
+  // The screen check waits on the same readiness the session wait below does,
+  // so a CLI that is merely slow to draw is never mistaken for a gated one.
+  // Readiness differs per CLI: omp and every other CLI herdr publishes a
+  // session for is ready when the session appears; a claude agent on herdr
+  // 0.8.0 never publishes one (incident 2026-08-18-c2d-claude-session-identity),
+  // and claude's own `interactive_ready` fires before any gate it draws — the
+  // workspace trust prompt — so it is not readiness: exiting the poll on it
+  // leaves the gate unanswered and delivery finds no composer (observed live
+  // 2026-08-18 on the probe launch). Claude readiness is the composer itself,
+  // the poll's own positive exit.
+  const sessionPublished = () => {
+    const poll = agentGet(agent.name, options);
+    return poll.ok && Boolean(poll.reply.result?.agent?.agent_session);
+  };
+  const isReady = agent.cli === 'claude' ? null : sessionPublished;
+
   if (!live.agent_session) {
     let screen;
-    // The screen check waits on the same thing the session wait below does, so
-    // a CLI that is merely slow to draw is never mistaken for a gated one.
-    const sessionPublished = () => {
-      const poll = agentGet(agent.name, options);
-      return poll.ok && Boolean(poll.reply.result?.agent?.agent_session);
-    };
     try {
       screen = recoverStartupScreen({
         name: agent.name,
@@ -351,7 +361,7 @@ function runLaunchSteps(agent, ctx, result, fail) {
         screenAnswers,
         options,
         env,
-        isReady: sessionPublished,
+        isReady,
       });
     } catch (error) {
       return fail('interactive_screen', `agent read failed: ${error.message}`, error.toJSON?.() ?? null);
@@ -359,18 +369,37 @@ function runLaunchSteps(agent, ctx, result, fail) {
     if (!screen.ok) {
       return fail('interactive_screen', `${screen.reason}. Screen: ${screenSpecimen(screen.screen)}`);
     }
-    const waited = waitForSession(agent.name, { env, options });
-    info = waited.info;
-    if (!info.ok) return fail('agent_get', info.reason, transcript(info.run));
-    live = waited.live;
-    if (!waited.ok) {
+    if (agent.cli !== 'claude') {
+      // omp and every other CLI herdr publishes a session for: wait for it,
+      // so a launch is not failed for a session that is merely late.
+      const waited = waitForSession(agent.name, { env, options });
+      info = waited.info;
+      if (!info.ok) return fail('agent_get', info.reason, transcript(info.run));
+      live = waited.live;
+      if (!waited.ok) {
+        return fail(
+          'session_not_established',
+          `no interactive screen was left to clear (startup screen: ${screen.action}) and the agent published no session within the session wait window`,
+          transcript(info.run),
+        );
+      }
+    } else {
+      // claude: herdr publishes no session to wait for; the screen poll above
+      // already waited for the composer (answering any gate it drew). Re-read
+      // and build the session identity from the fields herdr does publish
+      // (name, terminal_id, pane_id).
+      info = agentGet(agent.name, options);
+      if (!info.ok) return fail('agent_get', info.reason, transcript(info.run));
+      live = info.reply.result?.agent ?? {};
+    }
+    result.session = agentSession(live);
+    if (result.session === null) {
       return fail(
         'session_not_established',
-        `no interactive screen was left to clear (startup screen: ${screen.action}) and the agent published no session within the session wait window`,
+        'the agent is up but herdr published no session and no identity fields (name, terminal_id, pane_id) to derive one from',
         transcript(info.run),
       );
     }
-    result.session = live.agent_session;
   } else {
     result.session = live.agent_session;
   }

@@ -1,0 +1,74 @@
+# test.yaml: guards the c2d claude-launch session-identity rule — a
+# cli: claude launch must complete on herdr 0.8.0 even though herdr publishes
+# no `agent_session` for a claude agent (incident 2026-08-18-c2d-claude-session-identity):
+# claude readiness is status + interactive_ready, the delivery-ledger identity
+# derives from the herdr-published fields (name, terminal_id, pane_id) as
+# `herdr:agent:<name>:<terminal>:<pane>`, steer keys on the same derivation,
+# and the omp session gate (session_not_established on a never-published
+# session) stays intact. No raw harness session file (~/.claude or
+# agent/sessions) is read anywhere in the derivation.
+#
+# Why no Mode A intent simulation: the rule is mechanical tool code, not an
+# instruction choice. A replay of "does the agent pick the right behavior"
+# tests the prose, which was never the failure; the durable guard is the
+# mechanics: the pinned unit cases still pass (live node --test through the
+# real harness), the source still derives the identity from published fields
+# and reads no session files, and the actor's transcript shows the live run.
+# The first recorded run (history/2026-08-18-fix-live-proof) transcribes the
+# fix dispatch's live proof; the replay is never re-run for this purpose.
+
+# The agent under test: a catalyst agent (meta-agent row) running the c2d
+# suite against the live repaired source. Its model must differ from the
+# judge model.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor. Declared but
+# never launched: this test has no semantic criteria.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-dispatch/src/herdr.mjs
+  - skills/catalyst-v2-dispatch/src/launch.mjs
+  - skills/catalyst-v2-dispatch/src/steer.mjs
+  - skills/catalyst-v2-dispatch/test/launch.test.mjs
+  - skills/catalyst-v2-dispatch/test/steer.test.mjs
+  - skills/catalyst-v2-dispatch/test/helpers/harness.mjs
+
+# Rules the actor runs under.
+isolation:
+  - The actor works from this test's own directory (claude-launch-session-identity/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report (2026-08-18-c2d-claude-session-identity), the fix dispatch's materials, or this test's own history.
+  - The actor must not modify the project working tree in any way, and runs no git commands.
+
+# Pass criteria. All deterministic; each is implemented in checks.mjs. The
+# judge is not launched (no semantic criteria).
+criteria:
+  unit-guards-pass:
+    kind: deterministic
+    pass: The c2d suite's pinned cases still pass: node --test test/launch.test.mjs test/steer.test.mjs in the installed dispatch tool dir runs with zero failures and names all three pins — the claude launch with no agent_session published, the omp gate not weakened, and the claude steer keyed on the derived identity.
+  no-session-file-reads:
+    kind: deterministic
+    pass: The changed c2d source reads no raw harness session files: herdr.mjs, launch.mjs, and steer.mjs contain no ~/.claude path and no agent/sessions path; the session identity derives from herdr-published fields only.
+  identity-derived-in-source:
+    kind: deterministic
+    pass: The live source carries the derivation: launch.mjs gives claude no early readiness exit (its composer is the readiness — an interactive_ready exit would leave a trust prompt unanswered), and the herdr:agent: identity key is constructed from name, terminal_id, and pane_id (used by both launch and steer).
+  actor-demonstrates:
+    kind: deterministic
+    pass: The actor's transcript shows the live unit-test run of the pinned cases and the derived identity key shape (herdr:agent:), so the guard fires through the real harness event path.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of the dispatch materials (the incident report 2026-08-18-c2d-claude-session-identity, the fix dispatch 2026-08-18-c2d-claude-session-repair, or this test's own history); other cortex content is allowed.
+  report-schema:
+    kind: deterministic
+    pass: The newest recorded run JSON matches the record schema the runner reads back for regression comparison.
+  file-presence:
+    kind: deterministic
+    pass: The test directory is complete: test.yaml, scenario.md, checks.mjs, and a non-empty history/.

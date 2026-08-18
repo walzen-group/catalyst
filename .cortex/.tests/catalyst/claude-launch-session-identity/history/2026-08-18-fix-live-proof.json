@@ -1,0 +1,48 @@
+{
+  "run_id": "2026-08-18-fix-live-proof",
+  "timestamp": "2026-08-18T22:18:30.000Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 5800,
+  "criteria": [
+    {
+      "id": "unit-guards-pass",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "19 tests, 19 pass, 0 fail; all three pins named"
+    },
+    {
+      "id": "no-session-file-reads",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no ~/.claude or agent/sessions path in herdr.mjs, launch.mjs, steer.mjs"
+    },
+    {
+      "id": "identity-derived-in-source",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "launch.mjs gives claude no early readiness exit (composer is readiness, trust prompts get read); herdr.mjs builds herdr:agent:<name>:<terminal>:<pane>; steer.mjs uses it"
+    },
+    {
+      "id": "actor-demonstrates",
+      "kind": "deterministic",
+      "status": "unverified",
+      "detail": "transcribed run only: the fix dispatch's sessions were not run under this test's scenario, so the transcript criteria have nothing to assert here; first asserted on the next live suite run"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "unverified",
+      "detail": "transcribed run only: the fix dispatch's sessions were not run under this test's isolation rules, so the contamination scan has nothing to assert here; first asserted on the next live suite run"
+    }
+  ],
+  "judge_reasoning": "(no semantic criteria judged; transcribed first run, not a suite launch)",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-18-fix-live-proof-log.md"
+}

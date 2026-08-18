@@ -7,7 +7,7 @@
 // override flag.
 // Behavior contract: .cortex/plans/2026-08-01-dispatch-tool/01-tool-interface.md
 
-import { herdrRun, parseReply } from './herdr.mjs';
+import { agentSessionValue, herdrRun, parseReply } from './herdr.mjs';
 import { collapse, isAttributable } from './ledger.mjs';
 import { classifyScreen, extractComposer, probeGhostText, readComposerSettled, readVisible, screenSpecimen } from './screens.mjs';
 import { deliver } from './deliver.mjs';
@@ -122,7 +122,10 @@ export function steerAgent({
   }
 
   // 2. The composer must hold nothing this tool did not put there.
-  const session = info.agent.agent_session?.value ?? null;
+  // herdr 0.8.0 publishes no agent_session for a claude agent, so the identity
+  // derives from the fields it does publish — the same key the dispatch ledger
+  // was recorded against (incident 2026-08-18-c2d-claude-session-identity).
+  const session = agentSessionValue(info.agent);
   // A composer the extractor cannot locate holds nothing to attribute: the
   // refusal guards text that is demonstrably parked, so it needs a located one.
   const beforeRead = read(() => readComposerSettled(name, options));

@@ -12,7 +12,7 @@ import test from 'node:test';
 
 import { main } from '../src/cli.mjs';
 import { runDispatch } from '../src/dispatch.mjs';
-import { OMP_IDLE, OMP_WORKING_GET, rig } from './helpers/harness.mjs';
+import { CLAUDE_IDLE, OMP_IDLE, OMP_WORKING_GET, claudeGetNoSession, rig } from './helpers/harness.mjs';
 
 const CWD = '/tmp/catalyst-verify-omp';
 const SESSION = { agent: 'omp', kind: 'path', value: '/tmp/catalyst-verify-omp/session.jsonl' };
@@ -243,4 +243,164 @@ test('the rest of the dispatch result document keeps its shape', () => {
   // The persisted document on disk is the same record `status` reads back.
   assert.ok(existsSync(out.persisted), 'the result document is persisted');
   assert.deepEqual(JSON.parse(readFileSync(out.persisted, 'utf8')), out.document);
+});
+
+// --- herdr 0.8.0: a claude launch must not fail for a missing agent_session ---
+// herdr 0.8.0 publishes no `agent_session` for a claude agent (incident
+// 2026-08-18-c2d-claude-session-identity; d1/d2 failed at
+// session_not_established over it). The launch gate must not wait for a session
+// that never comes: claude readiness is the CLI demonstrably up (status plus
+// interactive_ready), and the session identity is derived from the fields herdr
+// *does* publish (name, terminal_id, pane_id), so delivery is still keyed and
+// attributed. The omp gate, whose session herdr does publish, is untouched.
+
+/** The session-gate windows sized for a fake-herdr test, not a cold start. */
+function fastGates(r) {
+  const env = {
+    ...r.env,
+    CATALYST_DISPATCH_SCREEN_ATTEMPTS: '2',
+    CATALYST_DISPATCH_SCREEN_INTERVAL_MS: '0',
+    CATALYST_DISPATCH_SESSION_ATTEMPTS: '2',
+    CATALYST_DISPATCH_SESSION_INTERVAL_MS: '0',
+  };
+  return { env, options: { ...r.options, env } };
+}
+
+test('a claude launch with no agent_session published still completes; session identity is derived from herdr fields', () => {
+  const r = rig({
+    tabCreate: {
+      status: 0,
+      stdout: `${JSON.stringify({
+        id: 'cli:tab:create',
+        result: { tab: { tab_id: 'w1:t9' }, root_pane: { pane_id: 'w1:p9', cwd: CWD } },
+      })}\n`,
+    },
+    // herdr 0.8.0 `agent start` returns no agent_session either.
+    agentStart: { status: 0, stdout: '{"result":{"agent":{}}}\n' },
+    agentGet: claudeGetNoSession({ name: 'probe-claude', cwd: CWD, pane: 'w1:p9', tab: 'w1:t9', terminal: 'term_0804' }),
+    reads: [CLAUDE_IDLE],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+  const { env, options } = fastGates(r);
+  const input = {
+    dispatch_id: 'claude-no-session-test',
+    heartbeat_ms: 60000,
+    agents: [
+      { name: 'probe-claude', cwd: CWD, cli: 'claude', model: 'claude-opus-4-8', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
+    ],
+  };
+  const out = runDispatch(input, { env, options });
+
+  assert.equal(out.document.status, 'ok', JSON.stringify(out.document.failures));
+  const agent = out.document.agents[0];
+  assert.deepEqual(agent.session, {
+    agent: 'claude',
+    kind: 'derived',
+    source: 'herdr:agent',
+    value: 'herdr:agent:probe-claude:term_0804:w1:p9',
+  }, 'the derived session identity is built from herdr-published fields');
+  assert.equal(agent.brief_delivery.verified, true, 'the brief landing is verified');
+  assert.equal(agent.brief_delivery.method, 'composer', 'claude delivery is verified by the composer method');
+  assert.ok(agent.wake.command.startsWith('herdr agent wait probe-claude'), 'a settle wake command is handed back');
+  assert.deepEqual(out.document.failures, []);
+  assert.equal(r.calls('agent prompt').length, 1, 'the brief was delivered exactly once');
+});
+
+// A claude readiness exit must not fire before the screen is read: herdr
+// reports interactive_ready as soon as the CLI starts, which on a never-trusted
+// cwd precedes the workspace trust prompt. Exiting the screen poll on
+// interactive_ready leaves the gate unanswered and delivery finds no composer
+// (observed live 2026-08-18 on the probe launch). The poll must see the trust
+// prompt, answer it, and only then proceed.
+const TRUST_LIVE_FOR_CWD = [
+  'claude --model claude-opus-4-8',
+  '',
+  '──────────────────────────────────────────────────────────────────',
+  ' Accessing workspace:',
+  '',
+  ` ${CWD}`,
+  '',
+  ' Quick safety check: Is this a project you created or one you trust?',
+  '',
+  ' ❯ 1. Yes, I trust this folder',
+  '   2. No, exit',
+  '',
+  ' Enter to confirm · Esc to cancel',
+].join('\n');
+
+test('a claude launch on a never-trusted cwd sees and answers the trust prompt, then delivers', () => {
+  const r = rig({
+    tabCreate: {
+      status: 0,
+      stdout: `${JSON.stringify({
+        id: 'cli:tab:create',
+        result: { tab: { tab_id: 'w1:t0' }, root_pane: { pane_id: 'w1:p0', cwd: CWD } },
+      })}\n`,
+    },
+    agentStart: { status: 0, stdout: '{"result":{"agent":{}}}\n' },
+    agentGet: claudeGetNoSession({ name: 'probe-claude', cwd: CWD, pane: 'w1:p0', tab: 'w1:t0', terminal: 'term_0804' }),
+    reads: [TRUST_LIVE_FOR_CWD],
+    readsAfterEnter: [CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+  const { env, options } = fastGates(r);
+  const input = {
+    dispatch_id: 'claude-trust-test',
+    heartbeat_ms: 60000,
+    agents: [
+      { name: 'probe-claude', cwd: CWD, cli: 'claude', model: 'claude-opus-4-8', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
+    ],
+  };
+  const out = runDispatch(input, { env, options });
+
+  assert.equal(out.document.status, 'ok', JSON.stringify(out.document.failures));
+  const agent = out.document.agents[0];
+  assert.deepEqual(agent.session, {
+    agent: 'claude',
+    kind: 'derived',
+    source: 'herdr:agent',
+    value: 'herdr:agent:probe-claude:term_0804:w1:p0',
+  }, 'the derived session identity is built from herdr-published fields');
+  assert.equal(agent.brief_delivery.verified, true, 'the brief landed after the trust prompt was answered');
+  assert.equal(agent.brief_delivery.method, 'composer');
+  assert.deepEqual(out.document.failures, []);
+  assert.equal(r.calls('agent prompt').length, 1, 'the brief was delivered exactly once');
+  const enters = r.calls('agent send-keys');
+  assert.ok(enters.some((argv) => argv.includes('enter')), 'the trust prompt was answered with Enter');
+});
+
+test('the omp session gate is not weakened: a session-less omp launch still fails session_not_established', () => {
+  const r = rig({
+    tabCreate: {
+      status: 0,
+      stdout: `${JSON.stringify({
+        id: 'cli:tab:create',
+        result: { tab: { tab_id: 't1' }, root_pane: { pane_id: 'p1', cwd: CWD } },
+      })}\n`,
+    },
+    agentStart: { status: 0, stdout: '{"result":{"agent":{}}}\n' },
+    agentGet: {
+      status: 0,
+      stdout: `${JSON.stringify({
+        id: 'cli:agent:get',
+        result: { agent: { agent: 'omp', agent_status: 'working', cwd: CWD, screen_detection_skipped: true } },
+      })}\n`,
+    },
+    reads: [''],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+  const { env, options } = fastGates(r);
+  const input = {
+    dispatch_id: 'omp-gate-intact-test',
+    heartbeat_ms: 60000,
+    agents: [
+      { name: 'a', cwd: CWD, cli: 'omp', model: 'deepseek-v4-flash', thinking: 'max', kind: 'unit', brief: { mode: 'inline', text: 'do it' } },
+    ],
+  };
+  const out = runDispatch(input, { env, options });
+
+  assert.equal(out.document.status, 'failed');
+  assert.equal(out.document.failures[0]?.step, 'session_not_established',
+    'the omp gate still fails a launch whose session never publishes');
+  assert.equal(r.calls('agent prompt').length, 0, 'nothing was delivered without a session');
 });

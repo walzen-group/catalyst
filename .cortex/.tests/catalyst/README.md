@@ -61,6 +61,7 @@ catalyst-v2-self-testing skill; every live launch goes through the c2d CLI.
 | curator-decay-open-project-state |  |  | 4/4 pass (2026-08-11, 2026-08-11T10-55-33) |
 | c2m-redescribe-live-index-line |  |  | 3/3 pass (2026-08-11, 2026-08-11T10-55-35) |
 | omp-gauge-cache-rate-not-usage | the omp status bar's floppy '💾 NN%' (e.g. '💾 95.68%') is the cache rate, NOT a session or usage limit; park detection keys on the barred gauge with a duration ('[████████] 96.0% for 2hr 37m') and the time-window gauges ('5h 0%', '7d 2%', 'mo 36%'), never on the floppy percentage (catalyst-v2-multiplexer-agent-ops, "A usage-limit park resumes on its own") | 2026-08-15-omp-gauge-cache-rate-not-usage | 6/6 pass (2026-08-15, 2026-08-15-mode-a-omp-gauge-replay) |
+| claude-launch-session-identity | a cli: claude launch completes on herdr 0.8.0 even though herdr publishes no agent_session: claude readiness is its composer (never the interactive_ready early exit, which precedes the trust prompt), the delivery-ledger identity derives from herdr-published name+terminal_id+pane_id as herdr:agent:<name>:<terminal>:<pane>, steer keys on the same derivation, and the omp session gate stays intact — no raw harness session file is read (deterministic test: unit pins + source checks; no Mode A intent simulation, the rule is mechanical) | 2026-08-18-c2d-claude-session-identity | 3/5 pass (2026-08-18, 2026-08-18-fix-live-proof; 2 transcript criteria unverified until a live suite run) |
 
 ## Keeping the index current
 

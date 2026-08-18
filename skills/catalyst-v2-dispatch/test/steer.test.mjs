@@ -7,16 +7,19 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { steerAgent } from '../src/steer.mjs';
+import { deliveriesForSession } from '../src/ledger.mjs';
 import { readWakeRecord } from '../src/wake.mjs';
 import {
   CLAUDE_FOREIGN_TEXT,
   CLAUDE_FOREIGN_TEXT_BACKSPACED,
   CLAUDE_GET,
   CLAUDE_GHOST_QUEUED,
+  CLAUDE_IDLE,
   HERDR_STALL_STDERR,
   OMP_DRAFT,
   OMP_IDLE,
   OMP_WORKING_GET,
+  claudeGetNoSession,
   rig,
 } from './helpers/harness.mjs';
 
@@ -288,4 +291,38 @@ test('a blocked agent is reported with a herdr hint, never answered or steered',
   assert.equal(r.calls('agent send-keys').length, 0, 'steer sends no keys at the dialog');
   assert.equal(r.calls('agent prompt').length, 0, 'and no directive into the block');
   assert.equal(out.wake, null, 'no wake is prescribed when nothing was delivered');
+});
+
+// herdr 0.8.0 publishes no `agent_session` for a claude agent, so a steer must
+// derive the same session identity the dispatch keyed its delivery ledger on
+// (incident 2026-08-18-c2d-claude-session-identity). Without it, the delivery
+// refuses with "the agent has no session, so this delivery could be neither
+// recorded nor attributed" — the exact second-order failure the curator steer
+// hit on 2026-08-17.
+
+test('a steer to a claude agent with no agent_session published still delivers, keyed on the derived identity', () => {
+  const r = rig({
+    agentGet: claudeGetNoSession({ name: 'orchestrator' }),
+    reads: [CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+
+  const out = steerAgent({
+    agent: 'orchestrator',
+    text: DIRECTIVE,
+    wakeTimeoutMs: 900000,
+    env: r.env,
+    options: r.options,
+  });
+
+  assert.equal(out.status, 'ok', out.failure ? JSON.stringify(out.failure) : out.reason);
+  assert.equal(out.delivery.status, 'delivered');
+  assert.equal(out.consumed, true);
+  // The delivery was recorded against the derived identity, so the ledger has
+  // a key for attribution instead of none at all.
+  const derived = 'herdr:agent:orchestrator:term_0804:w1:p5';
+  const records = deliveriesForSession(derived, r.env);
+  assert.ok(records.length >= 1, 'the steer delivery is recorded against the derived identity');
+  assert.equal(records[0].agent, 'orchestrator');
+  assert.equal(records[0].session, derived);
 });

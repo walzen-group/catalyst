@@ -96,6 +96,38 @@ export function parseReply(text) {
   }
 }
 
+/**
+ * The session identity c2d keys deliveries on, for one herdr agent record.
+ *
+ * herdr publishes `agent_session` for omp (kind `path`, the session jsonl);
+ * on herdr 0.8.0 it publishes no `agent_session` for a claude agent at all
+ * (incident 2026-08-18-c2d-claude-session-identity). When the published value
+ * is absent, the identity is derived from fields herdr *does* publish — name,
+ * terminal_id, pane_id — so a claude launch still keys and attributes its
+ * delivery-ledger entries. A tab create gets a fresh pane in its own terminal,
+ * so the derived key is unique per launch and stable for the agent's lifetime;
+ * it never reads a session file on disk, so no raw-jsonl exception is needed.
+ *
+ * @returns the published record, a derived record, or null when neither is
+ *          possible (the agent get carried no identity fields at all)
+ */
+export function agentSession(agent) {
+  const published = agent?.agent_session ?? null;
+  if (published && typeof published.value === 'string' && published.value !== '') return published;
+  const { name, terminal_id: terminal, pane_id: pane } = agent ?? {};
+  if (typeof name === 'string' && name !== ''
+      && typeof terminal === 'string' && terminal !== ''
+      && typeof pane === 'string' && pane !== '') {
+    return { agent: agent?.agent ?? null, kind: 'derived', source: 'herdr:agent', value: `herdr:agent:${name}:${terminal}:${pane}` };
+  }
+  return null;
+}
+
+/** The session identity *value* for a herdr agent record, or null. */
+export function agentSessionValue(agent) {
+  return agentSession(agent)?.value ?? null;
+}
+
 /** The live agent roster, as `herdr agent list` reports it. */
 export function fetchRoster(options = {}) {
   return herdrJson(['agent', 'list'], options);

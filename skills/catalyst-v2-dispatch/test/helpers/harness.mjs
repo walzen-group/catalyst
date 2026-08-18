@@ -142,7 +142,34 @@ export const CLAUDE_GET = {
 };
 
 /**
- * The workspace trust prompt Claude Code actually draws (captured live,
+ * herdr `agent get` for a live claude agent on herdr 0.8.0: no `agent_session`
+ * field at all — the 0.8.0 regression behind incident
+ * 2026-08-18-c2d-claude-session-identity — but the agent is up (working,
+ * interactive_ready) and herdr publishes the identity fields c2d derives its
+ * session identity from: name, terminal_id, pane_id.
+ */
+export function claudeGetNoSession({ name = 'orchestrator', cwd = '/tmp/catalyst-verify', pane = 'w1:p5', terminal = 'term_0804', tab = 'w1:t5', status = 'working' } = {}) {
+  return {
+    status: 0,
+    stdout: `${JSON.stringify({
+      id: 'cli:agent:get',
+      result: {
+        agent: {
+          agent: 'claude',
+          agent_status: status,
+          cwd,
+          interactive_ready: true,
+          name,
+          pane_id: pane,
+          tab_id: tab,
+          terminal_id: terminal,
+        },
+      },
+    })}\n`,
+  };
+}
+
+/** The workspace trust prompt Claude Code actually draws (captured live,
  * 2026-08-01): rules rather than a box, and wording the tool's original marker
  * did not match. It gates the keyboard and publishes no session behind it.
  */
