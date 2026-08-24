@@ -59,7 +59,8 @@ test('an omp brief lands via herdr\'s confirmed submit over a quiet composer', (
 // Regression anchor: incident 2026-08-03-steer-composer-interference. herdr
 // writes the prompt into the agent's own input buffer, so a live draft is
 // appended to and submitted along with the text. The omp composer is the
-// bottom bar of the status box, so the draft is observable: the delivery holds
+// bottom bar of the status box or, from 18.x, the `❯` editor above a rule, so
+// the draft is observable either way: the delivery holds
 // with the draft as specimen, nothing sent.
 
 test('an omp delivery over a live composer draft is refused with the draft as specimen', () => {

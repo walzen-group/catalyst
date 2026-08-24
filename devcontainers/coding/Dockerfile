@@ -52,11 +52,11 @@ USER root
 # refresh both digests from the GitHub release assets:
 #   curl -fsSL https://api.github.com/repos/herdrdev/herdr/releases/latest \
 #     | grep -E '"(tag_name|name|digest)"'
-ARG HERDR_VERSION=0.8.0
+ARG HERDR_VERSION=0.8.2
 ARG TARGETARCH
 RUN case "${TARGETARCH}" in \
-      arm64) asset=herdr-linux-aarch64; sha=f647ac66468d9efbc642fe534fb284468f0aea60641606fc008dfc0d82a3ca87 ;; \
-      amd64) asset=herdr-linux-x86_64;  sha=b872ea7e40fa2cb17e857ac9b62b1bf26db7b403c622f5d2f3f5b35f6e9acd28 ;; \
+      arm64) asset=herdr-linux-aarch64; sha=f55610658e1c2e0d2aaef730b4b2ab885f7f8ba00285ab372bfb14f2e3d5b40d ;; \
+      amd64) asset=herdr-linux-x86_64;  sha=976150a14d490c94b243ea2e1a7eb2dfb67f12e36b182db90936f6728e6aecf4 ;; \
       *) echo "herdr: unsupported TARGETARCH '${TARGETARCH}'" >&2; exit 1 ;; \
     esac \
  && curl -fsSL -o /usr/local/bin/herdr \

@@ -90,19 +90,23 @@ export function extractComposer(text) {
 }
 
 /**
- * The omp composer line. omp draws its input buffer as the bottom bar of the
- * status box: the last line of the visible screen, framed `╰─ <text> ─╯`
- * (captured live 2026-08-03). Text between the frame ends is a live draft;
- * a bar holding only whitespace is a quiet composer. Null when the last line
- * is not the bar at all, so the caller fails honestly instead of sending
- * blind into a screen it cannot read.
- * @returns {string|null} the bar's inner text, untrimmed; null when the last
- *          line is not an omp bottom bar
+ * The omp composer text, in either render that carries the input buffer: the
+ * status box's bottom bar (`╰─ <text> ─╯`, through 17.x) or the `❯` editor
+ * block (18.x). Text in either is a live draft; whitespace only is a quiet
+ * composer. Null when neither shape is present, so the caller fails honestly
+ * instead of sending blind into a screen it cannot read.
+ * @returns {string|null} the composer's inner text, untrimmed; null when no
+ *          omp composer is on screen
  */
 export function ompComposerText(screen) {
   const lines = String(screen ?? '').split('\n');
-  // The capture can end with the pane's cursor row or a trailing newline, so
-  // the bar is the last populated line, not necessarily the last line.
+  // Two renders carry the input buffer (captured live 2026-08-03 and
+  // 2026-08-24). Through 17.x it is the bottom bar of the status box: the last
+  // populated line, framed `╰─ <text> ─╯`. From 18.x any text in the buffer
+  // switches the pane to a `❯` editor between two horizontal rules with the
+  // model/status footer drawn below it, and the bar disappears entirely, so a
+  // bar is read first because it is unambiguous; the editor shape is matched
+  // only near the bottom of the capture, where the live composer draws.
   let last = '';
   for (let i = lines.length - 1; i >= 0; i -= 1) {
     if (lines[i].trim() !== '') {
@@ -111,8 +115,29 @@ export function ompComposerText(screen) {
     }
   }
   if (last === '') return null;
-  const match = /^\s*╰─(.*)─╯\s*$/.exec(last);
-  return match === null ? null : match[1];
+  const bar = /^\s*╰─(.*)─╯\s*$/.exec(last);
+  if (bar !== null) return bar[1];
+  return editorDraft(lines);
+}
+
+/**
+ * The 18.x editor render: the last `❯` line closed by a plain horizontal rule,
+ * with at most the status footer and a cursor row below it. Text after the
+ * marker is the buffer; a quiet editor reads as empty. Null unless the shape
+ * is complete, so a transcript echoing a `❯` prompt mid-scroll never reads as
+ * a live draft.
+ */
+function editorDraft(lines) {
+  for (let i = lines.length - 1; i >= 0; i -= 1) {
+    if (!/^\s*❯/.test(lines[i])) continue;
+    let close = i + 1;
+    while (close < lines.length && lines[close].trim() === '') close += 1;
+    if (close >= lines.length || !RULE_LINE.test(lines[close])) continue;
+    const below = lines.slice(close + 1).filter((line) => line.trim() !== '');
+    if (below.length > 2) continue;
+    return lines[i].replace(/^\s*❯/, '');
+  }
+  return null;
 }
 
 /**

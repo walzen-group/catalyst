@@ -13,6 +13,7 @@ import {
   CLAUDE_IDLE,
   CLAUDE_PARKED_PASTE,
   OMP_DRAFT,
+  OMP_DRAFT_EDITOR,
   OMP_IDLE,
   SHELL_STARTUP_NOISE,
   TRUST_PROMPT,
@@ -22,10 +23,10 @@ import {
 } from './helpers/harness.mjs';
 
 const CWD = '/workspaces/statswatch/statswatch-native';
-
-// Regression anchor: incident 2026-08-03-steer-composer-interference. omp
-// draws its input buffer as the bottom bar of the status box, so the draft is
-// the text between the frame ends of the last line.
+// Regression anchor: incident 2026-08-03-steer-composer-interference, plus the
+// omp 18.x composer switch (2026-08-24). omp draws its input buffer as the
+// bottom bar of the status box, or from 18.x as a `❯` editor above a rule; a
+// draft in either is text the delivery hold must see before sending.
 
 test('the omp composer bar holds a live draft between its frame ends', () => {
   // The bar draws a space of padding after the frame; callers collapse before
@@ -45,6 +46,22 @@ test('a trailing cursor row or newline does not hide the omp composer bar', () =
   // Live captures end with the pane's cursor row after the bar.
   assert.equal(ompComposerText(`${OMP_DRAFT}\n`).replace(/\s+/g, ' ').trim(), 'half a thought the user was typing');
   assert.equal(ompComposerText(`${OMP_IDLE}\n`).trim(), '', 'a quiet bar with a trailing row is still quiet');
+});
+
+test('the 18.x editor render holds a live draft after the prompt marker', () => {
+  assert.equal(ompComposerText(OMP_DRAFT_EDITOR).replace(/\s+/g, ' ').trim(), 'live draft specimen');
+});
+
+test('a quoted prompt mid-scroll is not a live draft', () => {
+  // A transcript echo has output below it, not a closing rule near the bottom
+  // of the capture; only the live editor draws that shape.
+  const echoed = [
+    '❯ some earlier command',
+    'lots of transcript output',
+    'more transcript output',
+    ' π  · ⬢ DeepSeek V4 Flash · ◒ high · 🗑 /tmp/catalyst-verify-omp',
+  ].join('\n');
+  assert.equal(ompComposerText(echoed), null);
 });
 
 test('a box in startup output is unattributed, and that alone decides nothing', () => {

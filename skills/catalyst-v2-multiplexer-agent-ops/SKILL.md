@@ -168,9 +168,10 @@ provenance is yours:
   into a live prompt.
 - **The orchestrator's omp session is a user surface.** The user types into
   that session's composer; hand-backs and steers land in the same pane. omp
-  draws its input buffer as the bottom bar of the status box, and steer now
-  reads it before sending: a bar holding text is a live user draft and the
-  delivery is refused with the draft as specimen
+  draws its input buffer as the status box's bottom bar or, from 18.x, as a
+  `❯` editor above a rule, and steer reads that composer state before
+  sending: text in either shape is a live user draft and the delivery is
+  refused with the draft as specimen
   (`.cortex/incidents/2026-08-03-steer-composer-interference.md`). A refused
   delivery is a HOLD, not a failure to work around: nothing is pushed through
   another channel (raw `send-keys`/paste stays banned), and delivery resumes

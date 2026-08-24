@@ -26,8 +26,14 @@ the catalyst-v2 bootstrap); this skill owns the repo-doc style on top of that.
 
 ## Style rules
 
-1. Keep it concise. Prune restated sentences and per-file mini-essays; the docs
-   should not be longer than the comments they replaced.
+The humanizer pass above already bans em dashes, headings that start with "The",
+figurative "wiring", and "X, not Y" parallelisms. These rules cover what the pass
+does not.
+
+1. Keep it concise, but not clipped. Prune restated sentences and per-file
+   mini-essays; the docs should not be longer than the comments they replaced.
+   Conciseness has a floor: keep the words that carry the meaning. Prefer "It
+   does not destroy the associated resources" over "It destroys nothing".
 2. Use tables for key/value lists (file -> what it sets, scope -> packages, host
    -> identity). Reserve prose for the explanatory parts.
 3. Minimise inline single-backtick spans. Put filenames and module/option names
@@ -35,18 +41,25 @@ the catalyst-v2 bootstrap); this skill owns the repo-doc style on top of that.
    literal option = value tokens. Technical identifiers are names too:
    operationIds (auth.set), schema names, paths, hashes, and class names stay
    in plain text.
-4. No em or en dashes. Use commas, periods, colons, or parentheses.
-5. No headings that start with "The ".
-6. Describe what a thing is and does, never what it is not, does not, or no
-   longer needs. No "X, not Y" parallelisms or negative framing. Write the
-   mechanism instead. A contrast earns its place only where a reader would
-   otherwise take the wrong path (a known failure mode, or a decision record in
-   docs/concepts/), and even there it follows the positive statement.
-7. Skip filler summary lines ("That is the whole setup", "It is worth noting
-   that").
-8. Bold sparingly: only the leading filename in a file-keyed bullet list.
-9. Do not use the word "wiring" (or "wires" / "wired"). Say what the file
-   actually does: integrates, composes, binds, imports, sets up.
+4. Describe what a thing is and does. A negative or contrast earns its place only
+   where a reader would otherwise take a wrong path (a known failure mode, or a
+   decision record in docs/concepts/), and it follows the positive statement.
+   Example: "This deletes tofu's record. It does not destroy the associated
+   resources" earns the negation, because a reader might assume otherwise.
+5. Skip filler summary lines ("That is the whole setup", "It is worth noting
+   that") and epigram tails written for effect ("a plan is the proof", "that is
+   the point of a fence"). State the instruction instead.
+6. Bold sparingly: only the leading filename in a file-keyed bullet list.
+7. Write plain declarative sentences. Do not weld a because/so/since rationale
+   onto every sentence. State what happens; if the reason matters, give it its
+   own sentence.
+8. Use concrete subjects. A tool may act (terragrunt reads the block, netbird
+   mints its keys). An abstract noun may not ("discovery reaches downward",
+   "config apply reaches each node").
+9. State the literal condition, not a figure of speech. No idiom flourishes
+   ("from cold", "return the hardware to nothing", "break out of view"). No
+   sentence fragment used as a lead ("Running terragrunt yourself."); a short
+   label before a command block ("One unit:") is fine.
 
 ## Boundary
 

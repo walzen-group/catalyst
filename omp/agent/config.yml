@@ -19,6 +19,8 @@ hideThinkingBlock: true
 memory:
   backend: "off"
 defaultThinkingLevel: high
+composer:
+  shape: claude
 statusLine:
   preset: custom
   separator: powerline

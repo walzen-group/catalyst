@@ -243,6 +243,22 @@ export const OMP_DRAFT = [
   '╰─ half a thought the user was typing                                                                                              ─╯',
 ].join('\n');
 
+/**
+ * The same pane under omp 18.x (captured live 2026-08-24): any text in the
+ * buffer switches the composer to a `❯` editor between two horizontal rules,
+ * with the model/status footer drawn below it, and the status box's bottom
+ * bar disappears entirely. The upper rule carries the token meter, so only
+ * the lower rule closes the block.
+ */
+export const OMP_DRAFT_EDITOR = [
+  ' Tip: Please use nerdfont 😭.',
+  ' Connected to MCP servers: plane, context7.',
+  '────────────────────────────────────── ◫ 1.9%/1M ⟲ · ⏱ 22:32 ─',
+  '❯ live draft specimen                                        ',
+  '──────────────────────────────────────────────────────────────',
+  ' π  · ⬢ DeepSeek V4 Flash · ◒ high · 🗑 /tmp/omp-style-probe',
+].join('\n');
+
 /** The same omp pane with a large paste parked in the composer (captured
  * 2026-08-01): a chip like "[Paste #1, +107 lines]" and the agent left idle.
  * The wording differs from Claude Code's "[Pasted text #1 +43 lines]": a comma

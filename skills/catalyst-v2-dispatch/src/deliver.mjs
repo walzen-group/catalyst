@@ -9,10 +9,11 @@
 //     releases it.
 //   - omp and every other CLI: herdr sets screen_detection_skipped, so there is
 //     no composer block of claude's shape to read, but omp draws its input
-//     buffer as the bottom bar of the status box (last visible line, framed
-//     `╰─ <text> ─╯`), so a live draft is observable there. The pre-send check
-//     reads that bar and refuses over a non-empty one: a send appends to the
-//     buffer and submits the draft with the text (incident
+//     buffer as the status box's bottom bar (framed `╰─ <text> ─╯`) or, from
+//     18.x, as a `❯` editor above a rule, so a live draft is observable in
+//     either. The pre-send check reads that composer state and refuses over
+//     non-empty text: a send appends to the buffer and submits the draft with
+//     the text (incident
 //     2026-08-03-steer-composer-interference), so the delivery holds with the
 //     draft as specimen until the composer is quiet. herdr's confirmed submit
 //     then proves a clean landing. On a stall the tool reads the raw
@@ -280,11 +281,12 @@ export function deliver({ name, cli, session, text, verb = 'dispatch', mandateMo
     // the agent's own input buffer, so a live draft there is appended to and
     // submitted along with the text — the user's in-progress message goes out
     // mangled (incident 2026-08-03-steer-composer-interference). omp draws the
-    // buffer as the bottom bar of the status box, so the draft is observable
-    // where claude's composer block is not: a non-empty bar is live input and
-    // the delivery holds with the draft as specimen, mirroring the claude
-    // refusal for foreign parked text. No bar at all means the composer state
-    // is unreadable, which fails honestly — nothing is sent blind.
+    // buffer as the status box's bottom bar or, from 18.x, as a `❯` editor
+    // above a rule; either way the draft is observable where claude's composer
+    // block is not: non-empty text is live input and the delivery holds with
+    // the draft as specimen, mirroring the claude refusal for foreign parked
+    // text. No composer shape at all means the state is unreadable, which
+    // fails honestly - nothing is sent blind.
     let screen;
     try {
       screen = readVisibleSettled(name, options);
