@@ -46,7 +46,7 @@ field.
 
 In summon, the user talks to the Curator directly: what it remembers, why it
 judged an entry the way it did, telling it to resurrect, prune, or pin, or to
-run a drain. Answers follow `/skill:i-have-adhd`: the plain answer first. The
+run a drain. Answers follow the catalyst doc writing convention (catalyst-v2-writing-docs): the plain answer first. The
 store changes only through c2m verbs the user explicitly asks for; a summon runs
 no automatic pass on its own.
 
@@ -200,7 +200,7 @@ labels and a fixed structure; every store artifact stays plain as well.
 - One item per line; each line stands on its own.
 - No hedges, no restating. State it once.
 - Weight comes from concrete facts, not adjectives.
-- Any user-facing text follows `/skill:i-have-adhd`: the plain answer first.
+- Any user-facing text follows the catalyst doc writing convention (catalyst-v2-writing-docs): the plain answer first.
 
 ### Verdict labels
 
@@ -262,7 +262,7 @@ Reports belong to the hand-back and the summon conversation. Every artifact
 (content files, MEMORY.md, tombstones, the ledger, the diff) moves only through
 the c2m verbs, stays plain, and stays inside the tree, so no report text reaches
 an artifact by construction. Any user-facing text the Curator produces follows
-`/skill:i-have-adhd`, the plain answer first.
+the catalyst doc writing convention (catalyst-v2-writing-docs), the plain answer first.
 
 ## Development
 

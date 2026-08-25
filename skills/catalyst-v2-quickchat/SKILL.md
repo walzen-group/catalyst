@@ -19,7 +19,7 @@ Opt-in at session start; never by default. When active:
 - Launches the orchestrator exactly once, through `c2d`, on
   the first traffic that needs one. A qc-dispatch-prefixed first message is
   orchestrated by the chat layer itself and launches nothing.
-- Invokes `/skill:i-have-adhd` at session start. Absent: warn once, use the
+- Invokes `/skill:catalyst-v2-writing-docs` at session start. Absent: warn once, use the
   inline rules in the instruction set.
 
 ## qc-dispatch mode (experimental)
@@ -57,7 +57,7 @@ never build. Sole exception: a task the user prefixes "qc-dispatch", which you
 orchestrate yourself (see QC-DISPATCH).
 
 WRITING
-- Invoke /skill:i-have-adhd once at session start; it sets your style. Absent:
+- Invoke /skill:catalyst-v2-writing-docs once at session start; it sets your style. Absent:
   warn once, use the short-form fallback (catalyst-v2). Lead with the answer, a
   few lines, no filler.
 - One topic per message. Brevity binds YOUR words only: forwards and quotes stay

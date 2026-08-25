@@ -1,0 +1,16 @@
+{
+  "run": "green (post-fix skill text)",
+  "date": "2026-08-24",
+  "results": [
+    {
+      "criterion": "no-contamination",
+      "pass": true,
+      "detail": "no forbidden source, git run, cortex read, or write evidence"
+    },
+    {
+      "criterion": "skill-churn-rule-present",
+      "pass": true,
+      "detail": "all 5 pins present"
+    }
+  ]
+}

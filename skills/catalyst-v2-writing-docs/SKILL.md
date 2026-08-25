@@ -21,8 +21,9 @@ apply its output."
 
 ## User-facing convention
 
-Text a catalyst role writes for the user follows the i-have-adhd convention (per
-the catalyst-v2 bootstrap); this skill owns the repo-doc style on top of that.
+This skill owns the user-facing writing convention: the catalyst doc writing
+convention. Text a catalyst role writes for the user follows it; the style
+rules below cover repo-doc style on top of that.
 
 ## Style rules
 

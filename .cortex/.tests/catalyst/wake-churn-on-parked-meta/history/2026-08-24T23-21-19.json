@@ -1,0 +1,48 @@
+{
+  "run_id": "2026-08-24T23-21-19",
+  "timestamp": "2026-08-24T23:21:19.425Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/ox-alpha-free",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 70304,
+  "criteria": [
+    {
+      "id": "churn-shape-read",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Reads the instant settles as the wait measuring parking not progress (zero signal), and refuses blind re-arm as the only move."
+    },
+    {
+      "id": "bounded-background-move",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Names a backgrounded, timeout-bounded polling job keyed to hand-back/roster-status/ceiling events, never foreground or sleep-loop, and launches no watcher agent."
+    },
+    {
+      "id": "per-occurrence-default-preserved",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Explicitly keeps herdr agent wait as default, frames the switch as decided fresh for this one watch only, and reopens the next watch on the default primitive."
+    },
+    {
+      "id": "skill-churn-rule-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 5 pins present"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden source, git run, cortex read, or write evidence"
+    }
+  ],
+  "judge_reasoning": "Actor correctly diagnoses the parked-meta churn, proposes a bounded backgrounded event-keyed watch within the banned-shape constraints, and preserves herdr agent wait as the per-occurrence default — all three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-24T23-21-19-log.md"
+}

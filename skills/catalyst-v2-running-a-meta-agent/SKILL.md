@@ -91,12 +91,18 @@ wave, not two metas (incident 2026-08-04-agent-self-identity).
      text carries the `A2A:` prefix.
    - **Frozen**: distinguish a hang from a slow gate and from a usage-limit park
      (a park resumes on its own, never restart it). A real hang: interrupt
-     (`herdr agent send-keys`) or restart if context is poisoned.
+     (ESCAPE via `herdr agent send-keys`) to force a turn boundary: omp
+     delivers a queued corrective steer only at a turn boundary, so the
+     interrupt is what lands it. Then re-steer; restart is the next rung
+     when interrupt plus steer fails, or when context is poisoned.
 2. **Settled idle/blocked**: read last output to see why, then poke, `steer`, or
    escalate. Always a poke or handoff, never another silent wait.
 3. **Misbehaving**: run the repair workflow below, then restart as a fresh
    dispatch. Watch it come up before returning to the others.
 4. **Blocked by a spec/environment/design problem the orchestrator owns**: escalate.
+   Constraints the orchestrator set are relayed verbatim, never softened; a
+   worker's request to relax one is escalated in the worker's own words,
+   never granted by the meta.
 5. **Settled done**: record its report and gate output; when every worker is done,
    close out verification.
 
@@ -127,7 +133,7 @@ Once every worker is done:
    `diffs_per_worker`, `gate_evidence` (the worker's recorded run, must
    resolve to an existing artifact), `whole_change_output` (repairs, holds,
    and open items), `deliverable_paths` (the reports the user should read,
-   empty list valid). Follows humanizer and i-have-adhd (`catalyst-v2`).
+   empty list valid). Follows humanizer and the catalyst doc writing convention (catalyst-v2-writing-docs).
    Delivery never goes through raw `herdr agent send-keys` (incident
    `2026-08-01-omp-delivery-raw-paste.md`); `c2d steer --file` is only for
    preplanned cortex spec docs.

@@ -66,7 +66,7 @@ actor model under test.
   run at once. Work that would exceed the cap queues or routes to mid-tier
   (deepseek-v4-flash). The orchestrator's own Opus session (when running Claude
   Code) is separate from this cap.
-- **Meta-agent model: prefer deepseek.** Meta-agents default to
+- **Meta-agent model: prefer deepseek-v4-flash.** Meta-agents default to
   opencode-go/deepseek-v4-flash at thinking max. Escalate to claude-opus-4-8 only
   when the meta-agent's task genuinely needs frontier judgment (complex
   multi-agent diagnosis, subtle cross-cutting verification). An Opus meta-agent
@@ -74,9 +74,9 @@ actor model under test.
 - **Thinking effort for Claude delegates: retired 2026-08-01 by user directive.**
   Claude delegates launch at default effort; the dispatch names just the model.
   The effort table below survives only as historical guidance for choosing tiers.
-- **The orchestrator keeps the expensive model.** kimi k3 at thinking high for
+- **The orchestrator keeps the expensive model.** kimi-code/k3 at thinking high for
   scheduling and triage; smol/tiny roles at ~1/30th the price; the chat layer
-  at deepseek-v4-flash thinking max.
+  at opencode-go/deepseek-v4-flash thinking max.
 
 ## Thinking effort for Claude delegates (retired 2026-08-01)
 
@@ -92,7 +92,7 @@ gate stays: `user_directive: true` required beside either.
 ## Thinking effort on omp launches
 
 omp takes off/minimal/low/medium/high/xhigh/max/auto as the `thinking` field.
-Use the deepseek pairing (opencode-go/deepseek-v4-flash, thinking max) for
+Use opencode-go/deepseek-v4-flash at thinking max for
 Mid-tier and Small/fast tiers. Frontier runs claude-opus-4-8 at default effort.
 
 ### Start low, escalate on evidence
@@ -109,7 +109,7 @@ hunch.
 runs claude-opus-4-8 at default effort (max 2 concurrent). All other work
 (reviews, verification, meta-agent, debugging) runs
 opencode-go/deepseek-v4-flash at thinking max. Exceptions: board keeper runs
-Sonnet at low; orchestrator runs kimi k3.
+Sonnet at low; orchestrator runs kimi-code/k3.
 
 ## Routing heuristics
 

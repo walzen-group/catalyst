@@ -108,6 +108,18 @@ reaches nobody. That is the recorded failure:
 - **A wake firing is a cue to verify, not proof of anything.** On every wake,
   read the agent directly (`status`, `git log`); if not done, re-arm. An idle
   session with settled delegates is a stall.
+- **Consecutive instant settles carry no signal.** An omp agent parked
+  between turns reads settled while fully alive, so a settle-based wait
+  armed on it returns immediately: check, re-arm, instant fire, again,
+  learning nothing. After two consecutive waits on the same agent have
+  settled instantly with no state change behind them, that wait measures
+  parking, not progress — stop re-arming it blind. You MAY switch that
+  one watch to a bounded background polling watch keyed to material
+  events (a hand-back file appearing, a roster or status change, a
+  timeout ceiling); backgrounded like every wait, never a foreground
+  poll. Decide the switch fresh on each occurrence from the observed
+  churn shape; it is never a standing default. `herdr agent wait` stays
+  the default wake primitive, and the next watch opens on it again.
 - **A status read is not liveness either.** An omp session between turns (its
   own waits armed, harness backgrounded) can read settled ('done', no
   background shells) while alive. 'Idle turn + armed waits' can be either

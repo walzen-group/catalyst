@@ -1,0 +1,54 @@
+# test.yaml: guards the churn-shape wake rule repaired from incident
+# 2026-08-24-wake-churn-on-parked-meta (dispatch 2026-08-24-electron-port-w0b):
+# when consecutive settle-based waits on the same agent return instantly with
+# no state change behind them — an omp meta parked between turns reads settled
+# while fully alive — the wait carries no progress signal. The watcher then MAY
+# switch that one watch to a bounded background polling watch keyed to material
+# events; the switch is re-decided per occurrence, never a standing default,
+# and `herdr agent wait` stays the default wake primitive. The rule lives in
+# catalyst-v2-multiplexer-agent-ops ("Keep a wake armed at every turn end").
+#
+# Mode A intent simulation: the fix changed watcher judgment, not a mechanical
+# boundary, so the durable guard elicits the monitoring decision from a fresh
+# actor grounded only in the live instructions.
+
+# The role under test: the orchestrator doing wave monitoring tonight ran this
+# exact loop. Its model must differ from the judge.
+actor:
+  role: orchestrator-default
+  model: opencode-go/ox-alpha-free
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst file whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2-multiplexer-agent-ops/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor grounds in the live catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) and in no other source.
+  - The actor must not read any .cortex/ content anywhere (project or kit: memory, incidents, plans, reports, tests), must not read any agent session transcript, must not run any git command, must not launch anything (no c2d dispatch, no herdr command that starts or prompts an agent), and must not modify or write any file; everything is delivered in the reply.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# deterministic criteria are implemented in checks.mjs.
+criteria:
+  churn-shape-read:
+    kind: semantic
+    pass: The reply treats the repeated near-instant settles with no state change as the settle wait carrying no progress signal for this agent — it measures the parking between turns, not the work — and does not answer "keep re-arming the same settle wait" indefinitely or present blind re-arm as the only available move.
+  bounded-background-move:
+    kind: semantic
+    pass: The move named for this watch stops the blind loop without violating the banned shapes: backgrounded, bounded, and keyed to material events (a hand-back appearing, a roster or status change, a timeout ceiling); any polling it proposes never runs foreground and never unbounded, and it launches no watcher agent.
+  per-occurrence-default-preserved:
+    kind: semantic
+    pass: The reply keeps `herdr agent wait` as the default wake primitive: any switch is framed as decided fresh from this occurrence's observed churn shape, applies to this one watch only, is never adopted as a new standing policy, and the next or default watch opens on the default primitive again.
+  skill-churn-rule-present:
+    kind: deterministic
+    pass: The repaired SKILL.md carries every load-bearing part of the churn rule. Pins, whitespace-collapsed: "consecutive instant settles carry no signal", "bounded background polling watch", "never a foreground poll", "never a standing default", "default wake primitive".
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's identifiers (incident 2026-08-24-wake-churn-on-parked-meta, dispatch 2026-08-24-electron-port-w0b, wave names meta-w0b or impl-ep-t1b), reads no .cortex content, runs no git command, and writes no file.

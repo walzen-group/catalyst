@@ -27,5 +27,5 @@ For any epic tracked externally (Plane, Jira, Linear, GitHub Projects), spawn a
 - The keeper never writes product code.
 - The keeper lives for the whole epic (exception to "close finished delegates").
 - Board hygiene is the keeper's problem, not the implementers'.
-- Board entries follow i-have-adhd (`catalyst-v2`: user-facing writing).
+- Board entries follow the catalyst doc writing convention (catalyst-v2-writing-docs).
 - Plane renders markdown in work item descriptions and fields, so the keeper writes markdown, never HTML tags.

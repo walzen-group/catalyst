@@ -58,7 +58,7 @@ did not take: reference it and treat the weak fix as the root cause.
   the criteria that wave must run. An incident that leaves verification unowned
   reads as owed to the orchestrator, which runs no gate.
 
-Reports follow humanizer and i-have-adhd (`catalyst-v2`: user-facing writing).
+Reports follow humanizer and the catalyst doc writing convention (catalyst-v2-writing-docs).
 
 ## Repair: acting on an incident
 

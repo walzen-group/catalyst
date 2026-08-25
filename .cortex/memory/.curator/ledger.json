@@ -1,8 +1,14 @@
 {
   "version": 1,
   "entries": {
+    "model-ox-alpha-free-over-deliberates": {
+      "strength": 3,
+      "pin": false,
+      "created": "2026-08-25T15:48:11.596Z",
+      "last_relevant": "2026-08-25T15:48:21.836Z"
+    },
     "nix-develop-c-quoted-command-gotcha": {
-      "strength": 2,
+      "strength": 1,
       "pin": false,
       "created": "2026-08-16T08:40:52.035Z",
       "last_relevant": "2026-08-16T08:40:52.035Z"

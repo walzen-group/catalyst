@@ -14,7 +14,7 @@ runs the mechanics.
 - One item per line; each line stands on its own.
 - No hedges, no throat-clearing, no restating.
 - Plain, direct language. Weight comes from concrete facts, not adjectives.
-- User-facing text follows `/skill:i-have-adhd`: the plain answer first.
+- User-facing text follows the catalyst doc writing convention (catalyst-v2-writing-docs): the plain answer first.
 
 ## Verdict labels
 

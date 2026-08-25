@@ -1,0 +1,16 @@
+{
+  "run": "red (pre-fix skill text)",
+  "date": "2026-08-24",
+  "results": [
+    {
+      "criterion": "no-contamination",
+      "pass": true,
+      "detail": "no forbidden source, git run, cortex read, or write evidence"
+    },
+    {
+      "criterion": "skill-churn-rule-present",
+      "pass": false,
+      "detail": "missing pins: consecutive instant settles carry no signal | bounded background polling watch | never a foreground poll | never a standing default | default wake primitive"
+    }
+  ]
+}

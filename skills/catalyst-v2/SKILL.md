@@ -128,7 +128,7 @@ type, the line count, and the path never change the role split.
 
 ## User-facing writing
 
-Text a catalyst role writes for the user follows `/skill:i-have-adhd`: invoke
+Text a catalyst role writes for the user follows the catalyst doc writing convention (catalyst-v2-writing-docs): invoke
 before the first such write. Absent: warn once, use the short-form fallback
 (lead with the answer, three lines or fewer, cut filler). Stated once here;
 other skills point to this convention. A spec carries it to a delegate

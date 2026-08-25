@@ -274,6 +274,10 @@ A thin hand-back goes back to the meta-agent to complete. **Verification is the
 meta-agent's second duty; watching is its first.** Watching cannot be batched
 because it happens while work runs. "One meta-agent verifies them all once they
 settle" is a decision to run the wave unobserved.
+**Quiesce a done-declared worker before verifying in its checkout.** "Done"
+settles the worker's turn, not its processes: a concurrent git checkout during
+a build produced a transient false PARITY FAIL. Confirm the worker is quiesced
+— nothing still running in its session — before running gates in its checkout.
 
 A hand-back that assigns verification to the orchestrator is thin the same way:
 the orchestrator runs no gate, so it goes back to the meta-agent. When an

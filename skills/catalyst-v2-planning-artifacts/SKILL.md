@@ -94,6 +94,9 @@ delivery; brief authors still name the task-specific skills for the work.
    like. Include a negative check where useful. Gate on the effect: that a config
    parses proves the delegate typed it, not that it does anything. Where no gate
    can observe the purpose, name the experiment that would and record the gap.
+6. **Emission discipline**: a survey budget in minutes, then writes-or-commit
+   every ~10 min. Long survey/reasoning turns with zero file emission stall
+   progress invisibly; the budget forces visible progress.
 
 ### Rules
 
@@ -132,7 +135,8 @@ delivery; brief authors still name the task-specific skills for the work.
   than one worker on one checkout and commits are authorized, the spec's
   Constraints state the append-only rule: the branch tip only ever moves
   forward, by adding commits; `git reset` (any mode), `git rebase`,
-  `git commit --amend`, and history reordering are forbidden. A commit that
+  `git commit --amend`, and history reordering are forbidden. Amending your own
+  unpushed tip is a rewrite too: the ban is unconditional. A commit that
   needs redoing (grouping, message, content) is left in place and reported
   with a proposed follow-up commit. A worker that rewrote history is stopped,
   and the branch is repaired by the meta-agent.
@@ -152,4 +156,4 @@ delivery; brief authors still name the task-specific skills for the work.
   c2d preflight requires to exist at dispatch
   (`catalyst-v2-filing-incidents`).
 - **Every spec carries the user-facing style rule.** A delegate never reads the
-  bootstrap: embed the i-have-adhd convention pointer (`catalyst-v2`).
+  bootstrap: embed the catalyst-v2-writing-docs convention pointer.
