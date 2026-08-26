@@ -1,0 +1,17 @@
+{
+  "run": "red (pre-fix skill text, revised rule for 2026-08-26-wake-hold-idled-on-completed-work)",
+  "date": "2026-08-26",
+  "note": "Supersedes the prior red run for 2026-08-26-meta-orchestrator-wait-churn. The three retained pins (orchestrator-is-watcher, never-wait-on-orchestrator, check-monitored-workers) still pass; the six pins the revised rule adds are missing against the pre-revision skill text.",
+  "results": [
+    {
+      "criterion": "no-contamination",
+      "pass": true,
+      "detail": "no forbidden source, git run, cortex read, or write evidence"
+    },
+    {
+      "criterion": "skill-meta-scope-and-churn-present",
+      "pass": false,
+      "detail": "missing pins: meta: the hand-back push is the primary completion signal | meta: the ceiling is a bound, never a duration to sleep out | meta: a wait return names an event, not a state | mux: a wait return names an event, not a state | mux: a hold that sits to its ceiling while the work already finished is wasted wall-clock | plan: addressed to the monitoring meta"
+    }
+  ]
+}

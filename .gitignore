@@ -6,3 +6,5 @@ node_modules/
 *.db-shm
 .cortex/reports/handbacks/*
 .cortex/memory/.agent-trash/
+# Repo-local agent scratch: code, logs, intermediate JSON, bulk/binary working data.
+.tmp/

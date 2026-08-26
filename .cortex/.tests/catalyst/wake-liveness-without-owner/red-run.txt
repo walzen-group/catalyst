@@ -1,0 +1,23 @@
+=== RED: wake.test.mjs ===
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 50.07029
+
+✖ failing tests:
+
+test at test/wake.test.mjs:1:1
+✖ test/wake.test.mjs (43.162764ms)
+  'test failed'
+
+=== RED: status.test.mjs ===
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

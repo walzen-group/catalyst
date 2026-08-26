@@ -48,6 +48,40 @@ export function wakeCommand(name, timeoutMs) {
   return `herdr agent wait ${name} --timeout ${timeoutMs}`;
 }
 
+/**
+ * The herdr pane and tab that own a process, read from its environment. A wait
+ * is a background job of its owner's harness, so it inherits the owner's
+ * HERDR_PANE_ID/HERDR_TAB_ID. That is how "whose wait is this" is answered: a
+ * live wait reported without its owner reads as coverage to any agent, and a
+ * meta once declined to arm its own wait because status showed another agent's
+ * wait against its worker (incident 2026-08-26-wake-liveness-without-owner).
+ *
+ * The environ read is injectable (options.readEnviron) for the unit suite; in
+ * production it reads /proc/<pid>/environ, which is readable for a same-user
+ * process on this host. A pid whose environ cannot be read returns a null owner.
+ */
+export function readProcessOwner(pid, options = {}) {
+  const read = options.readEnviron ?? ((p) => {
+    try {
+      return readFileSync(`/proc/${p}/environ`, 'utf8');
+    } catch {
+      return null;
+    }
+  });
+  const raw = read(pid);
+  if (typeof raw !== 'string') return { pane: null, tab: null };
+  let pane = null;
+  let tab = null;
+  for (const pair of raw.split('\0')) {
+    const eq = pair.indexOf('=');
+    if (eq < 0) continue;
+    const key = pair.slice(0, eq);
+    if (key === 'HERDR_PANE_ID') pane = pair.slice(eq + 1);
+    else if (key === 'HERDR_TAB_ID') tab = pair.slice(eq + 1);
+  }
+  return { pane, tab };
+}
+
 /** Whether a recorded process is still running. */
 export function wakeProcessAlive(pid) {
   if (typeof pid !== 'number' || !Number.isInteger(pid) || pid <= 0) return false;
@@ -72,7 +106,7 @@ export function wakeProcessAlive(pid) {
  *            orphaned: boolean, scanned: boolean}}
  */
 export function liveWaitFor(name, options = {}) {
-  const none = { running: false, pid: null, ppid: null, orphaned: false, scanned: false };
+  const none = { running: false, pid: null, ppid: null, orphaned: false, scanned: false, owner_pane: null, owner_tab: null };
   const ps = spawnSync(options.psBin ?? 'ps', ['-eo', 'pid=,ppid=,args='], { encoding: 'utf8' });
   if (ps.error || typeof ps.stdout !== 'string') return none;
 
@@ -90,8 +124,16 @@ export function liveWaitFor(name, options = {}) {
     if (argv[1] !== 'agent' || argv[2] !== 'wait') continue;
     // <name> as its own argument, so `foo` never matches a wait on `foo-2`.
     if (argv[3] !== name) continue;
-    const entry = { running: true, pid: Number(pid), ppid: Number(ppid), orphaned: Number(ppid) === 1, scanned: true };
-    if (!entry.orphaned) return entry;
+    const entry = { running: true, pid: Number(pid), ppid: Number(ppid), orphaned: Number(ppid) === 1, scanned: true, owner_pane: null, owner_tab: null };
+    if (!entry.orphaned) {
+      // Attribute the wait to its owner: a live wait tells no one whether it is
+      // THEIR wait unless it carries an owner. Only a real (non-orphan) wait is
+      // read; an orphan wakes nobody and never counts as coverage.
+      const owner = readProcessOwner(entry.pid, options);
+      entry.owner_pane = owner.pane;
+      entry.owner_tab = owner.tab;
+      return entry;
+    }
     orphan = entry;
   }
   return orphan ?? { ...none, scanned: true };

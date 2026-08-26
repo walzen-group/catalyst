@@ -1,0 +1,10 @@
+=== GREEN: full dispatch suite ===
+ℹ tests 176
+ℹ pass 176
+ℹ fail 0
+ℹ cancelled 0
+
+=== LIVE owner-attribution proof (real herdr wait pid 985487) ===
+liveWaitFor(meta-incident-waitdeath): {"running":true,"pid":985487,"ppid":985485,"orphaned":false,"scanned":true,"owner_pane":"w7:p1","owner_tab":"w7:t1"}
+readProcessOwner(985487): {"pane":"w7:p1","tab":"w7:t1"}
+owned_by_me: false (my pane w7:p14)

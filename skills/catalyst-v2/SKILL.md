@@ -181,12 +181,15 @@ built-in subagents substitute and the dispatch report says why.
 
 ## Directory conventions
 
-- `.cortex/plans/<date>-<epic>/` - plan index + per-task spec docs, run artifacts, drafts
+- `.cortex/plans/<date>-<epic>/` - plan index + per-task spec docs, prose drafts, gate evidence
 - `.cortex/memory/` + `MEMORY.md` - versioned agent memory
 - `.cortex/incidents/` - audit log of failures, one dated report per incident
 - `.cortex/reports/` - user-facing deliverable reports (audits, findings,
   recommendation reports); hand-backs under `.cortex/reports/handbacks/`
 - `.cortex/.sessions/` - saved session state per effort
+- `<repo>/.tmp/` - gitignored scratch: one-off scripts, program files a delegate
+  writes to compute a result, logs, intermediate/marker JSON, rendered
+  diagnostics, bulk or binary working data
 
 **Two `.cortex/` trees, one rule for what lives where.** The project under work
 has its own `.cortex/`. The catalyst system has a kit tree: in the devcontainer
@@ -201,17 +204,30 @@ the record: the catalyst system itself, or the project's workers.
 `catalyst-v2-in-repo-agent-memory` states the split for memory;
 `catalyst-v2-filing-incidents` for incidents.
 
-Agent run artifacts — logs, marker/intermediate JSON, draft reports a delegate
-emits mid-task — live under `.cortex/` as well (e.g. the effort's plan dir),
-never `/tmp`. A dispatch brief that points a worker's output at `/tmp` sends real
-work to a scratch path outside the reviewable tree; keep it in `.cortex/`.
+Three destinations, and the line between them. The durable record lives in
+`.cortex/`: plan and spec documents, memories, incidents, reports, and the gate
+evidence a verifier reads back. Transient working material lives in a repo-local
+`.tmp/`, gitignored: scratch and one-off scripts, the program files a delegate
+writes to compute a result, logs, intermediate and marker JSON, rendered
+diagnostics, and bulk or binary working data (extracted image frames, transcoded
+video). `/tmp` holds none of it: a brief that points a worker's output at `/tmp`
+sends real work to a global scratch path outside the repo, neither reviewable nor
+cleanable, and it kept not getting cleaned up. The repo-local `.tmp/` sits inside
+the tree, so leftovers are visible and removable, and is gitignored, so they
+never commit; its first use in a repo adds `.tmp/` to that repo's `.gitignore`.
+
+Code and bulk or binary data never land in `.cortex/`; that tree is the prose
+record and the audit trail, not a working directory. A delegate told to write a
+measurement script writes the script under `.tmp/` and records the number it
+produces in the plan doc or report.
 
 A user-facing deliverable report (an audit, findings, a recommendation the
 user will read) is not a run artifact: it lands at
 `.cortex/reports/<date>-<slug>.md`, written with `catalyst-v2-writing-docs`
 (style rules and the mandatory humanizer pass). A brief that sends the
 deliverable itself into the plan dir buries it where the user does not read;
-the plan dir holds drafts and run artifacts only.
+the plan dir holds prose drafts and gate evidence only, and a task's scratch
+scripts and bulk data go to the repo-local `.tmp/`.
 
 ## Memory setup and migration
 

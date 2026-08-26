@@ -1,0 +1,48 @@
+{
+  "run_id": "2026-08-26T07-32-33",
+  "timestamp": "2026-08-26T07:32:33.555Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 68797,
+  "criteria": [
+    {
+      "id": "no-orchestrator-wait",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Names the orchestrator as watcher/dispatcher not a monitored agent, arms no wait on it, grounds disarm in push-wake (c2d steer/handback) and that a settle-wait wakes nobody."
+    },
+    {
+      "id": "check-then-bounded-background",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Checks impl-b first via c2d status/herdr read, then replaces the blind re-arm with one bounded backgrounded wait keyed to a2a hand-back / roster-status change / timeout ceiling, naming the a2a hand-back as the primary wake."
+    },
+    {
+      "id": "sleep-banned-background-is-the-wait",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Treats shell sleep as mechanically refused by the sleep-guard extension, names a bounded backgrounded wait as the quiet-wait mechanism, and keeps herdr agent wait the default with the switch scoped to this one watch."
+    },
+    {
+      "id": "skill-meta-scope-and-churn-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 5 pins present"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden source, git run, cortex read, or write evidence"
+    }
+  ],
+  "judge_reasoning": "All three criteria pass: the actor disarms the orchestrator wait on push-wake grounds, switches the churning impl-b watch to a check-then-bounded-keyed-background wait, and refuses shell sleep in favor of a backgrounded wait, all grounded in the two named skills and within isolation.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-26T07-32-33-log.md"
+}

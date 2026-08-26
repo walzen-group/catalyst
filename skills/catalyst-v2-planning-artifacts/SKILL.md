@@ -57,8 +57,11 @@ the close-out emission stage in `catalyst-v2-orchestrating-delegates` only.
 - **A plan's user-facing deliverable is a report, not a run artifact.** An
   audit, findings, or recommendation the user will read goes to
   `.cortex/reports/`, written with `catalyst-v2-writing-docs`; the plan dir
-  holds drafts and run artifacts. Global constraints state the report path per
-  task so the spec and the hand-back carry it.
+  holds prose drafts and gate evidence, while a task's scratch scripts, logs,
+  intermediate JSON, and bulk or binary working data go to the repo-local
+  `.tmp/` (gitignored), never `.cortex/` or `/tmp` (catalyst-v2 bootstrap,
+  Directory conventions). Global constraints state the report path per task so
+  the spec and the hand-back carry it.
 - **Slug renames are the user's call, settled before dispatch.** When a plan
   proposes renaming or merging skills, the exact new slug strings are a taste
   call the plan presents to the user for confirmation before any dispatch; the
@@ -143,9 +146,18 @@ delivery; brief authors still name the task-specific skills for the work.
 - **User-facing deliverables are not run artifacts.** A task whose deliverable
   is a report the user will read (an audit, findings, a recommendation) writes
   it to `.cortex/reports/<date>-<slug>.md` with `catalyst-v2-writing-docs`
-  (style rules plus the mandatory humanizer pass). Run artifacts and drafts
-  stay under the plan dir. The spec names the exact report path, and the
-  delegate's hand-back states it.
+  (style rules plus the mandatory humanizer pass). Prose drafts and gate
+  evidence stay under the plan dir; a task's scratch scripts, logs, intermediate
+  JSON, rendered diagnostics, and bulk or binary working data go to the
+  repo-local `.tmp/` (gitignored), never `.cortex/` or `/tmp`. The spec names
+  the exact report path and, when a task produces scratch, the `.tmp/` location,
+  and the delegate's hand-back states them.
+- **A worker's completion hand-back is addressed to the monitoring meta.** The
+  spec names the wave's meta as the recipient of the worker's done hand-back (an
+  a2a push, `c2d steer --agent <meta>`), not the orchestrator; the meta verifies
+  and hands to the orchestrator. This lands the push on the watcher holding the
+  wait, so the meta wakes at the worker's real completion rather than on a
+  settle wait's ceiling (incident 2026-08-26-wake-hold-idled-on-completed-work).
 - **A spec for a fix carries the four test-first steps.** Write the test
   first, capturing the wanted behavior; run it against the current, unwanted
   behavior and record the failing run; implement the minimal fix; run the test

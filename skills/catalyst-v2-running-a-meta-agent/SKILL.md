@@ -84,8 +84,49 @@ arm waits for, and never count it as a second meta when judging recurrence
 or replacement. A roster showing your own name among other metas is one
 wave, not two metas (incident 2026-08-04-agent-self-identity).
 
+**The orchestrator is your watcher, not a monitored agent.** It dispatched
+you and reads your hand-back; you reach it by push (`c2d steer --agent
+orchestrator`, `c2d handback`) and it wakes on that push. Arm waits only on
+the agents you monitor, your workers; never arm a wait on the orchestrator.
+A wait on the orchestrator's live session settles at once and wakes nobody,
+the dead shape incident 2026-08-04-orchestrator-self-wait records for a
+self-wait, reached from the other side: the orchestrator is not your
+`caller_self`, so the tool's self-wait guard never marks it for you. Since
+your workers hand back over a2a, that push wakes you when there is something
+to act on (incident 2026-08-26-meta-orchestrator-wait-churn).
+
+**A worker's hand-back push is your primary wake; the settle wait is the safety
+net.** Every worker is briefed to address its completion hand-back (a2a push,
+`c2d steer`) to you, the monitoring meta, not to the orchestrator; you verify
+and hand to the orchestrator. The hand-back push is the primary completion
+signal: it fires at the worker's real completion, so it wakes you the moment the
+work is done, with no wall-clock spent holding a ceiling. The settle wait you
+keep armed underneath is the safety net, so an ended turn is never wakeless and a
+worker that dies without pushing is still caught. This is the meta-to-orchestrator
+shape `catalyst-v2-orchestrating-delegates` already runs (the hand-back arrives
+via steer; the wake is a safety net), one hop down
+(incident 2026-08-26-wake-hold-idled-on-completed-work).
+
 1. **Still working** - check against the spec, not just for motion.
-   - **On track**: re-arm. Autonomous workers are not micromanaged.
+   - **On track**: re-arm. Autonomous workers are not micromanaged. When the
+     wait settled instantly, check the monitored workers before you re-arm: a
+     wait that keeps settling instantly is reading a worker parked between its
+     own turns, not its progress (`catalyst-v2-multiplexer-agent-ops`,
+     "Consecutive instant settles carry no signal"). Once the workers read
+     healthy and unstuck, stop re-arming in a tight loop and hold one bounded
+     background wait, settle-bound to the worker so it returns the instant the
+     worker settles. That wait is the safety net; the worker's hand-back push is
+     the primary wake and arrives when work lands. Keep the wait keyed to
+     material events (the hand-back push, a roster or status change); the ceiling
+     is a bound, never a duration to sleep out, and a hold that sits to its
+     ceiling while the work already finished is wasted wall-clock, the newest
+     complaint on the record (60m armed, done at 5m, 55m idle: incident
+     2026-08-26-wake-hold-idled-on-completed-work). A wait return names an event,
+     not a state: on a settle read the worker's content to tell done from parked,
+     and on a timeout read its usage to tell working from a quota park (a park is
+     re-armed long to its reset, never held on a longer blind ceiling as if it
+     were working). An endless string of instant re-arms buys nothing and burns
+     the budget (incident 2026-08-26-meta-orchestrator-wait-churn).
    - **Off track**: corrective `steer` naming what it is doing, why that is wrong,
      and what to do instead. A soft "are you okay?" does nothing. The steer
      text carries the `A2A:` prefix.

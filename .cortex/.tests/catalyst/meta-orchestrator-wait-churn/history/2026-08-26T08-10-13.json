@@ -1,0 +1,60 @@
+{
+  "run_id": "2026-08-26T08-10-13",
+  "timestamp": "2026-08-26T08:10:13.698Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 71322,
+  "criteria": [
+    {
+      "id": "no-orchestrator-wait",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Arms no wait on the orchestrator; grounds it as watcher/dispatcher reached by push, and notes a wait on its live session settles at once and wakes nobody."
+    },
+    {
+      "id": "check-then-bounded-background",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Checks impl-b first (content since last settle), then holds one bounded backgrounded settle-bound wait as safety net with the a2a hand-back push as primary wake — no tight re-arm loop."
+    },
+    {
+      "id": "early-completion-no-timer-hold",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Names the 55 idle minutes as the ceiling slept out as a duration; primary wake is the hand-back push at the 5-minute completion and ceiling is a bound, never a timer to sleep out."
+    },
+    {
+      "id": "timeout-read-working-vs-quota",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Treats the timeout as a cue to read usage gauges; progressing = working (re-arm bounded), gauge-at-limit = quota park (re-arm long to reset, never restart/hold a longer blind ceiling)."
+    },
+    {
+      "id": "sleep-banned-background-is-the-wait",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Treats shell sleep as mechanically refused by the sleep-guard; names a backgrounded herdr agent wait as the sanctioned quiet wait, keeping it the wake primitive."
+    },
+    {
+      "id": "skill-meta-scope-and-churn-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 10 pins present"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden source, git run, cortex read, or write evidence"
+    }
+  ],
+  "judge_reasoning": "The actor's reply satisfies every criterion's pass definition explicitly and correctly across all five workers/mechanisms; all pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-26T08-10-13-log.md"
+}

@@ -114,12 +114,26 @@ reaches nobody. That is the recorded failure:
   learning nothing. After two consecutive waits on the same agent have
   settled instantly with no state change behind them, that wait measures
   parking, not progress — stop re-arming it blind. You MAY switch that
-  one watch to a bounded background polling watch keyed to material
-  events (a hand-back file appearing, a roster or status change, a
-  timeout ceiling); backgrounded like every wait, never a foreground
-  poll. Decide the switch fresh on each occurrence from the observed
-  churn shape; it is never a standing default. `herdr agent wait` stays
-  the default wake primitive, and the next watch opens on it again.
+  one watch to a bounded background polling watch keyed to material events
+  (a hand-back push arriving, a roster or status change); backgrounded like
+  every wait, never a foreground poll. A timeout ceiling is not one of
+  those events: it is a bound on the wait, the longest the watch stays
+  blind before a heartbeat check, never a duration to sleep out. Decide
+  the switch fresh on each occurrence from the observed churn shape; it is
+  never a standing default. `herdr agent wait` stays the default wake
+  primitive, and the next watch opens on it again.
+- **A wait return names an event, not a state.** `herdr agent wait` returns
+  on a settle or a timeout, and neither says what the agent is doing. A
+  settle fires on idle, done, exited, or settled, so it cannot tell
+  task-complete from an omp agent parked between its turns. A timeout fires
+  when nothing settled within the ceiling, so it cannot tell a genuinely
+  working agent from one parked dead on its quota. Read the agent before
+  acting on the return: on a settle read its content (a declared hand-back
+  is done; work in progress plus a momentary idle is parked), and on a
+  timeout read its usage gauges (progressing is working; a gauge at its
+  limit is a quota park, handled as a park below, never a longer blind
+  ceiling). The return is a cue to read, never a conclusion
+  (incident 2026-08-26-wake-hold-idled-on-completed-work).
 - **A status read is not liveness either.** An omp session between turns (its
   own waits armed, harness backgrounded) can read settled ('done', no
   background shells) while alive. 'Idle turn + armed waits' can be either
@@ -130,7 +144,18 @@ reaches nobody. That is the recorded failure:
 
 **Banned wait shapes.** Run blocking waits in the background (`run_in_background:
 true`) so the session stays free. A shell `sleep` is never a wait: no status
-check may be delayed with one, foreground or in a loop. A foreground blocking wait
+check may be delayed with one, foreground or in a loop. The sanctioned way to
+wait quietly between checks is a bounded backgrounded wait, not a shell timer: a
+backgrounded `herdr agent wait` to a timeout ceiling holds the session until its
+agent settles, and a monitor MAY hold on one once its agents are checked and
+read healthy this turn. The wait is settle-bound: it returns the instant the
+agent settles, so an agent done at 5 minutes wakes the monitor at 5 minutes. The
+ceiling is the longest the monitor stays blind before a heartbeat check, a bound
+on the wait, never a duration to sleep out; a hold that sits to its ceiling while
+the work already finished is wasted wall-clock (60m armed, done at 5m, 55m idle:
+incident 2026-08-26-wake-hold-idled-on-completed-work). A literal shell `sleep`
+stays refused, mechanically, by the `sleep-guard` omp extension under herdr; the
+background wait is how you sleep between checks. A foreground blocking wait
 (blocking `hub wait`, blocking shell wait) is the same failure: the session stays
 blocked on one agent while the others go unwatched. Enforcement is mechanical:
 the `foreground-wait-guard` omp extension

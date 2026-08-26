@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-import { liveWaitFor, prescribeWake, readWakeRecord, wakeCommand } from '../src/wake.mjs';
+import { liveWaitFor, prescribeWake, readProcessOwner, readWakeRecord, wakeCommand } from '../src/wake.mjs';
 
 function stateEnv() {
   const dir = mkdtempSync(join(tmpdir(), 'wake-test-'));
@@ -72,6 +72,38 @@ test('liveWaitFor finds a harness-owned wait and rejects an orphaned one', () =>
   assert.equal(owned.running, true);
   assert.equal(owned.orphaned, false, 'a wait owned by a real parent is a real wake');
   assert.equal(owned.ppid, 9001);
+});
+
+test('readProcessOwner reads the owning herdr pane and tab from a process environ', () => {
+  // A wait is a background job of its owner's harness, so it inherits the
+  // owner's HERDR_PANE_ID/HERDR_TAB_ID. That is how "whose wait is this" is
+  // answered (incident 2026-08-26-wake-liveness-without-owner: a meta read
+  // another agent's wait as its own coverage because the tool reported liveness
+  // without ownership).
+  const environ = ['HERDR_ENV=1', 'HERDR_PANE_ID=w7:p1', 'HERDR_TAB_ID=w7:t1', 'PATH=/usr/bin'].join('\0');
+  const owner = readProcessOwner(4243, { readEnviron: () => environ });
+  assert.equal(owner.pane, 'w7:p1');
+  assert.equal(owner.tab, 'w7:t1');
+});
+
+test('readProcessOwner returns null owner when the environ cannot be read', () => {
+  const owner = readProcessOwner(4243, { readEnviron: () => null });
+  assert.equal(owner.pane, null);
+  assert.equal(owner.tab, null);
+});
+
+test('liveWaitFor attributes a found wait to its owning pane', () => {
+  // The distinction the tool must draw is not "a wait exists" but "whose wait":
+  // a wait owned by another agent wakes ITS owner, not the reader.
+  const environ = ['HERDR_PANE_ID=w7:p1', 'HERDR_TAB_ID=w7:t1'].join('\0');
+  const found = liveWaitFor('delegate-a', {
+    psBin: fakePs(['  4243  9001 herdr agent wait delegate-a --timeout 900000']),
+    readEnviron: () => environ,
+  });
+  assert.equal(found.running, true);
+  assert.equal(found.orphaned, false);
+  assert.equal(found.owner_pane, 'w7:p1');
+  assert.equal(found.owner_tab, 'w7:t1');
 });
 
 test('a process that merely mentions the wait command is not counted as one', () => {

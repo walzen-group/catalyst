@@ -1,0 +1,89 @@
+# test.yaml: guards the meta-agent wake-scope and churn-brake rules repaired
+# from incident 2026-08-26-meta-orchestrator-wait-churn (dispatch
+# 2026-08-25-shared-contested-w2). A meta-agent armed a settle wait on the
+# orchestrator — its watcher, not one of its monitored workers — got instant
+# returns, and re-armed the identical wait 50+ times until it exhausted its
+# provider budget mid-verification. Two owning gaps, both in
+# catalyst-v2-running-a-meta-agent: (1) no rule that the orchestrator is the
+# meta's watcher, not a monitored agent, so the meta never arms a wait on it;
+# (2) the churn brake from incident 2026-08-24-wake-churn-on-parked-meta lived
+# only in catalyst-v2-multiplexer-agent-ops and did not bind the meta role, so
+# the meta's own monitoring loop ("On track: re-arm") carried no brake. The
+# user's policy also lands here: on an instant settle, check the monitored
+# workers first, and once they read healthy hold on a bounded background wait
+# rather than re-arming blind — the workers' a2a hand-back wakes the meta
+# regardless. catalyst-v2-multiplexer-agent-ops reconciles its shell-sleep ban
+# with that quiet-background wait.
+#
+# Sibling test: wake-churn-on-parked-meta guards the same churn shape from the
+# ORCHESTRATOR's role and the multiplexer skill. This test guards the
+# META-agent's role, the meta skill, and the distinct no-orchestrator-wait
+# facet. Kept separate rather than folded in: different role under test,
+# different owning file, different primary defect.
+#
+# Mode A intent simulation: the fix changed watcher judgment, not a mechanical
+# boundary, so the durable guard elicits the monitoring decision from a fresh
+# actor grounded only in the live instructions.
+#
+# EXTENDED 2026-08-26 for the follow-on incident
+# 2026-08-26-wake-hold-idled-on-completed-work. That incident revised this same
+# churn brake: the prior remedy told a churning meta to "hold on one bounded
+# background wait keyed to material events (..., a timeout ceiling)", and a hold
+# keyed to a ceiling is a timer that idles on completed work (60m armed, done at
+# 5m, 55m wasted). The revised rule, guarded by the added pins and the two new
+# semantic criteria (early-completion-no-timer-hold, timeout-read-working-vs-
+# quota): a wait return names an event not a state (read content on a settle,
+# usage on a timeout); the settle wait is settle-bound with the ceiling as a
+# bound, never a duration slept out; and the worker's hand-back push, addressed
+# to the monitoring meta (catalyst-v2-planning-artifacts, now a covered file),
+# is the primary completion wake. The dropped pin "hold on one bounded
+# background wait" named the timer-hold framing this incident removes.
+
+# The role under test: the meta-agent that ran this loop in two consecutive
+# waves. Its model matches the failing role and must differ from the judge.
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst files whose repaired rules this test guards.
+covered_files:
+  - skills/catalyst-v2-running-a-meta-agent/SKILL.md
+  - skills/catalyst-v2-multiplexer-agent-ops/SKILL.md
+  - skills/catalyst-v2-planning-artifacts/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor grounds in the live catalyst skills under ~/nix/catalyst/skills/catalyst-v2-* (or their skill:// URIs) and in no other source.
+  - The actor must not read any .cortex/ content anywhere (project or kit: memory, incidents, plans, reports, tests), must not read any agent session transcript, must not run any git command, must not launch anything (no c2d dispatch, no herdr command that starts or prompts an agent), and must not modify or write any file; everything is delivered in the reply.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# deterministic criteria are implemented in checks.mjs.
+criteria:
+  no-orchestrator-wait:
+    kind: semantic
+    pass: The reply recognizes the orchestrator as the meta's watcher and dispatcher, not one of its monitored agents, and arms no wait on the orchestrator. It grounds this in the orchestrator being reached by push (the meta's hand-back or steer) so the orchestrator wakes on that push, and/or that a wait on the orchestrator's live session settles at once and wakes nobody. It does not treat "watch the orchestrator with a settle wait" as a legitimate move.
+  check-then-bounded-background:
+    kind: semantic
+    pass: For the worker wait that keeps settling instantly while the worker is healthy, the reply checks the monitored worker first, then instead of re-arming the same settle wait in a tight loop holds one bounded, backgrounded wait that is settle-bound to the worker (it returns the instant the worker settles). It names the worker's a2a hand-back push as the primary wake that arrives when work lands and the settle wait as a safety net, and does not present an endless string of instant re-arms as the only move.
+  early-completion-no-timer-hold:
+    kind: semantic
+    pass: On the worker that finished at five minutes under a 60-minute ceiling, the reply identifies the wasted wall-clock as coming from a hold that treats the ceiling as a duration to sleep out rather than a settle-bound wait. It says the primary wake at real completion is the worker's hand-back push (and/or that a settle-bound wait returns at the worker's settle, not at the ceiling), and that the ceiling is a bound, never a timer to sleep out. It does not endorse holding to the ceiling on completed work.
+  timeout-read-working-vs-quota:
+    kind: semantic
+    pass: On the worker whose wait timed out at its ceiling with no settle, the reply treats the timeout as a cue to read the agent (its usage gauges or equivalent liveness read), not a conclusion, and distinguishes a genuinely working agent from one parked dead on its quota. For a quota park it re-arms long to the reset and does not restart; it does not blindly hold another long ceiling on the worker as if it were confirmed working.
+  sleep-banned-background-is-the-wait:
+    kind: semantic
+    pass: The reply does not propose a literal shell `sleep` as the wake mechanism (it treats a shell sleep as banned or unavailable), and instead names a backgrounded wait as the way to wait quietly between checks. `herdr agent wait` stays the default wake primitive and any switch applies to this one watch only.
+  skill-meta-scope-and-churn-present:
+    kind: deterministic
+    pass: The repaired skills carry every load-bearing part of the revised rules. Pins, whitespace-collapsed, in catalyst-v2-running-a-meta-agent/SKILL.md - "the orchestrator is your watcher, not a monitored agent", "never arm a wait on the orchestrator", "check the monitored workers before you re-arm", "the hand-back push is the primary completion signal", "the ceiling is a bound, never a duration to sleep out", "a wait return names an event, not a state"; in catalyst-v2-multiplexer-agent-ops/SKILL.md - "the background wait is how you sleep between checks", "a wait return names an event, not a state", "a hold that sits to its ceiling while the work already finished is wasted wall-clock"; and in catalyst-v2-planning-artifacts/SKILL.md - "addressed to the monitoring meta".
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's forbidden identifiers (dispatch 2026-08-25-shared-contested-w2, wave names meta-wave2-contested / meta-wave1-contested, the statswatch worker names), reads no .cortex content, runs no git command, and writes no file. The incident ids (2026-08-26-meta-orchestrator-wait-churn, 2026-08-26-wake-hold-idled-on-completed-work) are not forbidden: the repaired skills cross-reference them in their own text and the actor's cwd is this test directory, so the id reaches the actor through the live instructions and the test path, never only through the incident report (see the FORBIDDEN_SOURCES note in checks.mjs).

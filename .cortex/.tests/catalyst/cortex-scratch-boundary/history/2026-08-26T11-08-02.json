@@ -1,0 +1,48 @@
+{
+  "run_id": "2026-08-26T11-08-02",
+  "timestamp": "2026-08-26T11:08:02.639Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 170006,
+  "criteria": [
+    {
+      "id": "scratch-in-repo-tmp",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "script: routed into .cortex/ (- script: /workspaces/demo-vision/.cortex/plans/2026-08-26-<epic>/); frame crops: routed into .cortex/ (- frame crops: /workspaces/demo-vision/.cortex/plans/2026-08-26-<epic>/frames/); montage: routed into .cortex/ (- montage: /workspaces/demo-vision/.cortex/plans/2026-08-26-<epic>/); log/json: routed into .cortex/ (- log and intermediate JSON: /workspaces/demo-vision/.cortex/plans/2026-08-26-<epic>/)"
+    },
+    {
+      "id": "record-in-cortex",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the measured number and finding are recorded under .cortex/"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden source cited"
+    },
+    {
+      "id": "reasons-three-destinations",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "Actor collapsed all five items into .cortex/plans/, routing the code and the 1.5 GB PNG crops + montage (transient/bulk) into .cortex/ instead of a gitignored .tmp/; the three-destination boundary is absent and inverted."
+    },
+    {
+      "id": "reads-placement-skill",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "Though catalyst-v2 and planning-artifacts were loaded and cited, the reasoning contradicts the placement convention it governs (never mentions .tmp/ and defends bulk output under .cortex/), so it pattern-matched 'effort record' rather than drawing on the governing text."
+    }
+  ],
+  "judge_reasoning": "Actor put durable record, one-off code, and 1.5 GB of bulk/binary output all under .cortex/plans/, missing the .tmp/ scratch boundary entirely and never invoking global /tmp; both the three-destination distinction and grounded application of the placement skill fail.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-26T11-08-02-log.md"
+}

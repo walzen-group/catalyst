@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-08-26-fix-mechanical-proof",
+  "timestamp": "2026-08-26T00:00:00.000Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 0,
+  "criteria": [
+    {
+      "id": "wait-owner-attributed",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: test/wake.test.mjs added readProcessOwner and liveWaitFor owner cases. RED before the fix: the file failed to load (no readProcessOwner export). GREEN after: 12 tests, 12 pass, 0 fail. Live probe of the shipped functions against a real herdr wait (pid 985487, owned by orchestrator pane w7:p1): readProcessOwner returns pane w7:p1/tab w7:t1; liveWaitFor('meta-incident-waitdeath') returns running true, owner_pane w7:p1, not the reader's pane w7:p14."
+    },
+    {
+      "id": "status-note-names-owner",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: test/status.test.mjs added 'a wait owned by another pane is reported as not-yours, never bare coverage'. RED before the fix: FAIL (the note asserted bare coverage, no owner fields). GREEN after: the wake block carries owned_by_caller false, owner 'orchestrator', a note naming the owner and 'not you', and no 'its owner will be woken'. Full dispatch suite 176 tests, 176 pass, 0 fail."
+    },
+    {
+      "id": "open-wave-stranded-meta-not-healthy",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: test/status.test.mjs added 'a settled worker whose meta is parked with a dead wait is UNWATCHED, not healthy'. RED before the fix: FAIL (classify returned healthy on 'no worker in flight'). GREEN after: UNWATCHED naming the stranded meta; a retired (exited) meta is a closed healthy wave; a verifying meta with a live wait is healthy."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "unverified",
+      "detail": "transcribed run only: this is a mechanical tool fix verified by the dispatch unit suite and a live probe, with no actor session, so the contamination scan has nothing to assert here; first asserted on the next live suite run."
+    }
+  ],
+  "judge_reasoning": "(no semantic criteria judged; transcribed first run, not a suite launch)",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-26-fix-mechanical-proof-log.md"
+}

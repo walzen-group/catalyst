@@ -1,0 +1,17 @@
+{
+  "run": "green (post-fix skill text, revised rule for 2026-08-26-wake-hold-idled-on-completed-work)",
+  "date": "2026-08-26",
+  "note": "After the three skill edits (meta, mux, planning-artifacts). All 10 pins present: 6 meta, 3 mux, 1 planning-artifacts.",
+  "results": [
+    {
+      "criterion": "no-contamination",
+      "pass": true,
+      "detail": "no forbidden source, git run, cortex read, or write evidence"
+    },
+    {
+      "criterion": "skill-meta-scope-and-churn-present",
+      "pass": true,
+      "detail": "all 10 pins present"
+    }
+  ]
+}

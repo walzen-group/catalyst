@@ -80,6 +80,65 @@ test('classify: an idle-at-zero-tokens meta stays UNBRIEFED META (camouflage rea
   assert.match(result.reason, /camouflage reading/);
 });
 
+test('classify: a settled worker whose meta is parked with a dead wait is UNWATCHED, not healthy', () => {
+  // The filed shape (incident 2026-08-26-wake-liveness-without-owner): the
+  // worker settled, so nothing is in flight, but the meta is still parked with
+  // its verification undone and its own wait dead. Reading the wave healthy the
+  // instant the worker settled is what left the meta stranded for 25 minutes.
+  const result = classify([
+    { name: 'impl-flake', role: 'worker', status: 'idle' },
+    { name: 'meta-flake', role: 'meta', status: 'idle', present: true, tokens_spent: true, parked_monitoring: false, wake: { running: false } },
+  ]);
+  assert.equal(result.classification, 'UNWATCHED');
+  assert.match(result.reason, /meta-flake/);
+  assert.match(result.reason, /no live wait/);
+});
+
+test('classify: a settled worker whose meta has retired (exited) is a closed, healthy wave', () => {
+  const result = classify([
+    { name: 'impl-flake', role: 'worker', status: 'idle' },
+    { name: 'meta-flake', role: 'meta', status: 'exited', present: true },
+  ]);
+  assert.equal(result.classification, 'healthy');
+  assert.match(result.reason, /no worker is in flight/);
+});
+
+test('classify: a settled worker whose meta is verifying with a live wait is healthy, not stranded', () => {
+  const result = classify([
+    { name: 'impl-flake', role: 'worker', status: 'idle' },
+    { name: 'meta-flake', role: 'meta', status: 'working', present: true, tokens_spent: true, wake: { running: true } },
+  ]);
+  assert.equal(result.classification, 'healthy');
+});
+
+test('readStatus: a wait owned by another pane is reported as not-yours, never bare coverage', () => {
+  // The meta-testdata-dvc misread: c2d status showed a live wait against the
+  // worker and asserted "its owner will be woken"; the owner was the
+  // orchestrator, so the meta read another agent's wait as its own coverage.
+  const r = rig({
+    agentList: rosterReply([
+      { name: 'orchestrator', agent: 'omp', agent_status: 'working', tab_id: 'w7:t1', pane_id: 'w7:p1', cwd: '/repo' },
+      { name: 'meta-dvc', agent: 'omp', agent_status: 'idle', tab_id: 'w7:t14', pane_id: 'w7:p14', cwd: '/repo' },
+      { name: 'impl-dvc', agent: 'omp', agent_status: 'working', tab_id: 'w7:t2', pane_id: 'w7:p2', cwd: '/repo' },
+    ]),
+    // A live wait on impl-dvc owned by the orchestrator's pane (w7:p1).
+    psLines: ['  990546  990544 herdr agent wait impl-dvc --timeout 1800000'],
+    environByPid: { 990546: ['HERDR_PANE_ID=w7:p1', 'HERDR_TAB_ID=w7:t1'].join('\0') },
+  });
+  // The reader is the meta (pane w7:p14), not the wait's owner (w7:p1).
+  const env = { ...r.env, HERDR_TAB_ID: 'w7:t14', HERDR_PANE_ID: 'w7:p14' };
+
+  const out = readStatus({ env, options: r.options });
+
+  const worker = out.agents.find((a) => a.name === 'impl-dvc');
+  assert.equal(worker.wake.running, true, 'a wait is running');
+  assert.equal(worker.wake.owned_by_caller, false, 'but not one the reader owns');
+  assert.equal(worker.wake.owner, 'orchestrator', 'the owner is attributed by pane');
+  assert.match(worker.wake.note, /owned by orchestrator/);
+  assert.match(worker.wake.note, /not you/);
+  assert.doesNotMatch(worker.wake.note, /its owner will be woken/);
+});
+
 test('classify: the caller own entry is never a wake gap, only real gaps are named', () => {
   // The caller's own pane reads working with no live wait: pre-fix that was a
   // self-wait gap the caller dutifully armed, settling immediately (incident

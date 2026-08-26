@@ -136,8 +136,38 @@ export function classify(agents) {
   const workers = agents.filter((agent) => agent.role === 'worker' && agent.caller_self !== true);
   const metas = agents.filter((agent) => agent.role === 'meta');
   const workersInFlight = workers.filter(stillWorking);
-  if (workersInFlight.length === 0) return { classification: 'healthy', reason: 'no worker is in flight' };
-  if (metas.length === 0) return { classification: 'UNWATCHED', reason: 'workers are in flight with no meta-agent on the roster' };
+
+  // A meta that has not retired (present and not exited) still owes verification
+  // and a hand-back, so its wave is not closed even after every worker settled.
+  // Reading a wave healthy the instant its worker settled is what buried a meta
+  // stranded on a dead wait for 25 minutes with its verification undone
+  // (incident 2026-08-26-wake-liveness-without-owner). A closed, healthy wave is
+  // nothing in flight AND no meta still open.
+  const openMetas = metas.filter((meta) => meta.present !== false && meta.status !== 'exited');
+  if (workersInFlight.length === 0 && openMetas.length === 0) {
+    return { classification: 'healthy', reason: 'no worker is in flight and no meta is still open' };
+  }
+  if (workersInFlight.length > 0 && metas.length === 0) {
+    return { classification: 'UNWATCHED', reason: 'workers are in flight with no meta-agent on the roster' };
+  }
+
+  // From here a meta is on the roster: workers are in flight, or a meta is still
+  // open after the workers settled. Its state decides, exactly as it does with
+  // workers in flight. A meta that reads settled/parked with its own wake dead
+  // is stranded: when it (or its worker) settles, no live wait wakes anyone, so
+  // it sits with its duty undone. That is a mechanical fact (a prescribed wait
+  // whose pid is gone, or one never armed), so it is surfaced as a definite gap,
+  // never the probe-first META QUIESCENT that reads the same on a healthy park.
+  // Only a meta carrying a wake reading counts, so a hand-built roster without
+  // one is not read as a gap.
+  const stranded = openMetas.filter((meta) => meta.status !== 'working'
+    && meta.wake !== undefined && meta.wake !== null && meta.wake.running === false);
+  if (stranded.length > 0) {
+    return {
+      classification: 'UNWATCHED',
+      reason: `${stranded.map((meta) => meta.name).join(', ')} is parked with no live wait of its own: a settle wakes no one, so its verification is stranded. Probe it and re-arm its wait`,
+    };
+  }
 
   // Every meta is tested for the camouflage reading before any healthy verdict:
   // one working meta beside an unbriefed one is still an unbriefed meta. A meta
@@ -194,6 +224,9 @@ export function classify(agents) {
       reason: `a meta is at work, but no live wait is running for ${gaps.join(', ')}: a settle would go unnoticed`,
     };
   }
+  if (workersInFlight.length === 0) {
+    return { classification: 'healthy', reason: 'the workers settled and a meta is at work with a live wait: the wave is closing' };
+  }
   return { classification: 'healthy', reason: 'every in-flight worker has a meta at work and a live wait running' };
 }
 
@@ -238,6 +271,14 @@ export function readStatus({ dispatchId = null, names = null, sharedCheckout: ch
   }
   const roster = rosterAgents(rosterReply);
   const rosterByName = new Map(roster.map((agent) => [agent?.name, agent]));
+  // Pane -> agent name, so a live wait's owning pane resolves to whose wait it
+  // is. "A wait exists" is not "YOUR wait exists": a meta once read another
+  // agent's wait against its worker as its own coverage and declined to arm one
+  // (incident 2026-08-26-wake-liveness-without-owner).
+  const rosterByPane = new Map();
+  for (const agent of roster) {
+    if (agent?.pane_id) rosterByPane.set(agent.pane_id, agent.name);
+  }
   const self = callerSelfId(env);
 
   let targets;
@@ -258,6 +299,16 @@ export function readStatus({ dispatchId = null, names = null, sharedCheckout: ch
     // caller's own harness-run job, and an orphaned wait (ppid 1) delivers to
     // nobody however alive it looks.
     const waitProc = callerSelf ? null : liveWaitFor(name, options);
+    // Attribute a live wait to its owner: the owning pane, that pane's agent
+    // name, and whether the reader (the caller) is that owner. A wait the caller
+    // does not own wakes its owner, not the caller.
+    const ownerPane = !callerSelf && waitProc ? waitProc.owner_pane ?? null : null;
+    const ownerTab = !callerSelf && waitProc ? waitProc.owner_tab ?? null : null;
+    const ownerName = ownerPane ? rosterByPane.get(ownerPane) ?? null : null;
+    const ownedByCaller = !callerSelf && self !== null && waitProc !== null
+      && waitProc.running && !waitProc.orphaned
+      && ((self.paneId !== null && ownerPane === self.paneId)
+        || (self.tabId !== null && ownerTab === self.tabId));
     const shells = live === null
       ? { shells: null, parked: false, note: null }
       : shellReading(name, live.agent_status ?? null, options);
@@ -293,8 +344,13 @@ export function readStatus({ dispatchId = null, names = null, sharedCheckout: ch
             pid: waitProc.pid,
             ppid: waitProc.ppid,
             orphaned: waitProc.orphaned,
+            owner_pane: ownerPane,
+            owner: ownerName,
+            owned_by_caller: ownedByCaller,
             note: waitProc.running && !waitProc.orphaned
-              ? 'a live wait is running for this agent and its owner will be woken'
+              ? (ownedByCaller
+                  ? 'a live wait you own is running for this agent; you will be woken when it settles'
+                  : `a live wait is running for this agent, but it is owned by ${ownerName ?? (ownerPane ? `pane ${ownerPane}` : 'another agent')}, not you: it wakes ITS owner, not you. If you must be woken when this agent settles, arm your own \`${wakeRecord?.command ?? wakeCommand(name, wakeRecord?.timeout_ms ?? 900000)}\` as a background job of your own harness`)
               : waitProc.orphaned
                 ? 'a wait for this agent is running but ORPHANED (ppid 1): nobody is waiting on it, so its exit wakes no one. Run the command above as a background job of your own harness'
                 : 'no live wait is running for this agent: a settle would go unnoticed. Run the command above as a background job of your own harness',

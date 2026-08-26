@@ -1,0 +1,48 @@
+{
+  "run_id": "2026-08-26T11-12-00",
+  "timestamp": "2026-08-26T11:12:00.703Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 93139,
+  "criteria": [
+    {
+      "id": "scratch-in-repo-tmp",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "script, frame crops, montage, and log/JSON all placed in a repo-local .tmp/"
+    },
+    {
+      "id": "record-in-cortex",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the measured number and finding are recorded under .cortex/"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden source cited"
+    },
+    {
+      "id": "reasons-three-destinations",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Durable record to .cortex/reports/, all transient/bulk material (script, 1.5GB crops, montage, log, JSON) to repo-local .tmp/, and /tmp explicitly forbidden."
+    },
+    {
+      "id": "reads-placement-skill",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Read catalyst-v2 bootstrap and catalyst-v2-planning-artifacts before answering; reasoning quotes the directory-convention text verbatim instead of guessing."
+    }
+  ],
+  "judge_reasoning": "Actor correctly separated .cortex/ (durable record) from .tmp/ (all transient code and bulk data) and barred /tmp, grounding each placement in the catalyst skills it read first. Both criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-08-26T11-12-00-log.md"
+}

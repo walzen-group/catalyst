@@ -28,8 +28,20 @@ export function rig(state = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'catalyst-dispatch-test-'));
   rigDirs.push(dir);
   registerRigCleanup();
+  // Wait-liveness injection: psLines feeds liveWaitFor's process scan and
+  // environByPid feeds its owner-attribution read, kept out of the herdr state.
+  const { psLines, environByPid, ...herdrState } = state;
   const statePath = join(dir, 'state.json');
-  writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
+  writeFileSync(statePath, `${JSON.stringify(herdrState, null, 2)}\n`);
+  let psBin;
+  if (Array.isArray(psLines)) {
+    psBin = join(dir, 'ps');
+    writeFileSync(psBin, `#!/bin/sh\ncat <<'EOF'\n${psLines.join('\n')}\nEOF\n`);
+    chmodSync(psBin, 0o755);
+  }
+  const readEnviron = environByPid
+    ? (pid) => (Object.prototype.hasOwnProperty.call(environByPid, pid) ? environByPid[pid] : null)
+    : undefined;
   const env = {
     ...process.env,
     XDG_STATE_HOME: join(dir, 'state'),
@@ -46,7 +58,12 @@ export function rig(state = {}) {
   return {
     dir,
     env,
-    options: { bin: FAKE_HERDR, env },
+    options: {
+      bin: FAKE_HERDR,
+      env,
+      ...(psBin ? { psBin } : {}),
+      ...(readEnviron ? { readEnviron } : {}),
+    },
     state: () => JSON.parse(readFileSync(statePath, 'utf8')),
     // A run that made no herdr call at all writes no log, and "nothing was
     // called" is an answer some tests are asking for.
