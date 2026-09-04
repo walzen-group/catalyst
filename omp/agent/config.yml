@@ -33,7 +33,7 @@ statusLine:
     - pr
     - subagents
   rightSegments:
-#    - usage
+    - usage
     - cache_hit
     - token_in
     - token_out
