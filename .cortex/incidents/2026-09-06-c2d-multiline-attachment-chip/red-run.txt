@@ -1,0 +1,8 @@
+✖ omp 18.1.4 attachment-chip renders are recognized as a parked paste (1.011557ms)
+✖ a parked omp attachment chip (herdr stall + 18.1.4 render) is released with Enter and verified working (197.162163ms)
+ℹ tests 38
+ℹ pass 36
+ℹ fail 2
+✖ failing tests:
+✖ omp 18.1.4 attachment-chip renders are recognized as a parked paste (1.011557ms)
+✖ a parked omp attachment chip (herdr stall + 18.1.4 render) is released with Enter and verified working (197.162163ms)

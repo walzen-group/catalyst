@@ -10,6 +10,8 @@
 
 import { statSync } from 'node:fs';
 
+import { IN_FLIGHT } from './status.mjs';
+
 // Required fields, each refused by name when missing or empty. deliverable_paths
 // is required but may be an empty list. Unknown keys are refused (the schema-wide
 // invariant).
@@ -30,6 +32,26 @@ function statOrNull(path) {
   } catch {
     return null;
   }
+}
+
+/**
+ * The retirement gate: which of the caller's dispatch entries are workers still
+ * in flight. A meta retires by delivering its hand-back, so the delivery itself
+ * must refuse while any worker of its own dispatch reads in flight on the live
+ * roster — never retire with a worker still in flight
+ * (catalyst-v2-running-a-meta-agent). Entries are status.mjs-shaped:
+ * {name, role, caller_self, present, status}. Only a worker entry that is
+ * present and not the caller counts; a settled or absent worker does not.
+ * @param {Array<{name: string, role: string, caller_self?: boolean, present?: boolean, status?: string|null}>} agents
+ * @returns {Array<{name: string, status: string}>}
+ */
+export function gateInFlightWorkers(agents) {
+  return agents
+    .filter((agent) => agent?.role === 'worker'
+      && agent.caller_self !== true
+      && agent.present === true
+      && IN_FLIGHT.has(agent.status))
+    .map((agent) => ({ name: agent.name, status: agent.status }));
 }
 
 /**

@@ -1,0 +1,59 @@
+{
+  "run_id": "2026-09-06-fix-live-proof",
+  "timestamp": "2026-09-06T11:26:00.000Z",
+  "config_source": "declared",
+  "side": "declared",
+  "duration_ms": 0,
+  "errored": false,
+  "regressions": [],
+  "criteria": [
+    {
+      "id": "unit-guards-pass",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "38 tests, 38 pass, 0 fail in deliver.test.mjs (184/184 across the whole c2d suite); both pins named"
+    },
+    {
+      "id": "both-renders-wired",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "deliver.mjs ORs OMP_PASTE_CHIP, OMP_ATTACHMENT_CHIP_EDITOR and OMP_ATTACHMENT_CHIP_CARD in hasOmpParkedChip"
+    },
+    {
+      "id": "fixture-carries-new-render",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "harness.mjs OMP_ATTACHMENT_PARKED carries the captured 18.1.4 editor-line and card render"
+    },
+    {
+      "id": "actor-demonstrates",
+      "kind": "deterministic",
+      "status": "unverified",
+      "detail": "transcribed run only: the fix dispatch's sessions were not run under this test's scenario, so the transcript criteria have nothing to assert here; first asserted on the next live suite run"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "unverified",
+      "detail": "transcribed run only: the fix dispatch's sessions were not run under this test's isolation rules, so the contamination scan has nothing to assert here; first asserted on the next live suite run"
+    },
+    {
+      "id": "report-schema",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "newest recorded run JSON matches the record schema"
+    },
+    {
+      "id": "file-presence",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "test files present: test.yaml, scenario.md, checks.mjs, history/"
+    }
+  ],
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "judge_reasoning": "(no semantic criteria judged; transcribed first run, not a suite launch)"
+}

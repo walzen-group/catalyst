@@ -1,0 +1,45 @@
+GREEN RUN — recorded 2026-09-06 post-fix. The repaired rule is present and
+the mechanical guard passes.
+
+Skill pins, post-fix (grep counts over the target files):
+
+  planning-artifacts: 4 matches ("duty ends at its completion hand-back",
+    "runs no further commands", "no roster reads", "Report-to section
+    closes")
+  running-a-meta-agent: 2 matches ("enforces the gate at the delivery
+    moment", "--allow-in-flight true")
+
+Unit suite, post-fix (node --test in skills/catalyst-v2-dispatch):
+
+  tests 182, pass 182, fail 0. New cases in test/handback.test.mjs:
+  - gateInFlightWorkers names only present workers that are working or
+    blocked (meta, settled, absent, and caller-self entries excluded)
+  - handback refuses delivery while a worker of the caller dispatch is in
+    flight (exit 1, worker named, nothing delivered)
+  - handback delivers once every worker of the caller dispatch has settled
+  - --allow-in-flight true delivers over an in-flight worker and records
+    the exception in the delivered text
+  - handback with no attributable dispatch record delivers with a gate note
+  New cases in test/result.test.mjs:
+  - findDispatchForCaller returns the dispatch whose meta-agent entry
+    matches the caller pane
+  - a worker pane attributes no dispatch
+  - null with no herdr ids, no records, or no match
+
+Mode A replay, first recorded run `2026-09-06T11-16-36`: 6/6 pass. Actor
+opencode-go/deepseek-v4-flash via omp (the user's model directive; role
+implementation-mid), judge claude-opus-4-8 (the user-authorized single
+exception: the suite's own rubric role, launched by the runner on its own
+config; lib/resolve.mjs's distinct-judge rule untouched). All three semantic
+criteria pass (duty closes at the delivered hand-back with no ack owed; all
+roster/meta/peer reads, waits, and delivery re-verification refused as out of
+role; stalled steer capped at one more report then stop) and all three
+deterministic criteria pass (5 close-out pins, 2 meta-gate pins, clean
+contamination scan). Judge reasoning recorded in history/2026-09-06T11-16-36.
+
+The calibration run `2026-09-06T11-14-10` (5/6, no-contamination fail) is kept
+in history/: its semantic criteria passed and the scan failure was traced to
+the checks.mjs launch detector matching prose quotes of the commands the
+scenario itself names ("via c2d steer --agent meta-echo", the constraint
+echo). The detector now requires an execution shape (`$`/`❯` prompt or `╭───`
+tool box); re-run over the recorded transcript scans clean.

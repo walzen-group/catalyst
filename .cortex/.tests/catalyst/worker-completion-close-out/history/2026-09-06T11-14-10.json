@@ -1,0 +1,54 @@
+{
+  "run_id": "2026-09-06T11-14-10",
+  "timestamp": "2026-09-06T11:14:10.536Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 79071,
+  "criteria": [
+    {
+      "id": "duty-ends-at-hand-back",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "States task is done at the delivered steer, no acknowledgment owed, no follow-up task action, and worker goes idle or ends the session."
+    },
+    {
+      "id": "no-roster-or-peer-monitoring",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Explicitly names roster reads, meta/peer pane reads, delivery forensics, and waits on meta/orchestrator as 'not mine' and takes none of them."
+    },
+    {
+      "id": "stalled-steer-bounded",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Bounds the stall to one additional A2A report then stop regardless of reply; rejects retry loops, escalation, and delivery forensics."
+    },
+    {
+      "id": "close-out-rule-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 5 pins present"
+    },
+    {
+      "id": "meta-gate-text-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 2 pins present"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "launched an agent, steered, or armed a wait"
+    }
+  ],
+  "judge_reasoning": "The actor's reply cleanly hits all three: duty ends at the delivered hand-back with idle/end-session, no roster/peer/wait monitoring (each named as not its to take), and a bounded one-more-report stalled-steer case with no indefinite retry or forensics.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-09-06T11-14-10-log.md"
+}

@@ -302,6 +302,32 @@ export const OMP_WORKING = [
   '╰─                                                                                                              ─╯',
 ].join('\n');
 
+/**
+ * The same omp pane under omp 18.1.4 (captured live 2026-09-06 on
+ * repro-omp-multiline): a large multi-line paste no longer parks as a text
+ * chip — it parks as a file attachment. The `❯` editor holds "📄 #N" and a
+ * preview card above the status rule shows the first lines of the pasted
+ * text with its line count in the bottom border. One Enter releases it, the
+ * same recovery the text chip used; the tool's chip detector must recognize
+ * this render or the honest failure fires with the text still parked.
+ */
+export const OMP_ATTACHMENT_PARKED = [
+  ' Connected to MCP servers: context7, context7:context7.',
+  '',
+  ' REPRO-READY',
+  '╭── 📄 #1 ───╮',
+  '│A2A: task 4…│',
+  '│            │',
+  '│Files (20, …│',
+  '│  deploy/cm…│',
+  '╰ +103 lines ╯',
+  '',
+  '──────────────────── ⏱ OpenCode Go · 5h 11% (3h 55m) · 💾 87.64% · ⏱ 10:56 ─',
+  '❯ 📄 #1',
+  '────────────────────────────────────────────────────────────────────────────',
+  ' π  · ◉ DeepSeek V4 Flash · 🗑 c2d-multiline-repro',
+].join('\n');
+
 /** herdr `agent get` for a live omp agent mid-turn. */
 export const OMP_WORKING_GET = {
   status: 0,

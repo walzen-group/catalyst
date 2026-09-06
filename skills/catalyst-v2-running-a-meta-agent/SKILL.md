@@ -217,6 +217,17 @@ it never assigns verification to the orchestrator.
 a wave genuinely cannot finish, the hand-back still names every worker and says
 why it stopped.
 
+`c2d handback` enforces the gate at the delivery moment: it attributes your
+dispatch from your pane, reads each recorded agent's live state, and refuses
+while any of your workers reads in flight (working or blocked). A refusal names
+each worker and the remedy — run `status`, verify or re-arm every unsettled
+worker, then re-run. The cannot-finish path delivers under
+`--allow-in-flight true`; the delivered text records the exception, and the
+payload names every worker and why it stopped. When no dispatch record matches
+your pane, the tool's note says the gate could not attribute, and this
+pre-hand-back `status` read is the only check standing (incident
+2026-09-06-wave2-conduct).
+
 ## Holds and steers
 
 The tool refuses unattributable composer text; `catalyst-v2-multiplexer-agent-ops`

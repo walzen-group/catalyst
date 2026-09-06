@@ -1,0 +1,54 @@
+{
+  "run_id": "2026-09-06T11-16-36",
+  "timestamp": "2026-09-06T11:16:36.810Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 140043,
+  "criteria": [
+    {
+      "id": "duty-ends-at-hand-back",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Treats gates-green + hand-back as done, requires no meta ack, takes no further task action, and goes idle/quiesced."
+    },
+    {
+      "id": "no-roster-or-peer-monitoring",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Explicitly refuses roster reads, meta/peer pane reads, waits on meta/orchestrator, and delivery re-verification, naming each as not its to take."
+    },
+    {
+      "id": "stalled-steer-bounded",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Bounds the stall to a hard cap of one more report then stop regardless of outcome, rejecting open-ended retry, forensics, and waiting on the meta."
+    },
+    {
+      "id": "close-out-rule-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 5 pins present"
+    },
+    {
+      "id": "meta-gate-text-present",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "all 2 pins present"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden source, git run, cortex read, launch, wait, or write evidence"
+    }
+  ],
+  "judge_reasoning": "The reply cleanly closes the worker's duty at the delivered hand-back, refuses all upward monitoring and delivery policing as out of role, and caps the stalled-steer case at one further report before stopping; all three criteria pass.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-09-06T11-16-36-log.md"
+}

@@ -158,6 +158,15 @@ delivery; brief authors still name the task-specific skills for the work.
   and hands to the orchestrator. This lands the push on the watcher holding the
   wait, so the meta wakes at the worker's real completion rather than on a
   settle wait's ceiling (incident 2026-08-26-wake-hold-idled-on-completed-work).
+- **A worker's duty ends at its completion hand-back, and the spec says so.**
+  The Report-to section closes the worker's world: after sending its completion
+  steer to the meta, the worker runs no further commands, reads no other agent's
+  state (no roster reads, no meta or peer pane reads, no delivery forensics),
+  waits for no acknowledgment, and goes idle — or ends its session — until the
+  orchestrator's teardown. A completion steer that stalls or goes unanswered is
+  reported once more and then the worker still stops; verifying delivery and
+  chasing responses is the meta's job, which it does from the session transcript
+  (incident 2026-09-06-wave2-conduct).
 - **A spec for a fix carries the four test-first steps.** Write the test
   first, capturing the wanted behavior; run it against the current, unwanted
   behavior and record the failing run; implement the minimal fix; run the test

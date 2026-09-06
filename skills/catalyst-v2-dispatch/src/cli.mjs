@@ -9,7 +9,8 @@ import { fetchRoster } from './herdr.mjs';
 import { runDispatch as runDispatchPlan } from './dispatch.mjs';
 import { steerAgent } from './steer.mjs';
 import { readStatus } from './status.mjs';
-import { formatHandback, validateHandback } from './handback.mjs';
+import { formatHandback, validateHandback, gateInFlightWorkers } from './handback.mjs';
+import { findDispatchForCaller } from './result.mjs';
 
 const USAGE = `c2d — deterministic herdr launch wrapper
 
@@ -21,6 +22,7 @@ Usage:
                              [--expect <keyword>] [--wake-timeout <ms>]
   c2d handback --agent <name> --file <.cortex path>
                              [--expect <keyword>] [--wake-timeout <ms>]
+                             [--allow-in-flight true]
   c2d status [--dispatch-id <id> | --agents <a,b,...>]
                               [--shared-checkout <path>]
 
@@ -43,7 +45,12 @@ handback  validate a structured meta hand-back (files_changed, diffs_per_worker,
           gate_evidence, whole_change_output, deliverable_paths) read from a
           .cortex JSON --file, then deliver it through the steer path. Each
           required field is refused by name when missing or empty; gate_evidence
-          must reference an existing artifact.
+          must reference an existing artifact. Delivery is refused while a
+          worker of the caller's own dispatch reads in flight (working or
+          blocked) on the live roster: never retire with a worker still in
+          flight. A wave that genuinely cannot finish delivers under
+          --allow-in-flight true, which records the exception in the delivered
+          text.
   status    classify a roster's health: healthy, UNWATCHED, UNBRIEFED META,
           META QUIESCENT, or META RETIRED EARLY. Detection only.
 
@@ -262,12 +269,16 @@ function runSteer(args, io) {
 
 function runHandback(args, io) {
   const { out } = io;
-  const parsed = parseFlags(args, ['agent', 'file', 'expect', 'wake-timeout']);
+  const parsed = parseFlags(args, ['agent', 'file', 'expect', 'wake-timeout', 'allow-in-flight']);
   if (parsed.help) { out.write(USAGE); return 0; }
   if (parsed.error) return failed(out, [parsed.error]);
   const flags = parsed.value;
   if (!flags.agent) return failed(out, ['handback: --agent <name> is required']);
   if (flags.file === undefined) return failed(out, ['handback: --file <.cortex path> is required']);
+  const allowInFlight = flags['allow-in-flight'] ?? null;
+  if (allowInFlight !== null && allowInFlight !== 'true') {
+    return failed(out, [`handback: --allow-in-flight takes the value true (got "${allowInFlight}")`]);
+  }
 
   const gate = requireCortexDoc(flags.file);
   if (!gate.ok) return failed(out, [`handback: --file: ${gate.reason}`]);
@@ -282,10 +293,59 @@ function runHandback(args, io) {
   const validated = validateHandback(raw);
   if (!validated.ok) return failed(out, validated.errors);
 
+  // Retirement gate: never deliver a hand-back while a worker of the caller's
+  // own dispatch is still in flight (catalyst-v2-running-a-meta-agent). The
+  // caller's dispatch is attributed from its herdr pane against the persisted
+  // dispatch results, and each recorded agent's live state is read at the
+  // delivery moment, so the gate fires on the same reading the orchestrator
+  // would run. Unattributable (no herdr ids, no matching record): the gate
+  // notes that it could not run rather than blocking a legitimate delivery.
+  const env = io.env ?? process.env;
+  const handbackGate = {
+    dispatch_id: null,
+    attributed: false,
+    workers_in_flight: [],
+    overridden: false,
+    note: null,
+  };
+  if (env.HERDR_PANE_ID !== undefined || env.HERDR_TAB_ID !== undefined) {
+    const found = findDispatchForCaller(env);
+    if (found !== null) {
+      handbackGate.dispatch_id = found.dispatch_id;
+      handbackGate.attributed = true;
+      const statusDoc = readStatus({ dispatchId: found.dispatch_id, env, options: io.options });
+      if (statusDoc.classification === 'UNREADABLE') {
+        handbackGate.note = `the roster did not answer (${statusDoc.reason}); the gate could not confirm every worker settled`;
+        if (allowInFlight !== 'true') {
+          return failed(out, ['handback: the retirement gate could not run because the roster did not answer. Re-run once herdr answers; when a wave genuinely cannot finish, re-run with --allow-in-flight true and name every worker and why it stopped in the payload']);
+        }
+      } else {
+        handbackGate.workers_in_flight = gateInFlightWorkers(statusDoc.agents);
+        if (handbackGate.workers_in_flight.length > 0 && allowInFlight !== 'true') {
+          const names = handbackGate.workers_in_flight.map((w) => `${w.name} (${w.status})`).join(', ');
+          return failed(out, [`handback: refusing delivery while ${names} ${handbackGate.workers_in_flight.length === 1 ? 'is' : 'are'} still in flight: never retire with a worker in flight. Run c2d status and account for every agent — verify each or re-arm a wait on it — then re-run; when a wave genuinely cannot finish, re-run with --allow-in-flight true and name every worker and why it stopped in the payload`]);
+        }
+      }
+    }
+  }
+  if (allowInFlight === 'true' && (handbackGate.workers_in_flight.length > 0 || handbackGate.note !== null)) {
+    handbackGate.overridden = true;
+  }
+  if (!handbackGate.attributed && handbackGate.dispatch_id === null) {
+    handbackGate.note = 'no dispatch record matched the caller pane; the in-flight gate could not attribute workers to this hand-back';
+  }
+
   // On a valid payload, deliver through the steer path: composer-hold refusal,
   // attribution, and consumption checks all still apply. The A2A: attribution
-  // rides in the formatted text.
+  // rides in the formatted text; an overridden gate stays visible in it.
   const text = formatHandback(validated.value);
+  let delivered = text;
+  if (handbackGate.overridden) {
+    const names = handbackGate.workers_in_flight.length > 0
+      ? handbackGate.workers_in_flight.map((w) => `${w.name} (${w.status})`).join(', ')
+      : 'workers whose state the roster could not confirm';
+    delivered = `${text}\n\nHAND-BACK DELIVERED WITH WORKERS IN FLIGHT: ${names}. The payload names every worker and why the wave stopped.`;
+  }
 
   let wakeTimeoutMs;
   if (flags['wake-timeout'] !== undefined) {
@@ -297,13 +357,13 @@ function runHandback(args, io) {
 
   const document = steerAgent({
     agent: flags.agent,
-    text,
+    text: delivered,
     expect: flags.expect ?? null,
     ...(wakeTimeoutMs !== undefined ? { wakeTimeoutMs } : {}),
-    env: io.env ?? process.env,
+    env,
     ...(io.options ? { options: io.options } : {}),
   });
-  emit(out, document);
+  emit(out, { ...document, handback_gate: handbackGate });
   return document.status === 'ok' || document.status === 'skipped' ? 0 : 1;
 }
 

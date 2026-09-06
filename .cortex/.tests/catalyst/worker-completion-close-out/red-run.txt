@@ -1,0 +1,23 @@
+RED RUN — recorded 2026-09-06 pre-fix, before the skill edits and the tool
+change landed. Both halves of the wanted behavior are absent.
+
+Skill pins, pre-fix (grep counts over the target files):
+
+  planning-artifacts pins ("duty ends", "runs no further", "no roster
+  reads"):      0 matches
+  meta-agent pins ("allow-in-flight", "refuses while any worker",
+  "hand-back gate"): 0 matches
+  tool pins ("allow-in-flight", "inFlightNames", "findDispatchForCaller",
+  "handback_gate") across src/*.mjs: 0 matches in every file
+
+Unit suite, pre-fix (node --test test/handback.test.mjs test/result.test.mjs):
+
+  test/handback.test.mjs: failed to load — SyntaxError: the requested module
+    '../src/handback.mjs' does not provide an export named 'gateInFlightWorkers'
+  test/result.test.mjs:   failed to load — the requested module
+    '../src/result.mjs' does not provide an export named 'findDispatchForCaller'
+
+  (node:internal/modules/esm/module_job errors; 2 files, 0 pass)
+
+The pre-fix code and skill text carry none of the repaired rule, so a fresh
+worker or meta reading them repeats the wave-2 deviations.

@@ -8,10 +8,11 @@
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
 
-import { validateHandback, formatHandback } from '../src/handback.mjs';
+import { validateHandback, formatHandback, gateInFlightWorkers } from '../src/handback.mjs';
+import { resultPath } from '../src/result.mjs';
 import { main } from '../src/cli.mjs';
 import { OMP_IDLE, OMP_WORKING_GET, rig } from './helpers/harness.mjs';
 
@@ -142,4 +143,170 @@ test('handback --file outside a .cortex tree is refused', async () => {
   const code = await main(['handback', '--agent', 'orchestrator', '--file', file], { ...c.io });
   assert.equal(code, 1, c.read());
   assert.match(JSON.parse(c.read()).failures.join(' '), /not under a \.cortex\/ tree/);
+});
+
+// --- retirement gate: never hand back with a worker still in flight -----------
+// A meta retires by delivering its hand-back. Delivery must refuse while any
+// worker of the caller's own dispatch reads in flight on the live roster, so a
+// meta cannot declare completion over a worker that is still working
+// (incident 2026-09-06-wave2-conduct). The caller's dispatch is attributed from
+// its herdr pane against the persisted dispatch results.
+
+function rosterAgent(name, status, pane, tab) {
+  return {
+    name,
+    agent_status: status,
+    pane_id: pane,
+    tab_id: tab,
+    cwd: '/home/nixos/repos/kuport',
+    agent_session: { agent: 'omp', kind: 'path', source: 'herdr:omp', value: `/tmp/${name}.jsonl` },
+    revision: 3,
+  };
+}
+
+function listReply(agents) {
+  return { status: 0, stdout: JSON.stringify({ id: 'cli:agent:list', result: { agents } }) };
+}
+
+// One `agent get` reply serves every get in the fake; the pane is deliberately
+// NOT the caller's so no entry reads caller_self from the live reply (the
+// attribution comes from the persisted dispatch record, not the live pane).
+function getReply(status) {
+  return {
+    status: 0,
+    stdout: JSON.stringify({
+      id: 'cli:agent:get',
+      result: { agent: rosterAgent('any', status, 'wX:p9', 'wX:t9') },
+    }),
+  };
+}
+
+function writeResultRecord(env, dispatchId, agents) {
+  const file = resultPath(dispatchId, env);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, JSON.stringify({ dispatch_id: dispatchId, status: 'ok', agents }));
+}
+
+test('gateInFlightWorkers names only present workers that are working or blocked', () => {
+  const agents = [
+    { name: 'meta-wave2', role: 'meta', present: true, status: 'working' },
+    { name: 'impl-task4-deploy', role: 'worker', present: true, status: 'working' },
+    { name: 'impl-blocked', role: 'worker', present: true, status: 'blocked' },
+    { name: 'impl-done', role: 'worker', present: true, status: 'done' },
+    { name: 'impl-gone', role: 'worker', present: false, status: 'working' },
+    { name: 'impl-self', role: 'worker', caller_self: true, present: true, status: 'working' },
+  ];
+  assert.deepEqual(gateInFlightWorkers(agents), [
+    { name: 'impl-task4-deploy', status: 'working' },
+    { name: 'impl-blocked', status: 'blocked' },
+  ]);
+});
+
+test('handback refuses delivery while a worker of the caller dispatch is in flight', async () => {
+  const file = writeCortexPayload(payload());
+  const r = rig({
+    agentList: listReply([
+      rosterAgent('meta-wave2', 'working', 'wT:p1', 'wT:t1'),
+      rosterAgent('impl-task4-deploy', 'working', 'wT:p2', 'wT:t2'),
+    ]),
+    agentGet: getReply('working'),
+    reads: OMP_QUIET_READS,
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+  r.env.HERDR_PANE_ID = 'wT:p1';
+  r.env.HERDR_TAB_ID = 'wT:t1';
+  writeResultRecord(r.env, '2026-09-06-kuport-w2', [
+    { name: 'meta-wave2', pane_id: 'wT:p1', tab_id: 'wT:t1' },
+    { name: 'impl-task4-deploy', pane_id: 'wT:p2', tab_id: 'wT:t2' },
+  ]);
+  const c = capture();
+  const code = await main(['handback', '--agent', 'orchestrator', '--file', file], {
+    ...c.io, options: r.options, env: r.env,
+  });
+  assert.equal(code, 1, c.read());
+  const failures = JSON.parse(c.read()).failures.join(' ');
+  assert.match(failures, /impl-task4-deploy/, 'the refusal names the in-flight worker');
+  assert.match(failures, /in flight/, 'the refusal names the state');
+  assert.equal(r.calls('agent prompt').length, 0, 'nothing is delivered while a worker is in flight');
+});
+
+test('handback delivers once every worker of the caller dispatch has settled', async () => {
+  const file = writeCortexPayload(payload());
+  const r = rig({
+    agentList: listReply([
+      rosterAgent('meta-wave2', 'done', 'wT:p1', 'wT:t1'),
+      rosterAgent('impl-task4-deploy', 'done', 'wT:p2', 'wT:t2'),
+    ]),
+    agentGet: getReply('done'),
+    reads: [...OMP_QUIET_READS, ...OMP_QUIET_READS, ...OMP_QUIET_READS],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+  r.env.HERDR_PANE_ID = 'wT:p1';
+  r.env.HERDR_TAB_ID = 'wT:t1';
+  writeResultRecord(r.env, '2026-09-06-kuport-w2', [
+    { name: 'meta-wave2', pane_id: 'wT:p1', tab_id: 'wT:t1' },
+    { name: 'impl-task4-deploy', pane_id: 'wT:p2', tab_id: 'wT:t2' },
+  ]);
+  const c = capture();
+  const code = await main(['handback', '--agent', 'orchestrator', '--file', file], {
+    ...c.io, options: r.options, env: r.env,
+  });
+  assert.equal(code, 0, c.read());
+  const doc = JSON.parse(c.read());
+  assert.equal(doc.status, 'ok', 'the handback delivers');
+  assert.deepEqual(doc.handback_gate.workers_in_flight, [], 'the gate saw no in-flight worker');
+  const prompt = r.calls('agent prompt')[0];
+  assert.ok(prompt, 'the handback was delivered via agent prompt');
+});
+
+test('--allow-in-flight true delivers over an in-flight worker and records the exception', async () => {
+  const file = writeCortexPayload(payload());
+  const r = rig({
+    agentList: listReply([
+      rosterAgent('meta-wave2', 'working', 'wT:p1', 'wT:t1'),
+      rosterAgent('impl-task4-deploy', 'working', 'wT:p2', 'wT:t2'),
+    ]),
+    agentGet: getReply('working'),
+    reads: OMP_QUIET_READS,
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+  r.env.HERDR_PANE_ID = 'wT:p1';
+  r.env.HERDR_TAB_ID = 'wT:t1';
+  writeResultRecord(r.env, '2026-09-06-kuport-w2', [
+    { name: 'meta-wave2', pane_id: 'wT:p1', tab_id: 'wT:t1' },
+    { name: 'impl-task4-deploy', pane_id: 'wT:p2', tab_id: 'wT:t2' },
+  ]);
+  const c = capture();
+  const code = await main(['handback', '--agent', 'orchestrator', '--file', file, '--allow-in-flight', 'true'], {
+    ...c.io, options: r.options, env: r.env,
+  });
+  assert.equal(code, 0, c.read());
+  const doc = JSON.parse(c.read());
+  assert.equal(doc.status, 'ok');
+  assert.equal(doc.handback_gate.overridden, true, 'the override is recorded');
+  const prompt = r.calls('agent prompt')[0];
+  assert.ok(prompt, 'the handback was delivered via agent prompt');
+  assert.match(prompt[3], /WORKERS IN FLIGHT/, 'the delivered text records the exception for the reader');
+  assert.match(prompt[3], /impl-task4-deploy/, 'the delivered text names the in-flight worker');
+});
+
+test('handback with no attributable dispatch record delivers with a gate note', async () => {
+  const file = writeCortexPayload(payload());
+  const r = rig({
+    agentList: listReply([]),
+    agentGet: getReply('working'),
+    reads: OMP_QUIET_READS,
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+  r.env.HERDR_PANE_ID = 'wZ:p9';
+  r.env.HERDR_TAB_ID = 'wZ:t9';
+  const c = capture();
+  const code = await main(['handback', '--agent', 'orchestrator', '--file', file], {
+    ...c.io, options: r.options, env: r.env,
+  });
+  assert.equal(code, 0, c.read());
+  const doc = JSON.parse(c.read());
+  assert.equal(doc.status, 'ok');
+  assert.equal(doc.handback_gate.attributed, false, 'no dispatch was attributed');
+  assert.match(doc.handback_gate.note, /no dispatch record/i, 'the note says the gate could not attribute');
 });

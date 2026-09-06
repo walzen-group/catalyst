@@ -17,6 +17,7 @@ import {
   CLAUDE_IDLE,
   CLAUDE_PARKED_PASTE,
   HERDR_STALL_STDERR,
+  OMP_ATTACHMENT_PARKED,
   OMP_DRAFT,
   OMP_IDLE,
   OMP_PARKED_PASTE,
@@ -123,6 +124,48 @@ test('an omp paste chip is recognized on its own wording, not claude\'s', () => 
   assert.equal(hasOmpParkedChip('[Paste #3 +5 lines]'), true, 'the comma is optional');
   assert.equal(hasOmpParkedChip('[Pasted text #1 +43 lines]'), false, 'claude\'s placeholder is not an omp chip');
   assert.equal(hasOmpParkedChip('nothing parked here'), false);
+});
+
+// Regression anchor: incident 2026-09-06-c2d-multiline-paste. omp 18.1.4
+// (updated 2026-09-02) renders a parked multi-line paste as a file attachment
+// chip ("📄 #N" in the `❯` editor, with a preview card showing the pasted
+// lines) instead of the "[Paste #N, +M lines]" text chip. The recovery only
+// matched the old wording, so a stalled multi-line steer was never Entered and
+// failed honestly with the text parked in the target's composer. Captured live
+// on repro-omp-multiline and meta-wave2 (2026-09-06): the chip can be the
+// editor line alone or the card; both renders are the same park.
+
+test('omp 18.1.4 attachment-chip renders are recognized as a parked paste', () => {
+  assert.equal(hasOmpParkedChip(OMP_ATTACHMENT_PARKED), true, 'the editor line and card render is a park');
+  assert.equal(hasOmpParkedChip('❯ 📄 #1'), true, 'the editor line alone is a park');
+  assert.equal(hasOmpParkedChip('╭── 📄 #7 ───╮\n│A2A: task 4…│\n╰ +128 lines ╯'), true, 'the card alone is a park');
+  assert.equal(hasOmpParkedChip('❯ 📄 #12 '), true, 'the attachment number is not pinned');
+  assert.equal(hasOmpParkedChip('nothing parked here'), false);
+  assert.equal(hasOmpParkedChip('[Pasted text #1 +43 lines]'), false, 'claude\'s placeholder is not an omp chip');
+});
+
+test('a parked omp attachment chip (herdr stall + 18.1.4 render) is released with Enter and verified working', () => {
+  const r = rig({
+    agentGet: OMP_WORKING_GET,
+    reads: [OMP_IDLE, OMP_IDLE, OMP_ATTACHMENT_PARKED, OMP_ATTACHMENT_PARKED],
+    readsAfterEnter: [OMP_WORKING, OMP_WORKING],
+    prompt: { status: 1, stdout: '', stderr: HERDR_STALL_STDERR },
+  });
+
+  const out = deliver({
+    name: 'orchestrator',
+    cli: 'omp',
+    session: '/tmp/catalyst-verify-park/session.jsonl',
+    text: BRIEF,
+    env: r.env,
+    options: r.options,
+  });
+
+  assert.equal(out.status, 'delivered', out.reason);
+  assert.equal(out.attempts, 1);
+  const keys = r.calls('agent send-keys');
+  assert.equal(keys.length, 1, 'the parked attachment chip is released with exactly one Enter');
+  assert.deepEqual(keys[0].slice(2), ['orchestrator', 'enter']);
 });
 
 test('a parked omp paste (herdr stall + chip) is released with Enter and verified working', () => {

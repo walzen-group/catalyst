@@ -3,7 +3,7 @@
 // dispatch back by id.
 // Behavior contract: .cortex/plans/2026-08-01-dispatch-tool/01-tool-interface.md
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { stateSubdir } from './ledger.mjs';
 
@@ -113,7 +113,6 @@ export function resultPath(dispatchId, env = process.env) {
   return join(stateSubdir('results', env), `${encodeURIComponent(dispatchId)}.json`);
 }
 
-/** Persist the document `status --dispatch-id` reads back. */
 export function persistResult(document, env = process.env) {
   const path = resultPath(document.dispatch_id, env);
   writeFileSync(path, `${JSON.stringify(document, null, 2)}\n`);
@@ -128,4 +127,59 @@ export function loadResult(dispatchId, env = process.env) {
   } catch {
     return null;
   }
+}
+
+/** The persisted-results directory, or an empty list when it does not exist. */
+export function listResultIds(env = process.env) {
+  let entries;
+  try {
+    entries = readdirSync(stateSubdir('results', env));
+  } catch {
+    return [];
+  }
+  return entries
+    .filter((name) => name.endsWith('.json'))
+    .map((name) => decodeURIComponent(name.slice(0, -'.json'.length)));
+}
+
+/**
+ * Attribute a caller to the dispatch whose recorded meta-agent runs in the
+ * caller's own herdr pane. The caller's tab/pane ids come from its environment
+ * (herdr sets HERDR_TAB_ID/HERDR_PANE_ID in every agent pane); the recorded
+ * dispatch results carry the same ids per agent (incident
+ * 2026-08-04-agent-self-identity). Only a record whose matched entry is a
+ * meta-agent counts, and the newest such record wins, so a re-dispatched meta
+ * attributes to its current dispatch. Null when the caller is outside herdr,
+ * when no record matches, or when the matched entry is not a meta.
+ * @param {NodeJS.ProcessEnv} env
+ * @returns {{dispatch_id: string, name: string} | null}
+ */
+export function findDispatchForCaller(env = process.env) {
+  const paneId = env.HERDR_PANE_ID ?? null;
+  const tabId = env.HERDR_TAB_ID ?? null;
+  if (paneId === null && tabId === null) return null;
+
+  let best = null;
+  let bestMtime = -1;
+  for (const id of listResultIds(env)) {
+    const doc = loadResult(id, env);
+    const agents = Array.isArray(doc?.agents) ? doc.agents : [];
+    for (const agent of agents) {
+      const self = (paneId !== null && agent?.pane_id === paneId)
+        || (tabId !== null && agent?.tab_id === tabId);
+      if (!self || !/^meta[_-]/.test(agent?.name ?? '')) continue;
+      let mtime = 0;
+      try {
+        mtime = statSync(resultPath(id, env)).mtimeMs;
+      } catch {
+        // Unreadable record file: keep mtime 0 so it never wins a tie.
+      }
+      if (mtime > bestMtime) {
+        best = { dispatch_id: id, name: agent.name };
+        bestMtime = mtime;
+      }
+      break;
+    }
+  }
+  return best;
 }

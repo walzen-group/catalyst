@@ -95,10 +95,25 @@ const PASTE_PLACEHOLDER = /^\[Pasted text #\d+(?: \+\d+ lines?)?\]$/;
 // lines]". Anywhere on the visible screen, since omp draws no composer block the
 // tool can isolate. The comma and the spacing are both tolerated.
 const OMP_PASTE_CHIP = /\[Paste #\d+,?\s*\+\d+ lines?\]/i;
+// omp 18.1.4 (update installed 2026-09-02) changed the parked-paste render for
+// a large multi-line paste from the text chip above to a file-attachment chip:
+// the `❯` editor holds "📄 #N" and a preview card above the status line shows
+// the first pasted lines ("╭── 📄 #N ───╮" ... "╰ +N lines ╯"). Same park,
+// new paint: one Enter releases it. Captured live 2026-09-06 on meta-wave2
+// (📄 #7) and repro-omp-multiline (📄 #1); the attachment number is
+// per-session, never pinned. Matched on the two structural renders only,
+// never as a bare marker in prose, so transcript text cannot trigger a blind
+// Enter: the `❯` editor line holding the chip, and the preview card's top
+// border.
+const OMP_ATTACHMENT_CHIP_EDITOR = /^\s*❯\s*📄\s*#\d+/m;
+const OMP_ATTACHMENT_CHIP_CARD = /╭──\s*📄\s*#\d+\s*───╮/;
 
 /** Whether a captured omp screen is showing a parked-paste chip. */
 export function hasOmpParkedChip(screen) {
-  return OMP_PASTE_CHIP.test(String(screen ?? ''));
+  const text = String(screen ?? '');
+  return OMP_PASTE_CHIP.test(text)
+    || OMP_ATTACHMENT_CHIP_EDITOR.test(text)
+    || OMP_ATTACHMENT_CHIP_CARD.test(text);
 }
 
 /**

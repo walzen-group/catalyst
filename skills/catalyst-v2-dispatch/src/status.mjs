@@ -9,7 +9,7 @@ import { loadResult } from './result.mjs';
 import { liveIndicatorLines, readVisible } from './screens.mjs';
 import { liveWaitFor, readWakeRecord, wakeCommand } from './wake.mjs';
 
-const IN_FLIGHT = new Set(['working', 'blocked']);
+export const IN_FLIGHT = new Set(['working', 'blocked']);
 const SETTLED = new Set(['idle', 'done', 'exited', 'settled']);
 // The caller owes no wait on its own name: its own pane is the caller, not a
 // monitored agent, and a wait armed on it settles immediately and wakes nobody
