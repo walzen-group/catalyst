@@ -71,9 +71,10 @@ does not.
    literal option = value tokens. Technical identifiers are names too:
    operationIds (auth.set), schema names, paths, hashes, and class names stay
    in plain text.
-4. Describe what a thing is and does. A negative or contrast earns its place only
-   where a reader would otherwise take a wrong path (a known failure mode, or a
-   decision record in docs/concepts/), and it follows the positive statement.
+4. Describe what a component is and does. A negative or contrast earns its
+   place only where a reader would otherwise take a wrong path (a known failure
+   mode, or a decision record in docs/concepts/), and it follows the positive
+   statement.
    Example: "This deletes tofu's record. It does not destroy the associated
    resources" earns the negation, because a reader might assume otherwise.
 5. Skip filler summary lines ("That is the whole setup", "It is worth noting
@@ -91,9 +92,44 @@ does not.
    hardware to nothing", "break out of view", "ask both keys what they hold").
    No sentence fragment used as a lead ("Running terragrunt yourself."); a short
    label before a command block ("One unit:") is fine.
-10. Name the deprecated or replaced thing when a command supersedes it
+10. Name the deprecated or replaced command when one supersedes it
     ("This flag replaces the deprecated terraform taint command."), so a reader
     arriving from old material finds the mapping.
+11. Never let "thing" stand in for a name. "Two things name the claim", "three
+    things in it matter", "the thing that renames it" all withhold a name the
+    reader then has to reconstruct, and a reader who cannot reconstruct it is
+    stuck. Write the kind ("two objects", "three fields"), name the members
+    ("the Deployment and the ReplicationSource"), or drop the counting sentence
+    and name them in order. "Three things in it matter" becomes "The
+    podAffinity block, the write loop and the update strategy are what to read
+    in it."
+    The word itself is fine where no name is being withheld: "here's the
+    thing", "something", "anything", "nothing". The test is whether a reader
+    can tell what is meant.
+12. Name what you mean on every mention instead of pointing at it. Write the
+    resolver, the ingress unit, the wildcard record. Do not write "here",
+    "there", "this unit", "that name", "such a name", or a bare "it" or "one"
+    where a reader has to work out what is meant. Repeating a name costs
+    a few words and saves the reader a lookup, and it outranks any wish to vary
+    the wording. The humanizer pass bans synonym cycling for the same reason.
+    Prefer "an app resolving through that wildcard resolves without being added
+    to this module" over "an app there resolves with nothing written here".
+13. Put the actor and the action in the sentence. A phrase that compresses a
+    mechanism into a noun leaves the reader to reconstruct who acts and what
+    changes. Prefer "the resolver answers an exact hostname from the workload's
+    record and uses the wildcard for every other hostname" over "a per-workload
+    record overrides the wildcard". Prefer "every hostname under the domain
+    resolves from that one record, so an app needs no DNS change of its own to
+    become reachable" over "every name resolves with nothing written per app".
+14. Do not close a sentence with ", and nothing else". Put the restriction
+    inside the sentence with "only" or "just", or write it as its own
+    statement. "The Role covers Backup objects in that namespace, and nothing
+    else" becomes "The Role covers only Backup objects in that namespace", or
+    "There is only one Role, and it covers Backup objects in that namespace."
+15. Keep examples in this skill free of one environment's values. A domain, a
+    node name, an address, or a cluster name belongs in the repo doc that
+    configures it. An example here uses a role name (the ingress unit, the
+    worker holding the volume) so it reads the same in every repo.
 
 ## Boundary
 
