@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-self-testing
-description: Use when authoring or running an incident-driven integration test for the catalyst system itself, when a fix lands in a catalyst instruction file or tool code, or when a test run reports a regression
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when authoring or running an incident-driven integration test for the catalyst system itself, when a fix lands in a catalyst instruction file or tool code, or when a test run reports a regression
 ---
 
 # Self-testing: incident-driven integration tests (v2)

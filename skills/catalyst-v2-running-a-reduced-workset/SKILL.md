@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-running-a-reduced-workset
-description: Use for a small task, a chore, or a follow-up on existing work, where the full lifecycle (plan docs, board, formal specs) is more process than the work needs
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it for a small task, a chore, or a follow-up on existing work, where the full lifecycle (plan docs, board, formal specs) is more process than the work needs
 ---
 
 # Running a reduced workset (v2)

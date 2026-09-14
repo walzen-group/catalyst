@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-orchestrating-delegates
-description: Use when orchestrating any multi-agent effort, deciding who writes code, who verifies, when to intervene with a stuck delegate, or when tempted to implement changes yourself instead of delegating
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when orchestrating any multi-agent effort, deciding who writes code, who verifies, when to intervene with a stuck delegate, or when tempted to implement changes yourself instead of delegating
 ---
 
 # Orchestrating delegates (v2)

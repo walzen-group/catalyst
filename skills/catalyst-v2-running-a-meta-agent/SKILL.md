@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-running-a-meta-agent
-description: Use when the orchestrator hands over monitoring of dispatched agents, when an agent behaved incorrectly and the instruction or workflow files need diagnosis and repair, or when agents repeat or re-discover work that was already completed (context/handoff failure)
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when the orchestrator hands over monitoring of dispatched agents, when an agent behaved incorrectly and the instruction or workflow files need diagnosis and repair, or when agents repeat or re-discover work that was already completed (context/handoff failure)
 ---
 
 # Running a meta-agent (v2)

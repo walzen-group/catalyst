@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-quickchat
-description: Use when the user has asked at session start for the quickchat chat layer, so this session takes the small-model relay role between the user and the orchestrator (opt-in at session start)
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when the user has asked at session start for the quickchat chat layer, so this session takes the small-model relay role between the user and the orchestrator (opt-in at session start)
 ---
 
 # Running a quickchat layer (v2)

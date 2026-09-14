@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-planning-artifacts
-description: Use when planning a multi-task effort that will be dispatched to implementation agents (before writing task specs or spawning delegates), or when writing per-task spec documents or dispatch prompts for implementation agents that start with no conversation context
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when planning a multi-task effort that will be dispatched to implementation agents (before writing task specs or spawning delegates), or when writing per-task spec documents or dispatch prompts for implementation agents that start with no conversation context
 ---
 
 # Planning artifacts (v2)

@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-in-repo-agent-memory
-description: Use when a durable decision, user correction, or hard-won gotcha needs to survive across agent sessions, or when setting up long-term memory for agents on a project
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when a durable decision, user correction, or hard-won gotcha needs to survive across agent sessions, or when setting up long-term memory for agents on a project
 ---
 
 # In-repo agent memory (v2)

@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-multiplexer-agent-ops
-description: Use when starting, prompting, monitoring, or closing interactive coding agents that run in terminal multiplexer tabs (herdr) alongside an orchestrator session. The launch, re-prompt, and health-read procedure runs through c2d; this skill owns the judgment around it.
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when starting, prompting, monitoring, or closing interactive coding agents that run in terminal multiplexer tabs (herdr) alongside an orchestrator session. The launch, re-prompt, and health-read procedure runs through c2d; this skill owns the judgment around it.
 ---
 
 # Multiplexer agent ops (v2)

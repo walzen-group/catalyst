@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2
-description: Use at the start of any orchestration work — this is the v2 entry point that routes to the right catalyst-v2 skill before acting, with the deterministic launch procedure delegated to the c2d tool
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it at the start of any orchestration work, this is the v2 entry point that routes to the right catalyst-v2 skill before acting, with the deterministic launch procedure delegated to the c2d tool
 ---
 
 # Using catalyst (v2)
@@ -10,9 +10,28 @@ different tiers, board keeper, and meta-agent. The skills hold the
 judgment; this bootstrap holds the routing and layout conventions; the
 deterministic launch procedure lives in `c2d`.
 
-**Before any orchestration action, check the table below and read the matching
-skill first.** Acting from memory of this table is the failure mode this
-bootstrap prevents.
+## When catalyst applies
+
+Catalyst runs when the user has asked for it by name. Until they do, this skill
+and every other catalyst-v2 skill stay shut, and the work runs the way it would
+on a machine with no catalyst installed.
+
+Each of the following has been mistaken for a request for catalyst, and none of
+them is one:
+
+- herdr is running, or `HERDR_ENV=1` is set in the environment
+- the task is multi-step or large, or parallel work would finish it sooner
+- the task could be delegated, or a subagent would help
+- a `.cortex/` directory exists in the repo
+- the user says "task", "subagent", "agent", "spin something up", or "delegate"
+
+When the work looks like an orchestration job and the user has not named
+catalyst, do the work directly. Offering catalyst in one line is fine; loading
+it and starting to orchestrate is the failure this section prevents.
+
+**Once the user has asked for catalyst, before any orchestration action, check
+the table below and read the matching skill first.** Acting from memory of this
+table is the failure mode this bootstrap prevents.
 
 | Situation | Read first |
 |---|---|
@@ -168,7 +187,13 @@ about a herdr session, so it never reads as unavailability: request what you
 need through `c2d steer` with the `A2A:` prefix, or read the agent through
 `herdr agent read` / `get` / `list`.
 
-Two overrides, and nothing else:
+This section picks the launch path for a catalyst run the user has already
+asked for. It decides how a dispatch happens, and the gate in "When catalyst
+applies" decides whether there is a dispatch at all. An available herdr grants
+no permission to start one.
+
+Within an active catalyst run, two overrides send a dispatch to built-in
+subagents instead of herdr:
 
 1. The user explicitly opts out of herdr (names herdr or names the built-in
    facility as a deliberate replacement). Casual delegation wording ("task",

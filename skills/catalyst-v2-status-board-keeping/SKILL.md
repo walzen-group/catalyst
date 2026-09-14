@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-status-board-keeping
-description: Use when a multi-task effort needs an external status board kept in sync across many agents, or when the board and the plan documents disagree
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when a multi-task effort needs an external status board kept in sync across many agents, or when the board and the plan documents disagree
 ---
 
 # Status-board keeping (v2)

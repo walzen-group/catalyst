@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-dispatch
-description: Use when launching, re-prompting, or health-checking catalyst agents in herdr — the mandated launch tool that validates a dispatch document, brings each agent up verified in the right cwd on the brief actually delivered, and reports handles
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when launching, re-prompting, or health-checking catalyst agents in herdr, the mandated launch tool that validates a dispatch document, brings each agent up verified in the right cwd on the brief actually delivered, and reports handles
 ---
 
 # catalyst-v2-dispatch

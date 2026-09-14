@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-model-picking
-description: Use when assigning a model or thinking-effort level to a catalyst role or a delegate dispatch, when deciding what capability tier a task deserves, or when a delegate repeatedly fails and an upgrade is being considered
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when assigning a model or thinking-effort level to a catalyst role or a delegate dispatch, when deciding what capability tier a task deserves, or when a delegate repeatedly fails and an upgrade is being considered
 ---
 
 # Picking models for catalyst roles (v2)

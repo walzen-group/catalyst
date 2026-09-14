@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-curator
-description: Use when running or reasoning about a memory-curation pass over a .cortex/memory tree - the fresh, independent, autonomous role that drains the inbox, promotes or decays entries, prunes to tombstones, and hands back the pass, ships the c2m tool that owns the mechanics
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when running or reasoning about a memory-curation pass over a .cortex/memory tree - the fresh, independent, autonomous role that drains the inbox, promotes or decays entries, prunes to tombstones, and hands back the pass, ships the c2m tool that owns the mechanics
 ---
 
 # catalyst-v2-curator

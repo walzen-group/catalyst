@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-session-save-resume
-description: Use when an effort's front-line sessions (quickchat chat layer, orchestrator) need recording so the effort can be picked up later, or when reconnecting to an effort whose tabs were closed or whose session ended
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when an effort's front-line sessions (quickchat chat layer, orchestrator) need recording so the effort can be picked up later, or when reconnecting to an effort whose tabs were closed or whose session ended
 ---
 
 # Saving and resuming a catalyst session (v2)

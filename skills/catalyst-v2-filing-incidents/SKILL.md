@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-filing-incidents
-description: Use when the user asks to file or document a failure, when a meta-agent finds a root cause worth putting on the record, or when a filed incident needs the repair that acts on it
+description: Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when the user asks to file or document a failure, when a meta-agent finds a root cause worth putting on the record, or when a filed incident needs the repair that acts on it
 ---
 
 # Filing incidents (v2)

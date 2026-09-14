@@ -1,6 +1,6 @@
 ---
 name: catalyst-v2-sdd-rules
-description: "Use when implementing any change to observable behavior with a checkable outcome, before writing implementation code - the test-first procedure: test written first, failing run recorded, fix, green. Also use when a fix spec must carry the test-first steps, or when a fix's recorded red run is being checked"
+description: "Use only when the user has asked for catalyst by name; herdr being active, delegable or parallel work, and multi-step tasks are not triggers. Then use it when implementing any change to observable behavior with a checkable outcome, before writing implementation code - the test-first procedure: test written first, failing run recorded, fix, green. Also use when a fix spec must carry the test-first steps, or when a fix's recorded red run is being checked"
 ---
 
 # Test-first fixes (v2)
