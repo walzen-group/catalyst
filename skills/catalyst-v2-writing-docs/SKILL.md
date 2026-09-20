@@ -286,6 +286,47 @@ the test and the budget.
     consecutive sentences with it. A paragraph reaching for a third has a
     component as its real subject.
 
+19. Keep the action in the verb. A nominalization turns the verb into a noun
+    and puts a weak verb in front of it: "the runner performs a validation of
+    the manifest" for "the runner validates the manifest". Three effects
+    follow. The sentence grows. The verb the reader sees (perform, provide,
+    make, conduct, achieve, do, give, take, have) names no action. The object
+    slides out of the verb's reach and arrives behind a preposition, so
+    "validates the manifest" becomes "a validation of the manifest".
+    Detection: look for nouns ending in -tion, -ment, -ance, -ency, -ure, and
+    for verbs used bare as nouns (a run, a walk, a check, a read, a fix), each
+    sitting next to one of those weak verbs. Rewrite so the noun becomes the
+    main verb and the actor becomes its subject.
+    A nominalization is also where invented jargon starts. Once "a walk" exists
+    as a noun it is one edit away from a capital letter ("The Walk"), a
+    definition, and repetition across plan docs, memory entries and status
+    boards until it reads as vocabulary the reader agreed to. Keep the action
+    in the verb and describe it again on each mention, the way rule 12
+    requires for names. Rule 13 covers the same failure from the other side:
+    a noun that swallows a mechanism leaves the reader to reconstruct the
+    actor.
+
+    | Instead of | Write |
+    | --- | --- |
+    | never a walk through the steps one at a time | Don't walk through the steps one at a time. |
+    | perform a review of the config | review the config |
+    | this provides isolation of the store | this isolates the store |
+    | the operator makes a selection of the profile | the operator selects the profile |
+20. Give every sentence a subject and a finite verb. A trailing modifier
+    standing in for the verb ("The runner, built.", "Migration complete, the
+    old path removed.") drops the actor and the tense, so a reader learns
+    neither who acted nor whether the work finished. Write "We built the
+    runner." and "The migration is complete. I removed the old path." Status
+    lines in hand-backs, boards and commit subjects attract this shape, and
+    they are where the missing actor hurts most, because the next agent reads
+    them to decide what remains. Rule 9 bans the same fragment used as a lead
+    sentence.
+
+    | Instead of | Write |
+    | --- | --- |
+    | The runner, built. | We built the runner. |
+    | Migration complete, the old path removed. | The migration is complete. I removed the old path. |
+
 ## Boundary
 
 This skill owns repo-doc style and the style of user-facing deliverable reports
