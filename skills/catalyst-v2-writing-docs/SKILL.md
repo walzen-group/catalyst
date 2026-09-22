@@ -326,6 +326,59 @@ the test and the budget.
     | --- | --- |
     | The runner, built. | We built the runner. |
     | Migration complete, the old path removed. | The migration is complete. I removed the old path. |
+21. Name a particular in every explanation. A sentence that says how something
+    behaves carries the literal material: the path, the filename, the config
+    key, the folder name, the value, the error text. Built out of role-nouns
+    and generic verbs instead, it explains the mechanism to a reader who can
+    already picture it and leaves every other reader where they started.
+    The test is substitution. Swap the domain nouns for nonsense words and read
+    the sentence again. "File provisioning owns the folder it delivers into"
+    becomes "The flurble owns the glorble it strobles into", which reads
+    exactly as well, so the original carried no information. A sentence with a
+    particular in it fails the swap: "Grafana reads every .json under
+    /etc/grafana/dashboards into a folder called Provisioned" turns to nonsense
+    the moment you touch the path.
+    Verbs that signal the empty shape: owns, handles, manages, governs, drives,
+    controls, applies to, delivers, is responsible for, is in charge of.
+    Rules 8 and 13 ban the sentence whose actor has gone missing. This rule
+    bans the sentence that has an actor and still says nothing, because every
+    noun in it names a role rather than a thing. The two failures pass each
+    other's checks, so read for both.
+
+    | Instead of | Write |
+    | --- | --- |
+    | File provisioning owns the folder it delivers into. | Grafana reads every .json under /etc/grafana/dashboards into a folder called Provisioned. A dashboard saved in the UI becomes a row in the Postgres dashboard table. |
+    | The unit owns its own state. | Each unit writes its own tfstate to S3 under environments/<env>/<unit>/. |
+    | The sidecar handles dashboard discovery. | The sidecar watches for ConfigMaps labelled grafana_dashboard and writes their contents to /tmp/dashboards. |
+
+    Where the doc can show the mechanism running, show it first and let the
+    prose annotate the output. A paragraph that describes behaviour with no
+    example, no rendered block and no literal value has not explained it.
+22. Never write that a thing takes a property, a setting, a file or a repair. A
+    volume takes no backup, a unit's terragrunt.hcl takes the include, an app
+    takes mode 1, a status takes a repair: the verb names no action, so the
+    sentence reports a state of the subject and leaves the reader to work out
+    who acts and what they type. Name the action and the actor who performs it,
+    and in a procedure use the imperative the reader is there for.
+    The failure is worst in a summary or a cross-reference. "takes" gets reached
+    for precisely because it covers four different actions at once, and a verb
+    that fits delete, leave alone, roll back and upgrade-over says none of them.
+
+    | Instead of | Write |
+    | --- | --- |
+    | The unit's terragrunt.hcl takes the backup include. | Add the backup include to the unit's terragrunt.hcl. |
+    | A volume the app can rebuild takes no backup. | Do not back up a volume the app can rebuild. |
+    | ## Which mode an app takes | ## Which mode to use |
+    | The doc lists the statuses and what each one takes. | The doc gives the repair for each status: delete a pending-install record, roll a pending-upgrade record back to the last deployed revision. |
+
+    Keep the verb for a duration or a quantity: "the probe takes 528 ms", "a
+    resolver failure takes about ten seconds". Everywhere else a real verb is
+    hiding in the sentence, usually requires, needs, holds, accepts, or the
+    imperative. Grep a finished doc for `\btakes\b` and read every hit against
+    that line.
+    Rules 13 and 19 name the same failure from other directions: rule 19 catches
+    an action that turned into a noun, and this one catches an action that never
+    reached the sentence.
 
 ## Boundary
 
