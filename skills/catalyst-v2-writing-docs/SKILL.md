@@ -32,6 +32,25 @@ section is written for blog prose and asks for first-person opinion, mixed
 feelings and half-formed thoughts. Repo docs get their voice from the sentence
 rhythm in rule 7, the concrete actors in rule 8, and specific facts.
 
+## Final grep
+
+A doc is a file, so a command can check it before you hand it back. After the
+humanizer pass, run this over every doc you wrote or edited, and fix the hits
+before you report the change as done:
+
+```
+grep -nEi '—|–|honest|\b(it|that|this) (buys|costs)\b|what it buys|the cost is|at the cost of|costs nothing|worth (noting|knowing|saying|flagging|paying)|blast radius|load-(bearing|carrying)|footgun|smoking gun|push back on|rather than|not just|not only|instead of|isn.t about|, and nothing else|(^|[.!?] )nothing else|a real gap|(one|two|three|four|five) (things|reasons|points|findings)|\bwir(e|es|ed|ing)\b|^#+ the |\btakes\b|crucial|pivotal|underscore|interplay|leverage|seamless|robust' <files>
+```
+
+Each hit is a candidate. The table says which ones to rewrite on sight.
+
+| Hit | Action |
+| --- | --- |
+| Dashes, honest, costs/buys, worth noting, blast radius, load-bearing, footgun, smoking gun, push back on, a real gap, ", and nothing else", a sentence opening with "Nothing else", a counted opener, a heading starting with "The", the listed AI words | Rewrite. This skill bans all of them outright. |
+| rather than, instead of, not just, not only, isn't about | Keep only a contrast that warns against a wrong path (rule 4). |
+| wire, wiring | Keep only a literal wire. |
+| takes | Keep only for a duration or a quantity (rule 22). |
+
 ## User-facing convention
 
 This skill owns the user-facing writing convention: the catalyst doc writing
@@ -207,6 +226,8 @@ the test and the budget.
     statement. "The Role covers Backup objects in that namespace, and nothing
     else" becomes "The Role covers only Backup objects in that namespace", or
     "There is only one Role, and it covers Backup objects in that namespace."
+    A sentence that opens with "Nothing else" goes too. Name what is there:
+    "Nothing else changes" becomes "The rebuild changes only this file."
 15. Keep examples in this skill free of one environment's values. A domain, a
     node name, an address, or a cluster name belongs in the repo doc that
     configures it. An example here uses a role name (the ingress unit, the
@@ -374,8 +395,8 @@ the test and the budget.
     Keep the verb for a duration or a quantity: "the probe takes 528 ms", "a
     resolver failure takes about ten seconds". Everywhere else a real verb is
     hiding in the sentence, usually requires, needs, holds, accepts, or the
-    imperative. Grep a finished doc for `\btakes\b` and read every hit against
-    that line.
+    imperative. The final grep flags every "takes"; read each hit against that
+    line.
     Rules 13 and 19 name the same failure from other directions: rule 19 catches
     an action that turned into a noun, and this one catches an action that never
     reached the sentence.
