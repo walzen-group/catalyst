@@ -12,6 +12,10 @@ deliverable reports under `.cortex/reports/` included), and the
 one-line summary plus the `# See docs/<area>.md` pointer convention for .nix
 source files.
 
+Other catalyst skills call these rules "the catalyst doc writing convention".
+Text a catalyst role writes for the user follows them and opens with the plain
+answer. Hand-backs and plan docs take their style from their owning skills.
+
 ## Mandatory humanizer pass
 
 Invoke the humanizer skill (skills/humanizer) before writing or editing
@@ -49,13 +53,7 @@ Each hit is a candidate. The table says which ones to rewrite on sight.
 | Dashes, honest, costs/buys, worth noting, blast radius, load-bearing, footgun, smoking gun, push back on, a real gap, ", and nothing else", a sentence opening with "Nothing else", a counted opener, a heading starting with "The", the listed AI words | Rewrite. This skill bans all of them outright. |
 | rather than, instead of, not just, not only, isn't about | Keep only a contrast that warns against a wrong path (rule 4). |
 | wire, wiring | Keep only a literal wire. |
-| takes | Keep only for a duration or a quantity (rule 22). |
-
-## User-facing convention
-
-This skill owns the user-facing writing convention: the catalyst doc writing
-convention. Text a catalyst role writes for the user follows it; the style
-rules below cover repo-doc style on top of that.
+| takes | Keep only for a duration or a quantity (rule 20). |
 
 ## Structure rules
 
@@ -115,16 +113,6 @@ dry fails its own way, because the reader stops following it. Where a rule and
 readable prose look like they conflict, the paragraph is carrying the tic the
 rule names. Remove the tic and the flow survives.
 
-Voice runs through all of them, so settle it before the first sentence: write in
-the active voice, and pick the person from who acts. The component acts in a
-description of mechanism, the reader acts in a procedure, and we act in a design
-decision. Where the mechanism leaves the reader no choice, say so with a
-necessity: "we need to scale the workload to zero for the run". Two phrasings
-reach for that sentence and fail it, so reject both on sight: "the workload has
-to be stopped for the run" drops the actor, and "the Flux procedure above sets
-replicas to zero" makes a procedure the actor, which rule 8 bans. Rule 18 gives
-the test and the budget.
-
 1. Write complete sentences that carry the meaning. Prune repetition, per-file
    mini-essays, and restated points. Do not prune explanation: a procedure
    without its reasons is a script, and scripts belong in shell files. Prefer
@@ -164,10 +152,35 @@ the test and the budget.
    The tic this rule guards against is the rationale tail welded onto
    consecutive sentences, where each one ends in a because/so/since phrase. Two
    in a row is the signal to rewrite one of them.
-8. Use concrete subjects. A tool may act (terragrunt reads the block, netbird
-   mints its keys). An abstract noun may not ("discovery reaches downward",
-   "config apply reaches each node"). Rule 18 settles which person the subject
-   takes.
+8. Put a concrete actor, its action and a particular in every sentence that
+   explains something.
+   A tool may act (terragrunt reads the block, netbird mints its keys). An
+   abstract noun may not ("discovery reaches downward", "config apply reaches
+   each node"), and neither may a mechanism compressed into a noun: prefer "the
+   resolver answers an exact hostname from the workload's record and uses the
+   wildcard for every other hostname" over "a per-workload record overrides the
+   wildcard". Rule 17 settles which person to write the actor in.
+   The particular is the literal material: the path, the filename, the config
+   key, the folder name, the value, the error text. Test for it by
+   substitution: swap the domain nouns for nonsense words and read the sentence
+   again. "File provisioning owns the folder it delivers into" becomes "The
+   flurble owns the glorble it strobles into", which reads exactly as well, so
+   the original carried no information. "Grafana reads every .json under
+   /etc/grafana/dashboards into a folder called Provisioned" turns to nonsense
+   the moment you touch the path.
+   Verbs that signal the empty shape: owns, handles, manages, governs, drives,
+   controls, applies to, delivers, is responsible for, is in charge of. A
+   sentence with a concrete actor can still fail the swap, so check both.
+
+   | Instead of | Write |
+   | --- | --- |
+   | File provisioning owns the folder it delivers into. | Grafana reads every .json under /etc/grafana/dashboards into a folder called Provisioned. A dashboard saved in the UI becomes a row in the Postgres dashboard table. |
+   | The unit owns its own state. | Each unit writes its own tfstate to S3 under environments/<env>/<unit>/. |
+   | The sidecar handles dashboard discovery. | The sidecar watches for ConfigMaps labelled grafana_dashboard and writes their contents to /tmp/dashboards. |
+
+   Where the doc can show the mechanism running, show it first and let the
+   prose annotate the output. A paragraph that describes behaviour with no
+   example, no rendered block and no literal value has not explained it.
 9. State the literal condition, and give the operation its own verb. Four
    classes of metaphor stay out however idiomatic they sound: place ("out of
    view", "break out of view"), sight ("hide", "hides those skills"),
@@ -208,35 +221,27 @@ the test and the budget.
     to this module" over "an app there resolves with nothing written here".
     A pronoun for the nearest referent, where only one candidate is in scope, is
     correct English and reads better than a third literal repetition: "The
-    activation step creates the directory and sets its mode to 700." Writing the
-    full name in that position is the dryness this rule used to produce.
+    activation step creates the directory and sets its mode to 700."
     Varying the name stays banned. A pronoun points at one name; a synonym
     invents a second name for the same thing, which is the synonym cycling the
     humanizer pass removes. The resolver stays the resolver on every mention,
     never the DNS component or the name service.
-13. Put the actor and the action in the sentence. A phrase that compresses a
-    mechanism into a noun leaves the reader to reconstruct who acts and what
-    changes. Prefer "the resolver answers an exact hostname from the workload's
-    record and uses the wildcard for every other hostname" over "a per-workload
-    record overrides the wildcard". Prefer "every hostname under the domain
-    resolves from that one record, so an app needs no DNS change of its own to
-    become reachable" over "every name resolves with nothing written per app".
-14. Do not close a sentence with ", and nothing else". Put the restriction
+13. Do not close a sentence with ", and nothing else". Put the restriction
     inside the sentence with "only" or "just", or write it as its own
     statement. "The Role covers Backup objects in that namespace, and nothing
     else" becomes "The Role covers only Backup objects in that namespace", or
     "There is only one Role, and it covers Backup objects in that namespace."
     A sentence that opens with "Nothing else" goes too. Name what is there:
     "Nothing else changes" becomes "The rebuild changes only this file."
-15. Keep examples in this skill free of one environment's values. A domain, a
+14. Keep examples in this skill free of one environment's values. A domain, a
     node name, an address, or a cluster name belongs in the repo doc that
     configures it. An example here uses a role name (the ingress unit, the
     worker holding the volume) so it reads the same in every repo.
-16. Never price a design in "costs" or "buys". Banned in every form: "it
+15. Never price a design in "costs" or "buys". Banned in every form: "it
     costs", "it buys", "what it buys", "the cost is", "at the cost of", "costs
     nothing", "worth paying for", "you get / it costs" table headings. The
     metaphor names no actor and no action, so the reader has to convert an
-    imaginary currency back into the mechanism, which is rule 13 broken with a
+    imaginary currency back into the mechanism, which is rule 8 broken with a
     different word. It is the same slop as figurative "wiring".
     Write the consequence with a verb that says what happens, and a number
     where a number exists.
@@ -257,7 +262,7 @@ the test and the budget.
     second copy of every volume." A two-column table comparing options uses
     headings that name the quantity, such as "Restore time" and "Disk held",
     over "You get" and "It costs".
-17. Use the whole range of punctuation. The humanizer pass bans the em dash and
+16. Use the whole range of punctuation. The humanizer pass bans the em dash and
     the en dash, and a writer who then routes every pause through a comma
     produces comma splices: "The kit becomes self-contained, the skills, the
     tools and the container template all live with it." Pick the mark that
@@ -271,7 +276,7 @@ the test and the budget.
     | Split two clauses a comma is straining to hold | full stop |
 
     The minus symbol "-" covers a literal dash. Quotation marks are straight.
-18. Pick the person by asking who performs the action.
+17. Pick the person by asking who performs the action.
 
     | Who acts | Person | Example |
     | --- | --- | --- |
@@ -289,13 +294,13 @@ the test and the budget.
     need to"; in an explanation of the repo's own design it is "we need to".
 
     Write in the active voice. A passive construction drops the actor, which is
-    the failure rules 8 and 13 already name. Keep the passive where the actor is
+    the failure rule 8 names. Keep the passive where the actor is
     genuinely unknown or beside the point ("The lock file is regenerated at
     build time"), or where the object is the subject of the paragraph.
 
     "we" carries design decisions and the reasons behind them, so it belongs in
     rationale paragraphs and in docs/concepts/ records, where it repairs the
-    actorless sentence those rules ban: prefer "We keep identity out of the
+    actorless sentence that rule bans: prefer "We keep identity out of the
     template so a second host can reuse it" over "Identity is kept out of the
     template". A procedure step stays imperative and says "we" nowhere.
 
@@ -307,13 +312,13 @@ the test and the budget.
     consecutive sentences with it. A paragraph reaching for a third has a
     component as its real subject.
 
-19. Keep the action in the verb. A nominalization turns the verb into a noun
+18. Keep the action in the verb. A nominalization turns the verb into a noun
     and puts a weak verb in front of it: "the runner performs a validation of
-    the manifest" for "the runner validates the manifest". Three effects
-    follow. The sentence grows. The verb the reader sees (perform, provide,
-    make, conduct, achieve, do, give, take, have) names no action. The object
-    slides out of the verb's reach and arrives behind a preposition, so
-    "validates the manifest" becomes "a validation of the manifest".
+    the manifest" for "the runner validates the manifest". The sentence grows,
+    and the verb the reader sees (perform, provide, make, conduct, achieve, do,
+    give, take, have) names no action. The object slides out of the verb's
+    reach and arrives behind a preposition, so "validates the manifest" becomes
+    "a validation of the manifest".
     Detection: look for nouns ending in -tion, -ment, -ance, -ency, -ure, and
     for verbs used bare as nouns (a run, a walk, a check, a read, a fix), each
     sitting next to one of those weak verbs. Rewrite so the noun becomes the
@@ -323,7 +328,7 @@ the test and the budget.
     definition, and repetition across plan docs, memory entries and status
     boards until it reads as vocabulary the reader agreed to. Keep the action
     in the verb and describe it again on each mention, the way rule 12
-    requires for names. Rule 13 covers the same failure from the other side:
+    requires for names. Rule 8 covers the same failure from the other side:
     a noun that swallows a mechanism leaves the reader to reconstruct the
     actor.
 
@@ -333,7 +338,7 @@ the test and the budget.
     | perform a review of the config | review the config |
     | this provides isolation of the store | this isolates the store |
     | the operator makes a selection of the profile | the operator selects the profile |
-20. Give every sentence a subject and a finite verb. A trailing modifier
+19. Give every sentence a subject and a finite verb. A trailing modifier
     standing in for the verb ("The runner, built.", "Migration complete, the
     old path removed.") drops the actor and the tense, so a reader learns
     neither who acted nor whether the work finished. Write "We built the
@@ -347,35 +352,7 @@ the test and the budget.
     | --- | --- |
     | The runner, built. | We built the runner. |
     | Migration complete, the old path removed. | The migration is complete. I removed the old path. |
-21. Name a particular in every explanation. A sentence that says how something
-    behaves carries the literal material: the path, the filename, the config
-    key, the folder name, the value, the error text. Built out of role-nouns
-    and generic verbs instead, it explains the mechanism to a reader who can
-    already picture it and leaves every other reader where they started.
-    The test is substitution. Swap the domain nouns for nonsense words and read
-    the sentence again. "File provisioning owns the folder it delivers into"
-    becomes "The flurble owns the glorble it strobles into", which reads
-    exactly as well, so the original carried no information. A sentence with a
-    particular in it fails the swap: "Grafana reads every .json under
-    /etc/grafana/dashboards into a folder called Provisioned" turns to nonsense
-    the moment you touch the path.
-    Verbs that signal the empty shape: owns, handles, manages, governs, drives,
-    controls, applies to, delivers, is responsible for, is in charge of.
-    Rules 8 and 13 ban the sentence whose actor has gone missing. This rule
-    bans the sentence that has an actor and still says nothing, because every
-    noun in it names a role rather than a thing. The two failures pass each
-    other's checks, so read for both.
-
-    | Instead of | Write |
-    | --- | --- |
-    | File provisioning owns the folder it delivers into. | Grafana reads every .json under /etc/grafana/dashboards into a folder called Provisioned. A dashboard saved in the UI becomes a row in the Postgres dashboard table. |
-    | The unit owns its own state. | Each unit writes its own tfstate to S3 under environments/<env>/<unit>/. |
-    | The sidecar handles dashboard discovery. | The sidecar watches for ConfigMaps labelled grafana_dashboard and writes their contents to /tmp/dashboards. |
-
-    Where the doc can show the mechanism running, show it first and let the
-    prose annotate the output. A paragraph that describes behaviour with no
-    example, no rendered block and no literal value has not explained it.
-22. Never write that a thing takes a property, a setting, a file or a repair. A
+20. Never write that a thing takes a property, a setting, a file or a repair. A
     volume takes no backup, a unit's terragrunt.hcl takes the include, an app
     takes mode 1, a status takes a repair: the verb names no action, so the
     sentence reports a state of the subject and leaves the reader to work out
@@ -397,19 +374,6 @@ the test and the budget.
     hiding in the sentence, usually requires, needs, holds, accepts, or the
     imperative. The final grep flags every "takes"; read each hit against that
     line.
-    Rules 13 and 19 name the same failure from other directions: rule 19 catches
+    Rules 8 and 18 name the same failure from other directions: rule 18 catches
     an action that turned into a noun, and this one catches an action that never
     reached the sentence.
-
-## Boundary
-
-This skill owns repo-doc style and the style of user-facing deliverable reports
-under `.cortex/reports/`: the humanizer pass and the style rules apply there.
-Incidents, hand-backs, and plan docs carry their own style pointers in their
-owning skills.
-
-## Scannability
-
-A human finds the rules in under 30 seconds: tables and numbered lists
-over prose. A human finds a command in a doc in under 10 seconds: every command
-sits in a fenced block under a numbered step or a labelled heading.
