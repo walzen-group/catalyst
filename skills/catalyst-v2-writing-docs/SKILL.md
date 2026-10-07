@@ -43,7 +43,7 @@ humanizer pass, run this over every doc you wrote or edited, and fix the hits
 before you report the change as done:
 
 ```
-grep -nEi '—|–|honest|\b(it|that|this) (buys|costs)\b|what it buys|the cost is|at the cost of|costs nothing|worth (noting|knowing|saying|flagging|paying)|blast radius|load-(bearing|carrying)|footgun|smoking gun|push back on|rather than|not just|not only|instead of|isn.t about|, and nothing else|(^|[.!?] )nothing else|a real gap|(one|two|three|four|five) (things|reasons|points|findings)|\bwir(e|es|ed|ing)\b|^#+ the |\btakes\b|crucial|pivotal|underscore|interplay|leverage|seamless|robust' <files>
+grep -nEi '—|–|honest|\b(it|that|this) (buys|costs)\b|what it buys|the cost is|at the cost of|costs nothing|worth (noting|knowing|saying|flagging|paying)|blast radius|load-(bearing|carrying)|footgun|smoking gun|push back on|rather than|not just|not only|instead of|isn.t about|, and nothing else|(^|[.!?] )nothing else|a real gap|(one|two|three|four|five) (things|reasons|points|findings)|\bwir(e|es|ed|ing)\b|^#+ the |\btakes\b|\b(holds?|holding|held|reach(es|ed)?|carries|appears|arrives)\b|\b(lists|names|writes|reads|sets) no\b|crucial|pivotal|underscore|interplay|leverage|seamless|robust' <files>
 ```
 
 Each hit is a candidate. The table says which ones to rewrite on sight.
@@ -54,6 +54,8 @@ Each hit is a candidate. The table says which ones to rewrite on sight.
 | rather than, instead of, not just, not only, isn't about | Keep only a contrast that warns against a wrong path (rule 4). |
 | wire, wiring | Keep only a literal wire. |
 | takes | Keep only for a duration or a quantity (rule 20). |
+| holds, held, reaches, carries, appears, arrives | Rewrite where the word stands for data being somewhere or a value moving by itself (rule 9). |
+| lists no, names no, writes no, reads no, sets no | Rewrite. Negate the verb (rule 21). |
 
 ## Structure rules
 
@@ -81,8 +83,8 @@ explanation and commands packed into the same paragraph.
    option does instead. One consequence per sentence, with a concrete subject.
    A reader who has never used the rejected alternative must be able to tell
    from the paragraph alone what would go wrong with it.
-   The repo says which of its doc trees holds a decision paragraph. Follow that
-   layout and put the paragraph where the repo keeps its decision records.
+   The repo says which of its doc trees keeps the decision records. Follow that
+   layout and put the paragraph there.
 7. One doc owns each fact, and the sibling docs link to it. Before writing an
    explanation, search for the fact in the docs that already exist:
 
@@ -90,7 +92,7 @@ explanation and commands packed into the same paragraph.
    grep -rl "<a distinctive phrase from the fact>" docs/
    ```
 
-   A fact with a home gets a link, and the new doc carries only what differs
+   A fact with a home gets a link, and the new doc covers only what differs
    from it.
    Two sibling docs that both explain the same mechanism are the failure this
    prevents, and the damage is concrete. A reader who lands on one copy has no
@@ -100,6 +102,37 @@ explanation and commands packed into the same paragraph.
    the common doc, and each variant doc keeps the column that varies.
    Where a fact has to appear twice, one copy is the source and the other names
    it: "The object list is in the overview doc; this table adds the mode column."
+8. A page's first paragraph says something its title and its neighbouring pages
+   haven't: how the system behaves, or where the reader goes next. An opening
+   that lists the parts the title already named teaches the reader nothing they
+   can act on. Move housekeeping, such as where the source files live, to the
+   end.
+   An overview opens with what the system is and which tool does which job, in
+   the words you'd use explaining it to a colleague. The mechanism, such as a
+   build order, comes after that. In a declarative repository the configuration
+   is the subject: the units and the manifests describe the system, and a tool
+   such as terragrunt only runs what they describe. Fix a passive by naming the
+   tool that acts. A "we" that builds the system stands for the machine, which
+   rule 17 bans.
+   A section of a how-to opens with what the reader does, in the imperative,
+   and the sentences after it name the files and objects that make it true.
+9. When a reader picks between variants of a file, show every variant they are
+   likely to write as its own complete block. "Replace `all: true` with
+   `source: <claim>`" leaves the reader to assemble the file, and it says
+   nothing about the case the swap does not cover: a field that accepts one
+   name, when the reader needs two objects and so two documents in the file.
+10. A page for a case most readers don't have names that case in its title. It
+    opens with the common cases it doesn't cover, as a table where there are
+    several, and says in plain words that a reader in one of them is done:
+    "If the app's hostname is one of these, write it into the Ingress and
+    you're done." A title like "Give an app a hostname of its own" reads as
+    something every app needs, and readers who are already done start on the
+    procedure.
+11. Treat a tool the page's readers already use as a prerequisite. State the
+    settings the repository depends on ("You need Nix with flakes enabled and
+    direnv hooked into your shell"), and neither explain nor link how to
+    install it. Write install steps only for a tool the reader meets for the
+    first time on that page, such as Nix on a Windows route.
 
 ## Style rules
 
@@ -119,6 +152,13 @@ rule names. Remove the tic and the flow survives.
    "It does not destroy the associated resources" over "It destroys nothing",
    and "The next plan will propose to create it again. Applying that plan is
    the damaging step." over "So the next plan recreates it."
+   Concise means that every sentence says something. It never means cutting
+   words out of a sentence. A shorthand such as "start from the app closest to
+   yours" or "a database or none" leaves the reader to decode it, so write the
+   clause a person would say: "pick the app that matches the app you want to
+   deploy most closely", "whether it has a Postgres database". A phrase that
+   reads well, such as "making use of", stays: a shorter synonym makes the text
+   no denser, only less fluent. Density comes from what a sentence says.
 2. Use tables for key/value lists (file -> what it sets, scope -> packages, host
    -> identity). Reserve prose for the explanatory parts.
 3. Minimise inline single-backtick spans. Put filenames and module/option names
@@ -139,7 +179,7 @@ rule names. Remove the tic and the flow survives.
    A short closing sentence that adds a fact belongs in the doc: "The change
    takes effect on the next rebuild." The test is whether the sentence tells the
    reader something the paragraph has not already said. Length is no part of the
-   test, so keep a sentence that is short and carries a fact.
+   test, so keep a sentence that is short and states a fact.
 6. Bold sparingly: only the leading filename in a file-keyed bullet list.
 7. Vary sentence shape as well as length. A run of sentences that all open on
    the subject and close on the object reads as machine output even when every
@@ -178,6 +218,19 @@ rule names. Remove the tic and the flow survives.
    | The unit owns its own state. | Each unit writes its own tfstate to S3 under environments/<env>/<unit>/. |
    | The sidecar handles dashboard discovery. | The sidecar watches for ConfigMaps labelled grafana_dashboard and writes their contents to /tmp/dashboards. |
 
+   When a sentence crosses several files or components, write one link per
+   sentence. "The module a unit sources composes the repository module under
+   the name backup" packs three links into a noun phrase: the unit's
+   terragrunt.hcl points `source` at a module, that module contains a
+   `module "backup"` block, and the block calls the repository module. Write
+   each link with the file and the block a reader will find there. Stacked
+   possessives compress a chain the same way: "the unit's entry's class" names
+   a unit, a list item and a field, none of them in a form the reader can look
+   up. Say who sets the value and give an example value.
+   When one component builds half of a mechanism and another completes it,
+   write the steps in order: what the first creates, what it allows, and what
+   the second fills in afterwards, each with its actor. A list of the objects
+   each one creates does not say how they combine.
    Where the doc can show the mechanism running, show it first and let the
    prose annotate the output. A paragraph that describes behaviour with no
    example, no rendered block and no literal value has not explained it.
@@ -195,6 +248,15 @@ rule names. Remove the tic and the flow survives.
    the entry, drops the connection. Test a candidate against the four classes
    above before reaching for this permission; a phrase that reads as place,
    sight, temperature or volition stays out.
+   Verbs that turn an event into the state of an object belong to the place and
+   volition classes: holds, reaches, carries, brings back, appears, arrives and
+   shows up, used for data being somewhere or a value moving by itself. "A
+   dataset holding only what reached the repository" leaves the reader to work
+   out that a backup uploaded the data and a restore downloaded it. Write the
+   event and its actor: "the restore fills the new dataset from the latest
+   backup", "the Ingress writes the placeholder". A sentence about what a
+   mechanism does describes any app's data ("data written after the latest
+   backup is lost"), never the files one test workload happens to write.
    No sentence fragment used as a lead ("Running terragrunt yourself."); a short
    label before a command block ("One unit:") is fine.
 10. Name the deprecated or replaced command when one supersedes it
@@ -211,6 +273,13 @@ rule names. Remove the tic and the flow survives.
     The word itself is fine where no name is being withheld: "here's the
     thing", "something", "anything", "nothing". The test is whether a reader
     can tell what is meant.
+    A count of inputs, fields or keys withholds the names the same way. "One
+    input decides" sends the reader into the block below to guess which, and a
+    count is easy to get wrong. Write the name and what it decides: "set
+    `backup_enabled` to create the backup objects". An instruction to decide
+    names what is being chosen: "decide what each volume gets" says nothing
+    until the next sentence mentions backups, so write "decide which type of
+    backup each volume needs".
 12. Name what you mean wherever a reader would otherwise have to work it out.
     Write the resolver, the ingress unit, the wildcard record. Spell the name
     again when two or more candidates are in scope, when the reference crosses a
@@ -226,6 +295,19 @@ rule names. Remove the tic and the flow survives.
     invents a second name for the same thing, which is the synonym cycling the
     humanizer pass removes. The resolver stays the resolver on every mention,
     never the DNS component or the name service.
+    "These", "its entry" and "that unit" point back at a name, so they need one
+    earlier in the text. Before a table or a list, say that it follows and what
+    it lists: "Check the table below in case the app needs any of the following
+    additional features." A pointer to another page says which part of it to
+    read when that page opens on something else: "the second table in the
+    claims page lists all three". A cross-reference names the literal material
+    the reader will find there, the statuses and the repairs, like any other
+    sentence.
+    Point at one example among several by what it contains. "The fullest one"
+    ranks the examples on a scale the reader never saw; "the tutorial with a
+    database, a backed-up volume and a volume without backup" tells them what
+    they will get. A definite noun the reader hasn't met yet gets the word that
+    says where it comes from: "the provisioned wildcards" over "the wildcards".
 13. Do not close a sentence with ", and nothing else". Put the restriction
     inside the sentence with "only" or "just", or write it as its own
     statement. "The Role covers Backup objects in that namespace, and nothing
@@ -236,11 +318,11 @@ rule names. Remove the tic and the flow survives.
 14. Keep examples in this skill free of one environment's values. A domain, a
     node name, an address, or a cluster name belongs in the repo doc that
     configures it. An example here uses a role name (the ingress unit, the
-    worker holding the volume) so it reads the same in every repo.
+    worker that stores the volume) so it reads the same in every repo.
 15. Never price a design in "costs" or "buys". Banned in every form: "it
     costs", "it buys", "what it buys", "the cost is", "at the cost of", "costs
     nothing", "worth paying for", "you get / it costs" table headings. The
-    metaphor names no actor and no action, so the reader has to convert an
+    metaphor doesn't name an actor or an action, so the reader has to convert an
     imaginary currency back into the mechanism, which is rule 8 broken with a
     different word. It is the same slop as figurative "wiring".
     Write the consequence with a verb that says what happens, and a number
@@ -252,16 +334,16 @@ rule names. Remove the tic and the flow survives.
     | Following the endpoint costs a watch. | Following the endpoint requires the controller to open a watch. |
     | Compression costs little CPU. | Compression uses little CPU. |
     | The encapsulation costs 50 bytes. | The encapsulation adds 50 bytes of header. |
-    | Adding a cluster costs nothing here. | Adding a cluster changes no file in this module. |
+    | Adding a cluster costs nothing here. | Adding a cluster doesn't change any file in this module. |
     | What it buys is a second replica. | It adds a second replica. |
-    | The cost is a second copy of every volume. | It holds a second copy of every volume. |
+    | The cost is a second copy of every volume. | It keeps a second copy of every volume. |
 
     A trade-off still gets written out. Name what the design gives the reader
     in one sentence and what it demands of them in the next, each with its own
-    verb: "Restoring from the warm copy takes seconds. Holding it occupies a
-    second copy of every volume." A two-column table comparing options uses
-    headings that name the quantity, such as "Restore time" and "Disk held",
-    over "You get" and "It costs".
+    verb: "Restoring from the warm copy takes seconds. Keeping the warm copy
+    uses disk for a second copy of every volume." A two-column table comparing
+    options uses headings that name the quantity, such as "Restore time" and
+    "Disk used", over "You get" and "It costs".
 16. Use the whole range of punctuation. The humanizer pass bans the em dash and
     the en dash, and a writer who then routes every pause through a comma
     produces comma splices: "The kit becomes self-contained, the skills, the
@@ -298,7 +380,7 @@ rule names. Remove the tic and the flow survives.
     genuinely unknown or beside the point ("The lock file is regenerated at
     build time"), or where the object is the subject of the paragraph.
 
-    "we" carries design decisions and the reasons behind them, so it belongs in
+    "we" states design decisions and the reasons behind them, so it belongs in
     rationale paragraphs and in docs/concepts/ records, where it repairs the
     actorless sentence that rule bans: prefer "We keep identity out of the
     template so a second host can reuse it" over "Identity is kept out of the
@@ -316,9 +398,9 @@ rule names. Remove the tic and the flow survives.
     and puts a weak verb in front of it: "the runner performs a validation of
     the manifest" for "the runner validates the manifest". The sentence grows,
     and the verb the reader sees (perform, provide, make, conduct, achieve, do,
-    give, take, have) names no action. The object slides out of the verb's
-    reach and arrives behind a preposition, so "validates the manifest" becomes
-    "a validation of the manifest".
+    give, take, have) doesn't name an action. The object stops being the verb's
+    object and follows a preposition, so "validates the manifest" becomes "a
+    validation of the manifest".
     Detection: look for nouns ending in -tion, -ment, -ance, -ency, -ure, and
     for verbs used bare as nouns (a run, a walk, a check, a read, a fix), each
     sitting next to one of those weak verbs. Rewrite so the noun becomes the
@@ -354,12 +436,12 @@ rule names. Remove the tic and the flow survives.
     | Migration complete, the old path removed. | The migration is complete. I removed the old path. |
 20. Never write that a thing takes a property, a setting, a file or a repair. A
     volume takes no backup, a unit's terragrunt.hcl takes the include, an app
-    takes mode 1, a status takes a repair: the verb names no action, so the
+    takes mode 1, a status takes a repair: the verb doesn't name an action, so the
     sentence reports a state of the subject and leaves the reader to work out
     who acts and what they type. Name the action and the actor who performs it,
     and in a procedure use the imperative the reader is there for.
-    The failure is worst in a summary or a cross-reference. "takes" gets reached
-    for precisely because it covers four different actions at once, and a verb
+    The failure is worst in a summary or a cross-reference. Writers pick "takes"
+    there because it covers four different actions at once, and a verb
     that fits delete, leave alone, roll back and upgrade-over says none of them.
 
     | Instead of | Write |
@@ -371,9 +453,32 @@ rule names. Remove the tic and the flow survives.
 
     Keep the verb for a duration or a quantity: "the probe takes 528 ms", "a
     resolver failure takes about ten seconds". Everywhere else a real verb is
-    hiding in the sentence, usually requires, needs, holds, accepts, or the
+    hiding in the sentence, usually requires, needs, accepts, or the
     imperative. The final grep flags every "takes"; read each hit against that
     line.
     Rules 8 and 18 name the same failure from other directions: rule 18 catches
-    an action that turned into a noun, and this one catches an action that never
-    reached the sentence.
+    an action that turned into a noun, and this one catches an action the
+    sentence never states.
+21. Negate the verb. "An app without any of those lists no ConfigMap" reads as
+    translated text; spoken English says "doesn't list a ConfigMap". The same
+    goes for names no, writes no, reads no and sets no. "Has no" stays where
+    "has" is the plain verb.
+22. Describe a group by what puts a member in it, and name one or two members
+    as examples: "put an app that administers the platform, such as a
+    dashboard or a database console, in management". A complete list of
+    today's members is state; it goes stale with the next addition, and the
+    directory tree already records it. To point at a group of files, say what
+    they have in common and link the page that lists them. Three members picked
+    at random read as the whole set. Introduce a single file by its path and by
+    what it sets.
+23. State an inference as a numbered assumption, in a table at the end of the
+    section: the assumption, what it is based on, and the check that would
+    confirm it. Mark each step that depends on it with its number. "I have not
+    decoded the file" tells the reader something is uncertain without saying
+    which claim, what supports it, or how to settle it.
+24. A bug report's summary states the defect: the conditions that trigger it,
+    what the component does, and what it should do. The investigation and the
+    measurements go in the evidence sections after it. A duration that only
+    measures when someone stopped the process says nothing about the defect,
+    and an input the component should accept is described as an input, never
+    as the cause.
