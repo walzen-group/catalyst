@@ -11,10 +11,10 @@ setupVersion: 1
 modelRoles:
   plan: kimi-code/k3
   designer: kimi-code/k3
-  default: opencode-go/deepseek-v4-flash:high
-  smol: opencode-go/deepseek-v4-flash
-  tiny: opencode-go/deepseek-v4-flash
-  task: opencode-go/deepseek-v4-flash:max
+  default: opencode-go/deepseek-v4.1-flash:high
+  smol: opencode-go/deepseek-v4.1-flash
+  tiny: opencode-go/deepseek-v4.1-flash
+  task: opencode-go/deepseek-v4.1-flash:max
 hideThinkingBlock: true
 memory:
   backend: "off"
