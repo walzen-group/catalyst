@@ -1,0 +1,48 @@
+{
+  "run_id": "2026-10-28-fix-live-proof",
+  "timestamp": "2026-10-28T00:00:00.000Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4.1-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 0,
+  "criteria": [
+    {
+      "id": "wait-owner-attributed",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: unchanged criterion, held through the repair. RED run: PASS. GREEN run: PASS (readProcessOwner reads HERDR_PANE_ID/HERDR_TAB_ID; liveWaitFor attaches owner_pane/owner_tab; an unreadable environ yields a null owner)."
+    },
+    {
+      "id": "status-note-names-owner",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: extended with a SKILL.md source check (no 'META QUIESCENT is a settled meta whose session is still live: an omp meta between turns reads this way'). RED before the fix: FAIL, the unit suite failed (34 tests, 28 pass, 6 fail). GREEN after: unit suite 34 tests, 34 pass, 0 fail; owner note intact; SKILL.md synced. Full dispatch suite 198 tests, 198 pass, 0 fail."
+    },
+    {
+      "id": "open-wave-stranded-meta-not-healthy",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: extended with the armed parked meta, working armed meta, shell-parked meta and unarmed parked meta cases (incident 2026-10-28-c2d-omp-meta-own-waits). RED before the fix: FAIL, armedPark=UNWATCHED armedWorking=UNWATCHED shellPark=UNWATCHED, reason 'meta-x is parked with no live wait of its own'. GREEN after: armed, working-armed and shell-parked metas read healthy; the unarmed parked meta and the settled-worker stranded meta read UNWATCHED naming the meta; retired and verifying cases unchanged; no reason claims 'no live wait of its own'."
+    },
+    {
+      "id": "all-waits-per-target-reported",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "transcribed: new criterion. RED before the fix: FAIL, liveWaitFor waits=null owner_pane=w0:p1; readStatus owners=null owner=orch-x. GREEN after: liveWaitFor reports both waits on impl-x with owner panes w0:p1 and w1:p1, first kept as owner_pane; readStatus wake.owners [orch-x, meta-x], wake.owner orch-x. Live proof against real herdr waits on 2026-10-28: liveWaitFor('repair-c2d-meta-waits') returned two waits, pid 273588 owned by pane w0:p1 and pid 275251 owned by pane w0:pF."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "unverified",
+      "detail": "transcribed run only: a mechanical tool fix verified by the dispatch unit suite, the deterministic checks and a live probe, with no actor session, so the contamination scan has nothing to assert here; first asserted on the next live suite run."
+    }
+  ],
+  "judge_reasoning": "(no semantic criteria judged; transcribed run, not a suite launch)",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-10-28-fix-live-proof-log.md"
+}

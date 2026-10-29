@@ -122,6 +122,21 @@ function wakeMissing(agent) {
     && agent.wake.running === false;
 }
 
+function ownersOf(agent) {
+  if (Array.isArray(agent.wake?.owners)) return agent.wake.owners;
+  return agent.wake?.owner ? [agent.wake.owner] : [];
+}
+
+// A settled meta is armed when it owns a live wait on a worker still in flight:
+// that worker's settle wakes it. A wait on the meta's own name is the caller's
+// coverage, never the meta's reachability (incident
+// 2026-10-28-c2d-omp-meta-own-waits).
+function armedOnWorkers(meta, agents) {
+  return agents.some((agent) => agent.role === 'worker'
+    && stillWorking(agent)
+    && ownersOf(agent).includes(meta.name));
+}
+
 /**
  * 01's detection table, read off the roster. Five names, no sixth: the wake-gap
  * and blocked-meta cases land on the nearest row and say why in `reason`.
@@ -153,19 +168,22 @@ export function classify(agents) {
 
   // From here a meta is on the roster: workers are in flight, or a meta is still
   // open after the workers settled. Its state decides, exactly as it does with
-  // workers in flight. A meta that reads settled/parked with its own wake dead
-  // is stranded: when it (or its worker) settles, no live wait wakes anyone, so
-  // it sits with its duty undone. That is a mechanical fact (a prescribed wait
-  // whose pid is gone, or one never armed), so it is surfaced as a definite gap,
-  // never the probe-first META QUIESCENT that reads the same on a healthy park.
-  // Only a meta carrying a wake reading counts, so a hand-built roster without
-  // one is not read as a gap.
-  const stranded = openMetas.filter((meta) => meta.status !== 'working'
-    && meta.wake !== undefined && meta.wake !== null && meta.wake.running === false);
+  // workers in flight. A settled meta that owns no live wake mechanism is
+  // stranded: not working, not blocked, not parked on background shells, and
+  // owning no live wait on a worker still in flight, so nothing wakes it when
+  // that work settles. A wait on the meta's own name is the caller's coverage
+  // and never counts here: a wait on a settled agent returns at once, so an
+  // armed omp meta between turns has none (incident
+  // 2026-10-28-c2d-omp-meta-own-waits). Only a meta carrying a wake reading
+  // counts, so a hand-built roster without one is not read as a gap.
+  const stranded = openMetas.filter((meta) => meta.parked_monitoring !== true
+    && meta.status !== 'working' && meta.status !== 'blocked'
+    && meta.wake !== undefined && meta.wake !== null
+    && !armedOnWorkers(meta, agents));
   if (stranded.length > 0) {
     return {
       classification: 'UNWATCHED',
-      reason: `${stranded.map((meta) => meta.name).join(', ')} is parked with no live wait of its own: a settle wakes no one, so its verification is stranded. Probe it and re-arm its wait`,
+      reason: `${stranded.map((meta) => meta.name).join(', ')} is settled with no live wait it owns on a worker still in flight: nothing will wake it when that work settles, so its verification is stranded. Probe it and re-arm its wait on the workers it monitors`,
     };
   }
 
@@ -180,9 +198,12 @@ export function classify(agents) {
     };
   }
 
-  // A meta parked on background shells satisfies 01's "working or handed back":
-  // it re-enters when a shell or a wake reports back.
-  const atWork = metas.filter((meta) => meta.status === 'working' || meta.parked_monitoring === true);
+  // A meta parked on background shells, or one owning a live wait on an
+  // in-flight worker, satisfies 01's "working or handed back": it re-enters
+  // when a shell or a wake reports back.
+  const atWork = metas.filter((meta) => meta.status === 'working'
+    || meta.parked_monitoring === true
+    || armedOnWorkers(meta, agents));
   if (atWork.length === 0) {
     const blocked = metas.filter((meta) => meta.status === 'blocked');
     if (blocked.length > 0) {
@@ -217,7 +238,9 @@ export function classify(agents) {
     };
   }
 
-  const gaps = agents.filter(wakeMissing).map((agent) => agent.name);
+  // A meta is not a wake gap: the waits it owns on workers, and the worker rows'
+  // own gaps, carry that reading.
+  const gaps = workers.filter(wakeMissing).map((agent) => agent.name);
   if (gaps.length > 0) {
     return {
       classification: 'UNWATCHED',
@@ -305,6 +328,14 @@ export function readStatus({ dispatchId = null, names = null, sharedCheckout: ch
     const ownerPane = !callerSelf && waitProc ? waitProc.owner_pane ?? null : null;
     const ownerTab = !callerSelf && waitProc ? waitProc.owner_tab ?? null : null;
     const ownerName = ownerPane ? rosterByPane.get(ownerPane) ?? null : null;
+    // Every agent owning a live wait on this name, in wait order. A meta's
+    // reachability is read off these: its waits run on its workers' names
+    // (incident 2026-10-28-c2d-omp-meta-own-waits).
+    const owners = [];
+    for (const wait of (!callerSelf && waitProc?.waits) || []) {
+      const owner = wait.owner_pane ? rosterByPane.get(wait.owner_pane) ?? null : null;
+      if (owner !== null && !owners.includes(owner)) owners.push(owner);
+    }
     const ownedByCaller = !callerSelf && self !== null && waitProc !== null
       && waitProc.running && !waitProc.orphaned
       && ((self.paneId !== null && ownerPane === self.paneId)
@@ -334,6 +365,7 @@ export function readStatus({ dispatchId = null, names = null, sharedCheckout: ch
             pid: null,
             ppid: null,
             orphaned: false,
+            owners: [],
             note: SELF_WAIT_NOTE,
           }
         : {
@@ -346,6 +378,7 @@ export function readStatus({ dispatchId = null, names = null, sharedCheckout: ch
             orphaned: waitProc.orphaned,
             owner_pane: ownerPane,
             owner: ownerName,
+            owners,
             owned_by_caller: ownedByCaller,
             note: waitProc.running && !waitProc.orphaned
               ? (ownedByCaller

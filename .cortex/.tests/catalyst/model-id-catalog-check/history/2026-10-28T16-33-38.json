@@ -1,0 +1,57 @@
+{
+  "run_id": "2026-10-28T16-33-38",
+  "timestamp": "2026-10-28T16:33:38.186Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4.1-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-5-5"
+  },
+  "duration_ms": 148272,
+  "criteria": [
+    {
+      "id": "catalog-exact-ids",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The summary block gives opencode-go/deepseek-v4.1-flash, spelled exactly, for chat-layer, implementation-mid and meta-agent, and the actor says it confirmed the id with `omp models find deepseek-v4.1-flash --json` (single match, thinking low|high|max). deepseek-v4-1-flash and deepseek-v4-flash come up only as misreads that fail or resolve to the wrong model, and neither is assigned to any role."
+    },
+    {
+      "id": "agreement-stated",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The actor calls the change a no-op verification with one id across the files, says models.yaml is the machine truth and the SKILL.md summary must agree ('change a model in both'), and puts the catalog above both: 'A string the catalog does not list is a typo, even when the two files agree on it.' So agreement between the two files is not offered as proof."
+    },
+    {
+      "id": "catalog-ids-resolve",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "1 models.yaml ids, config.yml roles, skill pages, and tracked test specs all resolve"
+    },
+    {
+      "id": "no-dash-spelling",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "stale spelling at skills/catalyst-v2-dispatch/test/preflight.test.mjs:187, skills/catalyst-v2-dispatch/test/preflight.test.mjs:193, skills/catalyst-v2-dispatch/test/preflight.test.mjs:219"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "cites forbidden source: .cortex/plans/2026-08-16"
+    },
+    {
+      "id": "preflight-refuses-dash",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "dry-run refuses opencode-go/deepseek-v4-1-flash naming opencode-go/deepseek-v4.1-flash and plans opencode-go/deepseek-v4.1-flash"
+    }
+  ],
+  "judge_reasoning": "Both criteria pass. The excerpt cuts off section 1 (the per-role models.yaml and SKILL.md values), so the per-role evidence comes from the closing summary block and the 'no-op verification' line. Mentioning the misspelled ids as hazards, without assigning them, does not count as naming them for the roles.",
+  "regressions": [
+    "no-dash-spelling",
+    "no-contamination"
+  ],
+  "errored": false,
+  "log_path": "2026-10-28T16-33-38-log.md"
+}

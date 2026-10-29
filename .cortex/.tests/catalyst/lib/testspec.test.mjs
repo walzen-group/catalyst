@@ -56,7 +56,7 @@ test('a criterion with an unknown kind is rejected', () => {
 });
 
 test('a missing actor model is rejected', () => {
-  const r = specFrom(TEST_YAML.replace('  model: opencode-go/deepseek-v4-flash\n', '', 1));
+  const r = specFrom(TEST_YAML.replace('  model: opencode-go/deepseek-v4.1-flash\n', '', 1));
   assert.equal(r.ok, false);
 });
 
@@ -64,31 +64,31 @@ test('an actor models list parses with the harness prefix, and infers it without
   const r = specFrom(MULTI_TEST_YAML);
   assert.ok(r.ok, JSON.stringify(r.errors));
   assert.deepEqual(r.value.actor.models, [
-    { model: 'opencode-go/deepseek-v4-flash', runtime: 'omp' },
+    { model: 'opencode-go/deepseek-v4.1-flash', runtime: 'omp' },
     { model: 'sonnet', runtime: 'claude-code' },
   ]);
   // The bare form infers: a claude-* model belongs to claude-code, because an
   // omp launch of it dies on a provider 401.
   const bare = specFrom(MULTI_TEST_YAML.replace(
-    'models: [omp:opencode-go/deepseek-v4-flash, claude-code:sonnet]',
-    'models: [opencode-go/deepseek-v4-flash, claude-opus-4-8]',
+    'models: [omp:opencode-go/deepseek-v4.1-flash, claude-code:sonnet]',
+    'models: [opencode-go/deepseek-v4.1-flash, claude-opus-4-8]',
   ));
   assert.ok(bare.ok, JSON.stringify(bare.errors));
   assert.deepEqual(bare.value.actor.models.map((m) => m.runtime), ['omp', 'claude-code']);
   assert.equal(inferRuntime('claude-opus-4-8'), 'claude-code');
-  assert.equal(inferRuntime('opencode-go/deepseek-v4-flash'), 'omp');
+  assert.equal(inferRuntime('opencode-go/deepseek-v4.1-flash'), 'omp');
   assert.equal(parseModelEntry('nope:some-model').ok, false, 'an unknown harness is refused');
 });
 
 test('the models list also parses in the block form, and every entry keeps its harness', () => {
   const block = TEST_YAML.replace(
-    '  model: opencode-go/deepseek-v4-flash\n',
-    '  models:\n    - omp:opencode-go/deepseek-v4-flash\n    - claude-code:sonnet\n',
+    '  model: opencode-go/deepseek-v4.1-flash\n',
+    '  models:\n    - omp:opencode-go/deepseek-v4.1-flash\n    - claude-code:sonnet\n',
   );
   const r = specFrom(block);
   assert.ok(r.ok, JSON.stringify(r.errors));
   assert.deepEqual(r.value.actor.models.map((m) => `${m.runtime}:${m.model}`), [
-    'omp:opencode-go/deepseek-v4-flash',
+    'omp:opencode-go/deepseek-v4.1-flash',
     'claude-code:sonnet',
   ]);
 });
@@ -96,16 +96,16 @@ test('the models list also parses in the block form, and every entry keeps its h
 test('a legacy scalar model still validates and normalizes to a one-entry list', () => {
   const r = specFrom(TEST_YAML);
   assert.ok(r.ok, JSON.stringify(r.errors));
-  assert.equal(r.value.actor.model, 'opencode-go/deepseek-v4-flash');
+  assert.equal(r.value.actor.model, 'opencode-go/deepseek-v4.1-flash');
   // Runtime null: the role's own runtime from models.yaml stays in force, which
   // is what a legacy test.yaml has always meant.
-  assert.deepEqual(r.value.actor.models, [{ model: 'opencode-go/deepseek-v4-flash', runtime: null }]);
+  assert.deepEqual(r.value.actor.models, [{ model: 'opencode-go/deepseek-v4.1-flash', runtime: null }]);
 });
 
 test('actor.model and actor.models together are refused', () => {
   const both = TEST_YAML.replace(
-    '  model: opencode-go/deepseek-v4-flash\n',
-    '  model: opencode-go/deepseek-v4-flash\n  models: [claude-code:sonnet]\n',
+    '  model: opencode-go/deepseek-v4.1-flash\n',
+    '  model: opencode-go/deepseek-v4.1-flash\n  models: [claude-code:sonnet]\n',
   );
   const r = specFrom(both);
   assert.equal(r.ok, false);
@@ -113,7 +113,7 @@ test('actor.model and actor.models together are refused', () => {
 });
 
 test('a duplicate model in the list is refused', () => {
-  const r = specFrom(MULTI_TEST_YAML.replace('claude-code:sonnet', 'omp:opencode-go/deepseek-v4-flash'));
+  const r = specFrom(MULTI_TEST_YAML.replace('claude-code:sonnet', 'omp:opencode-go/deepseek-v4.1-flash'));
   assert.equal(r.ok, false);
   assert.ok(r.errors.some((e) => /duplicate model/.test(e)), JSON.stringify(r.errors));
 });

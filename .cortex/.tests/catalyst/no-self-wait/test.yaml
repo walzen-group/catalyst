@@ -9,14 +9,14 @@
 # The agent under test: a freshly launched catalyst orchestrator session
 # (normal mode, herdr available) mid-wave, deciding which waits to arm at turn
 # end. Role: orchestrator-default (omp runtime). Model: the working omp
-# default opencode-go/deepseek-v4-flash; the pinned orchestrator-default model
+# default opencode-go/deepseek-v4.1-flash; the pinned orchestrator-default model
 # kimi-code/k3 returned provider 403 quota errors on the identity-adoption
 # replay (recorded run 2026-08-04T21-07-16), so the replay runs on the
 # alternative to confirm the instruction text generalizes rather than fitting
 # one model. Its model must differ from the judge model.
 actor:
   role: orchestrator-default
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

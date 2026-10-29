@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { classifyScreen, extractComposer, ompComposerText, probeGhostText, recoverStartupScreen } from '../src/screens.mjs';
+import { classifyScreen, extractComposer, ompComposerText, probeGhostText, recoverStartupScreen, trustAnswerKeys } from '../src/screens.mjs';
 import {
   CLAUDE_FOREIGN_TEXT,
   CLAUDE_FOREIGN_TEXT_BACKSPACED,
@@ -17,6 +17,7 @@ import {
   OMP_IDLE,
   SHELL_STARTUP_NOISE,
   TRUST_PROMPT,
+  TRUST_PROMPT_CURRENT,
   TRUST_PROMPT_LIVE,
   UNKNOWN_GATE,
   rig,
@@ -119,6 +120,24 @@ test('the live trust prompt is answered, and the cwd is still checked', () => {
   assert.equal(refused.ok, false);
   assert.match(refused.reason, /names a different path/);
   assert.equal(other.calls('agent send-keys').length, 0);
+});
+
+// Regression anchor: 2026-10-28. Claude Code 2.1.312 draws the same trust
+// choices as a plain list with the cursor parked on `No, exit`, so the bare
+// Enter the tool used to send exited the CLI. The confirm is pressed on the
+// accept row, wherever the cursor starts.
+test('the trust menu is confirmed on its accept row, wherever the cursor starts', () => {
+  assert.deepEqual(trustAnswerKeys(TRUST_PROMPT_CURRENT), ['down', 'enter']);
+  assert.deepEqual(trustAnswerKeys(TRUST_PROMPT_LIVE), ['enter'], 'accept first, cursor already on it');
+  assert.deepEqual(trustAnswerKeys(TRUST_PROMPT), ['enter'], 'the boxed numbered render');
+  assert.equal(trustAnswerKeys(UNKNOWN_GATE), null, 'a menu with no accept row is never confirmed');
+});
+
+test('the current trust prompt is answered by walking onto the accept row', () => {
+  const r = rig({ reads: [TRUST_PROMPT_CURRENT] });
+  const ok = recoverStartupScreen({ name: 'v', cwd: '/tmp/catalyst-verify', options: r.options, env: r.env });
+  assert.equal(ok.action, 'trust-enter');
+  assert.deepEqual(r.calls('agent send-keys')[0].slice(2), ['v', 'down', 'enter']);
 });
 
 test('startup noise is waited through, not aborted on', () => {

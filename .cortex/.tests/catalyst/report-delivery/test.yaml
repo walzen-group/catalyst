@@ -10,7 +10,7 @@
 # (the spec/worker chain). Its model must differ from the judge model.
 actor:
   role: report-writer
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

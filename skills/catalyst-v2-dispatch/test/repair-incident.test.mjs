@@ -26,7 +26,7 @@ function repair(overrides = {}) {
     name: 'fix-x',
     cwd: realCwd,
     cli: 'claude',
-    model: 'claude-opus-4-8',
+    model: 'claude-opus-5-5',
     kind: 'repair',
     incident_path: incidentFile,
     brief: { mode: 'inline', text: 'repair it' },
@@ -40,7 +40,7 @@ const meta = {
   name: 'meta-watch',
   cwd: realCwd,
   cli: 'claude',
-  model: 'claude-opus-4-8',
+  model: 'claude-opus-5-5',
   kind: 'worker',
   brief: { mode: 'inline', text: 'watch' },
 };

@@ -49,14 +49,14 @@ test('the built dispatch input names the resolved model, cwd, and kind unit', ()
     dispatchId: 'test-x-declared-actor',
     name: 'x-actor',
     cwd: '/some/test/dir',
-    model: 'opencode-go/deepseek-v4-flash',
+    model: 'opencode-go/deepseek-v4.1-flash',
     roleEntry: ROLES['implementation-mid'],
     briefText: 'do the task',
   });
   // Strict-JSON round trip: the document is plain data.
   assert.deepEqual(JSON.parse(JSON.stringify(input)), input);
   const agent = input.agents[0];
-  assert.equal(agent.model, 'opencode-go/deepseek-v4-flash');
+  assert.equal(agent.model, 'opencode-go/deepseek-v4.1-flash');
   assert.equal(agent.cwd, '/some/test/dir');
   assert.equal(agent.cli, 'omp');
   assert.equal(agent.thinking, 'max');
@@ -69,7 +69,7 @@ test('buildDispatchInput forwards mandate_mode when given and omits it when abse
     dispatchId: 'test-x-declared-actor',
     name: 'x-actor',
     cwd: '/some/test/dir',
-    model: 'opencode-go/deepseek-v4-flash',
+    model: 'opencode-go/deepseek-v4.1-flash',
     roleEntry: ROLES['implementation-mid'],
     briefText: 'do the task',
   };
@@ -112,7 +112,7 @@ test('the real c2d dispatch --dry-run accepts the runner-built unit launch', () 
     dispatchId: 'test-x-declared-actor',
     name: 'x-actor',
     cwd: r.dir, // an existing directory, as preflight requires
-    model: 'opencode-go/deepseek-v4-flash',
+    model: 'opencode-go/deepseek-v4.1-flash',
     roleEntry: ROLES['implementation-mid'],
     briefText: 'do the task',
   });
@@ -121,7 +121,7 @@ test('the real c2d dispatch --dry-run accepts the runner-built unit launch', () 
   assert.equal(res.status, 0, res.stdout + res.stderr);
   const plan = JSON.parse(res.stdout);
   assert.equal(plan.mode, 'dry-run');
-  assert.equal(plan.agents[0].model, 'opencode-go/deepseek-v4-flash');
+  assert.equal(plan.agents[0].model, 'opencode-go/deepseek-v4.1-flash');
   assert.equal(plan.agents[0].cwd, r.dir);
   assert.equal(plan.agents[0].cli, 'omp');
 });
@@ -136,7 +136,7 @@ test('the same launch as a worker (kind flipped) is refused for lacking a meta',
     dispatchId: 'test-x-declared-actor',
     name: 'x-actor',
     cwd: r.dir,
-    model: 'opencode-go/deepseek-v4-flash',
+    model: 'opencode-go/deepseek-v4.1-flash',
     roleEntry: ROLES['implementation-mid'],
     briefText: 'do the task',
   });

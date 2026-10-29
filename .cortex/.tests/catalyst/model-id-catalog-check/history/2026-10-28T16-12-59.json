@@ -1,0 +1,48 @@
+{
+  "run_id": "2026-10-28T16-12-59",
+  "timestamp": "2026-10-28T16:12:59.265Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4.1-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-5-5"
+  },
+  "duration_ms": 199124,
+  "criteria": [
+    {
+      "id": "catalog-exact-ids",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The actor names opencode-go/deepseek-v4.1-flash, spelled exactly, for chat-layer, implementation-mid and meta-agent. It says it confirmed the id with `omp models find opencode-go/deepseek-v4.1-flash` (one row came back) and cross-checked with `omp models find deepseek`. It never writes deepseek-v4-1-flash, and it mentions deepseek-v4-flash only as a separate near-miss catalog entry without assigning it to any role."
+    },
+    {
+      "id": "agreement-stated",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The actor shows the same id in models.yaml and in the three matching SKILL.md summary rows. It says models.yaml is the machine truth and that SKILL.md 'must agree with models.yaml'. It names the catalog lookup as 'the only proof of the id', so it doesn't treat agreement between the two files as proof that the id exists."
+    },
+    {
+      "id": "catalog-ids-resolve",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "1 models.yaml ids, config.yml roles, skill pages, and tracked test specs all resolve"
+    },
+    {
+      "id": "no-dash-spelling",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no live tracked file names the dash-spelled model id"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "Both criteria pass on the final report. The exact dotted id appears for all three roles with explicit omp catalog confirmation, the deprecated and hyphenated variants are absent or only named as distinct entries, and the actor separates the file-agreement rule (models.yaml authoritative, SKILL.md must match) from the proof of existence (the catalog lookup).",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-10-28T16-12-59-log.md"
+}

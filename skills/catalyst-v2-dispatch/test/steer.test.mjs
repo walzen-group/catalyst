@@ -4,9 +4,13 @@
 // 2026-08-01-dispatch-wake-armed-nothing-delivers.
 
 import assert from 'node:assert/strict';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import test from 'node:test';
 
 import { steerAgent } from '../src/steer.mjs';
+import { main } from '../src/cli.mjs';
+import { resultPath } from '../src/result.mjs';
 import { deliveriesForSession } from '../src/ledger.mjs';
 import { readWakeRecord } from '../src/wake.mjs';
 import {
@@ -325,4 +329,68 @@ test('a steer to a claude agent with no agent_session published still delivers, 
   assert.ok(records.length >= 1, 'the steer delivery is recorded against the derived identity');
   assert.equal(records[0].agent, 'orchestrator');
   assert.equal(records[0].session, derived);
+});
+
+// --- recipient: `--agent dispatcher` resolves to the caller's dispatcher ------
+// Incident 2026-10-28-orchestrator-name-taken-handback-misroute.
+
+function dispatcherRig(record) {
+  const r = rig({
+    agentGet: OMP_WORKING_GET,
+    reads: OMP_QUIET_READS,
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+  r.env.HERDR_PANE_ID = 'wC:p1';
+  r.env.HERDR_TAB_ID = 'wC:t1';
+  if (record) {
+    const file = resultPath(record.dispatch_id, r.env);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, JSON.stringify(record));
+  }
+  return r;
+}
+
+function captureOut() {
+  let out = '';
+  return { io: { out: { write: (c) => { out += c; } }, err: { write: () => {} } }, read: () => out };
+}
+
+test('steer --agent dispatcher resolves to the recorded caller', async () => {
+  const r = dispatcherRig({
+    dispatch_id: 'housekeeping-aio',
+    status: 'ok',
+    caller: { name: 'orch-aio', pane_id: 'wA:p1', tab_id: 'wA:t1', cwd: '/tmp/catalyst-verify-omp' },
+    agents: [{ name: 'the-curator', pane_id: 'wC:p1', tab_id: 'wC:t1' }],
+  });
+  const c = captureOut();
+  const code = await main(['steer', '--agent', 'dispatcher', '--text', 'A2A: pass done'], {
+    ...c.io, options: r.options, env: r.env,
+  });
+  assert.equal(code, 0, c.read());
+  const prompt = r.calls('agent prompt')[0];
+  assert.ok(prompt, 'the steer was delivered');
+  assert.equal(prompt[2], 'orch-aio');
+});
+
+test('steer --agent dispatcher with no caller on record is refused with the pane, dispatch id and remedy', async () => {
+  const noRecord = dispatcherRig(null);
+  const a = captureOut();
+  assert.equal(await main(['steer', '--agent', 'dispatcher', '--text', 'A2A: x'], {
+    ...a.io, options: noRecord.options, env: noRecord.env,
+  }), 1);
+  const noRecordFailure = JSON.parse(a.read()).failures.join(' ');
+  assert.match(noRecordFailure, /wC:p1/, 'names the caller pane');
+  assert.match(noRecordFailure, /\.cortex\/reports\/handbacks/, 'names the remedy');
+
+  const noCaller = dispatcherRig({
+    dispatch_id: 'old-dispatch',
+    status: 'ok',
+    agents: [{ name: 'the-curator', pane_id: 'wC:p1', tab_id: 'wC:t1' }],
+  });
+  const b = captureOut();
+  assert.equal(await main(['steer', '--agent', 'dispatcher', '--text', 'A2A: x'], {
+    ...b.io, options: noCaller.options, env: noCaller.env,
+  }), 1);
+  assert.match(JSON.parse(b.read()).failures.join(' '), /old-dispatch/, 'names the dispatch found');
+  assert.equal(noCaller.calls('agent prompt').length, 0);
 });

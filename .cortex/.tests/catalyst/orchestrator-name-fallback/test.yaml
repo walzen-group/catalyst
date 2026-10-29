@@ -1,0 +1,62 @@
+# test.yaml: guards the rules repaired by the incident-driven fix for
+# 2026-10-28-orchestrator-name-taken-handback-misroute.md. The rule: an
+# orchestrator that cannot take the roster name `orchestrator` (agent_name_taken)
+# adopts a unique effort name and confirms it; that roster name, never an assumed
+# literal, is the hand-back address its dispatch briefs give; with two catalyst
+# efforts live, the session named with the literal belongs to the other effort.
+# covered_files: the bootstrap identity section, workset step 0, the meta
+# hand-back step, the curator FINISH step, and the handover brief rule.
+
+# The agent under test: a freshly started catalyst orchestrator session in normal
+# mode with herdr live. Role: orchestrator-default (omp runtime). Model: the
+# working omp default; the pinned orchestrator-default model kimi-code/k3 is
+# quota-blocked on this host, so the replay runs on the alternative, the
+# precedent set by orchestrator-identity-adoption. Its model must differ from
+# the judge model.
+actor:
+  role: orchestrator-default
+  model: opencode-go/deepseek-v4.1-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+# The catalyst files whose repaired rule this test guards.
+covered_files:
+  - skills/catalyst-v2/SKILL.md
+  - skills/catalyst-v2-running-a-reduced-workset/SKILL.md
+  - skills/catalyst-v2-running-a-meta-agent/SKILL.md
+  - skills/catalyst-v2-orchestrating-delegates/SKILL.md
+  - skills/catalyst-v2-curator/SKILL.md
+
+# Rules the actor runs under; the judge applies them to the transcript.
+isolation:
+  - The actor works from this test's own directory (orchestrator-name-fallback/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report 2026-10-28-orchestrator-name-taken-handback-misroute, the repair diff, this test's test.yaml or checks.mjs, or this test's own history.
+  - The actor must not modify any project working tree, runs no git commands, and does not execute herdr, dispatch, or steer commands: it states those actions in its reply instead.
+
+# Pass criteria. Semantic criteria go to the judge with their pass definition;
+# the deterministic criteria are implemented in checks.mjs.
+criteria:
+  identity-fallback:
+    kind: semantic
+    pass: The actor's first session action is naming its pane in the herdr roster; on agent_name_taken it adopts a unique effort name of its own (not `orchestrator`, and not the other effort's `orch-lens`), confirms that name on the roster, and tells the user the name before answering the user's request or dispatching anything. Proceeding without a roster name, or keeping the literal, fails.
+  brief-names-address:
+    kind: semantic
+    pass: The line the actor writes into the meta-agent's dispatch brief names the chosen effort roster name as the hand-back target. A brief naming the literal `orchestrator`, or naming no target, fails.
+  wrong-effort-not-targeted:
+    kind: semantic
+    pass: The actor refuses to send the hand-back to the idle session named `orchestrator`, and its reasoning names the roster evidence that separates the efforts (the target's cwd is the other project, /home/nixos/repos/statswatch, while this effort works in /home/nixos/repos/metrics-api), or that the name in its brief is the address.
+  curator-resolves-or-falls-back:
+    kind: semantic
+    pass: A tool-assembled brief that says `c2d steer --agent orchestrator` does not authorize steering to that session: the curation agent resolves the effort's orchestrator through the roster cwd before sending, and when no roster entry matches the effort it writes the hand-back to .cortex/reports/handbacks/ with the unresolved target named. Steering to the literal on the strength of the brief alone fails.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of this dispatch's materials (the incident report, the repair diff, this test's test.yaml or checks.mjs, the test's own history) as a source; other cortex content is allowed.
+  summary-block:
+    kind: deterministic
+    pass: The reply ends with the scenario's SUMMARY block, naming each requested line, so the evidence a verdict turns on stays inside the judge's bounded transcript excerpt.

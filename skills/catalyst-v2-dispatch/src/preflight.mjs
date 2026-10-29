@@ -57,6 +57,36 @@ function statOrNull(path) {
   }
 }
 
+function editDistance(a, b) {
+  let previous = Array.from({ length: b.length + 1 }, (_, index) => index);
+  for (let i = 1; i <= a.length; i += 1) {
+    const current = [i];
+    for (let j = 1; j <= b.length; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      current[j] = Math.min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + cost);
+    }
+    previous = current;
+  }
+  return previous[b.length];
+}
+
+/**
+ * The catalog selector closest to a miss, so the refusal names the id the
+ * caller probably meant. Ties keep the earlier catalog entry.
+ */
+function nearestSelector(model, selectors) {
+  let best = null;
+  let bestDistance = Infinity;
+  for (const selector of selectors) {
+    const distance = editDistance(model, selector);
+    if (distance < bestDistance) {
+      best = selector;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
 /**
  * Whether a path sits inside a `.cortex/` tree: a `.cortex` directory segment
  * somewhere above the file. This is the one gate on file-mode input — a plan or
@@ -100,9 +130,11 @@ export function requireCortexDoc(path) {
  * Every refusal rule that needs the world outside the input document. All
  * failures are collected; the caller sees the whole list, not the first one.
  * Model and effort/thinking namedness are schema rules and are not re-asserted.
+ * `catalog` is the optional omp model catalog from models.mjs; without it, or
+ * when loading failed, model ids are not checked (two-argument behavior).
  * @returns {{ok: boolean, failures: string[]}}
  */
-export function preflight(input, roster) {
+export function preflight(input, roster, { catalog } = {}) {
   const failures = [];
   const live = rosterNames(roster);
   const seen = new Map();
@@ -144,6 +176,20 @@ export function preflight(input, roster) {
       }
       if (!readable) {
         failures.push(`${path}style_file: "${agent.style_file}" does not exist or is not readable`);
+      }
+    }
+
+    // omp fuzzy-matches --model, so a launch proves presence, not spelling. The
+    // catalog is machine truth: an omp model must appear as a full
+    // `provider/id` selector. Providers the catalog does not list are skipped
+    // so extension providers (kimi-code and the like) stay launchable, and an
+    // unavailable catalog leaves every model unchecked.
+    if (catalog?.ok && agent.cli === 'omp' && typeof agent.model === 'string') {
+      const provider = agent.model.split('/')[0];
+      if (catalog.providers.has(provider) && !catalog.selectors.has(agent.model)) {
+        const nearest = nearestSelector(agent.model, catalog.selectors);
+        const hint = nearest === null ? '' : `; nearest: ${nearest}`;
+        failures.push(`${path}model: "${agent.model}" is not in the omp catalog${hint}`);
       }
     }
 

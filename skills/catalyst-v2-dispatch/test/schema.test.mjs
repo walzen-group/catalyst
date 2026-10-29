@@ -1,6 +1,6 @@
 // Effort optionality for claude agents, and the gating that stays.
 // Change: the 2026-08-01 model policy assigns default effort to the
-// claude-opus-4-8 frontier and meta-agent roles, so a claude agent may omit
+// claude-opus-5-5 frontier and meta-agent roles, so a claude agent may omit
 // effort and let the CLI use its built-in default.
 
 import assert from 'node:assert/strict';

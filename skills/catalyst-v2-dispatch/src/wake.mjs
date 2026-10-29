@@ -102,14 +102,22 @@ export function wakeProcessAlive(pid) {
  * its exit will deliver nothing. That one is reported running-but-orphaned and
  * does NOT count as watched.
  *
+ * Every live wait is reported in `waits`, each with its own owner: the
+ * orchestrator and a meta often both wait on one worker, and a first-match
+ * return erased the meta's ownership (incident 2026-10-28-c2d-omp-meta-own-waits).
+ * The top-level pid/ppid/owner fields mirror the first entry.
+ *
  * @returns {{running: boolean, pid: number|null, ppid: number|null,
- *            orphaned: boolean, scanned: boolean}}
+ *            orphaned: boolean, scanned: boolean,
+ *            owner_pane: string|null, owner_tab: string|null,
+ *            waits: Array<{pid: number, ppid: number, owner_pane: string|null, owner_tab: string|null}>}}
  */
 export function liveWaitFor(name, options = {}) {
-  const none = { running: false, pid: null, ppid: null, orphaned: false, scanned: false, owner_pane: null, owner_tab: null };
+  const none = { running: false, pid: null, ppid: null, orphaned: false, scanned: false, owner_pane: null, owner_tab: null, waits: [] };
   const ps = spawnSync(options.psBin ?? 'ps', ['-eo', 'pid=,ppid=,args='], { encoding: 'utf8' });
   if (ps.error || typeof ps.stdout !== 'string') return none;
 
+  const waits = [];
   let orphan = null;
   for (const line of ps.stdout.split('\n')) {
     const match = line.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/);
@@ -124,17 +132,19 @@ export function liveWaitFor(name, options = {}) {
     if (argv[1] !== 'agent' || argv[2] !== 'wait') continue;
     // <name> as its own argument, so `foo` never matches a wait on `foo-2`.
     if (argv[3] !== name) continue;
-    const entry = { running: true, pid: Number(pid), ppid: Number(ppid), orphaned: Number(ppid) === 1, scanned: true, owner_pane: null, owner_tab: null };
-    if (!entry.orphaned) {
-      // Attribute the wait to its owner: a live wait tells no one whether it is
-      // THEIR wait unless it carries an owner. Only a real (non-orphan) wait is
-      // read; an orphan wakes nobody and never counts as coverage.
-      const owner = readProcessOwner(entry.pid, options);
-      entry.owner_pane = owner.pane;
-      entry.owner_tab = owner.tab;
-      return entry;
+    if (Number(ppid) === 1) {
+      orphan = { ...none, running: true, pid: Number(pid), ppid: 1, orphaned: true, scanned: true };
+      continue;
     }
-    orphan = entry;
+    // Attribute the wait to its owner: a live wait tells no one whether it is
+    // THEIR wait unless it carries an owner. Only a real (non-orphan) wait is
+    // read; an orphan wakes nobody and never counts as coverage.
+    const owner = readProcessOwner(Number(pid), options);
+    waits.push({ pid: Number(pid), ppid: Number(ppid), owner_pane: owner.pane, owner_tab: owner.tab });
+  }
+  if (waits.length > 0) {
+    const [first] = waits;
+    return { running: true, pid: first.pid, ppid: first.ppid, orphaned: false, scanned: true, owner_pane: first.owner_pane, owner_tab: first.owner_tab, waits };
   }
   return orphan ?? { ...none, scanned: true };
 }

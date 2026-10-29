@@ -24,7 +24,7 @@ test('config_source declared -> one run on the declared model', () => {
   assert.ok(r.ok);
   assert.equal(r.runs.length, 1);
   assert.equal(r.runs[0].side, 'declared');
-  assert.equal(r.runs[0].actorModel, 'opencode-go/deepseek-v4-flash');
+  assert.equal(r.runs[0].actorModel, 'opencode-go/deepseek-v4.1-flash');
 });
 
 test('config_source live -> one run on the live model from models.yaml', () => {
@@ -47,13 +47,13 @@ test('config_source both with actor models differing -> two actor runs', () => {
   assert.ok(r.ok);
   assert.equal(r.runs.length, 2);
   assert.deepEqual(r.runs.map((run) => run.side), ['declared', 'live']);
-  assert.deepEqual(r.runs.map((run) => run.actorModel), ['opencode-go/deepseek-v4-flash', 'opencode-go/deepseek-v5']);
+  assert.deepEqual(r.runs.map((run) => run.actorModel), ['opencode-go/deepseek-v4.1-flash', 'opencode-go/deepseek-v5']);
 });
 
 test('a judge model equal to the actor model is refused', () => {
   // Same-model collision on the declared side: both come from test.yaml.
   const collided = parseTestSpec(
-    parseYaml(TEST_YAML.replace('  model: claude-opus-4-8', '  model: opencode-go/deepseek-v4-flash')),
+    parseYaml(TEST_YAML.replace('  model: claude-opus-4-8', '  model: opencode-go/deepseek-v4.1-flash')),
     'slug',
   ).value;
   const r = resolveRuns(collided, ROLES);
@@ -65,10 +65,10 @@ test('two actor models produce two runs, in order, each on its own harness and s
   const r = resolveRuns(specFromText(MULTI_TEST_YAML), ROLES);
   assert.ok(r.ok, JSON.stringify(r.errors));
   assert.equal(r.runs.length, 2);
-  assert.deepEqual(r.runs.map((run) => run.actorModel), ['opencode-go/deepseek-v4-flash', 'sonnet']);
+  assert.deepEqual(r.runs.map((run) => run.actorModel), ['opencode-go/deepseek-v4.1-flash', 'sonnet']);
   assert.deepEqual(r.runs.map((run) => run.actorRuntime), ['omp', 'claude-code']);
   assert.deepEqual(r.runs.map((run) => run.idSuffix), [
-    '-omp-opencode-go-deepseek-v4-flash',
+    '-omp-opencode-go-deepseek-v4-1-flash',
     '-claude-code-sonnet',
   ]);
   // One judge serves both runs.
@@ -99,7 +99,7 @@ test('a judge colliding with any one model in the list refuses the whole test', 
 
 test('runSuffix is a filesystem-safe slug of harness and model', () => {
   assert.equal(runSuffix({ runtime: 'claude-code', model: 'claude-opus-4-8' }), '-claude-code-claude-opus-4-8');
-  assert.doesNotMatch(runSuffix({ runtime: 'omp', model: 'opencode-go/deepseek-v4-flash' }), /[/:.]/);
+  assert.doesNotMatch(runSuffix({ runtime: 'omp', model: 'opencode-go/deepseek-v4.1-flash' }), /[/:.]/);
 });
 
 test('config_source live ignores the declared models list and runs the live config once', () => {
@@ -107,7 +107,7 @@ test('config_source live ignores the declared models list and runs the live conf
   assert.ok(r.ok, JSON.stringify(r.errors));
   assert.equal(r.runs.length, 1);
   assert.equal(r.runs[0].side, 'live');
-  assert.equal(r.runs[0].actorModel, 'opencode-go/deepseek-v4-flash');
+  assert.equal(r.runs[0].actorModel, 'opencode-go/deepseek-v4.1-flash');
 });
 
 test('an unknown role is refused', () => {

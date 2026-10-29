@@ -20,9 +20,9 @@ launch that omits one; this page is the authority for *which* to name.
 
 | Tier | Use for | Model | Session shape |
 |---|---|---|---|
-| **Frontier** | Implementation only: contract-defining changes, subtle cross-cutting logic | claude-opus-4-8 at default effort | Max 2 concurrent |
-| **Mid-tier** | Standard implementation, per-task reviews, open-ended verification, meta-agent monitoring, final whole-branch review, debugging | opencode-go/deepseek-v4-flash at thinking max (omp) | One-shot or back-to-back chain |
-| **Small/fast** | Chore-sized mechanical work: mirrored tests, config bumps, doc edits | opencode-go/deepseek-v4-flash at thinking max | One-shot, fully spec'd |
+| **Frontier** | Implementation only: contract-defining changes, subtle cross-cutting logic | claude-opus-5-5 at default effort | Max 2 concurrent |
+| **Mid-tier** | Standard implementation, per-task reviews, open-ended verification, meta-agent monitoring, final whole-branch review, debugging | opencode-go/deepseek-v4.1-flash at thinking max (omp) | One-shot or back-to-back chain |
+| **Small/fast** | Chore-sized mechanical work: mirrored tests, config bumps, doc edits | opencode-go/deepseek-v4.1-flash at thinking max | One-shot, fully spec'd |
 | **Reserve** | Independent verification reruns, triage, smoke-test driving | Orchestrator's own session, or omp smol/tiny | Sparingly |
 | **Board keeper** | Status-board sync only | Claude Sonnet at effort low | Long-lived, whole epic |
 
@@ -41,20 +41,29 @@ back to its own `skills/` layout.
 | Catalyst role | Runtime | Model |
 |---|---|---|
 | Orchestrator (default) | omp session | kimi-code/k3, thinking high |
-| Orchestrator (Claude Code) | Claude Code in herdr tab | claude-opus-4-8, default effort |
-| Chat layer (quickchat) | omp session | opencode-go/deepseek-v4-flash, thinking max |
-| Implementation (frontier) | Claude Code in herdr tab, max 2 concurrent | claude-opus-4-8, default effort |
-| Implementation (mid-tier, small/fast) | omp in herdr tab | opencode-go/deepseek-v4-flash, thinking max |
-| Meta-agent | omp in herdr tab | opencode-go/deepseek-v4-flash, thinking max |
+| Orchestrator (Claude Code) | Claude Code in herdr tab | claude-opus-5-5, default effort |
+| Chat layer (quickchat) | omp session | opencode-go/deepseek-v4.1-flash, thinking max |
+| Implementation (frontier) | Claude Code in herdr tab, max 2 concurrent | claude-opus-5-5, default effort |
+| Implementation (mid-tier, small/fast) | omp in herdr tab | opencode-go/deepseek-v4.1-flash, thinking max |
+| Meta-agent | omp in herdr tab | opencode-go/deepseek-v4.1-flash, thinking max |
 | Board keeper | Claude Code in herdr tab | sonnet, effort low |
 | Curator | Claude Code in herdr tab | sonnet, default effort |
-| Judge (test runner) | Claude Code | claude-opus-4-8, default effort |
+| Judge (test runner) | Claude Code | claude-opus-5-5, default effort |
 
 The omp session also keeps two internal modelRoles set in omp/agent/config.yml:
 plan/designer (kimi-code/k3) and smol/tiny subagents
-(opencode-go/deepseek-v4-flash). The `judge` role is defined in `models.yaml` for
+(opencode-go/deepseek-v4.1-flash). The `judge` role is defined in `models.yaml` for
 the integration-test runner, which enforces that the judge model differs from the
 actor model under test.
+
+## Model ids are catalog ids
+
+A model string is the catalog id the runtime serves, spelled exactly as the
+catalog lists it. Confirm an unfamiliar id with `omp models find <id>` before
+writing it into models.yaml or this page. A string the catalog does not list is
+a typo, even when the two files agree on it. A launch does not prove the
+spelling: omp fuzzy-matches `--model`, so a near-miss can start on a different
+model.
 
 ## Policy
 
@@ -62,12 +71,12 @@ actor model under test.
   modelRoles in omp/agent/config.yml, or named on the dispatch) is a separate
   question from which model to name. The tool refuses a nameless launch; the
   judgment it cannot make is *which* model. Read the row, name it.
-- **Opus concurrency cap: 2.** No more than two claude-opus-4-8 delegate sessions
+- **Opus concurrency cap: 2.** No more than two claude-opus-5-5 delegate sessions
   run at once. Work that would exceed the cap queues or routes to mid-tier
-  (deepseek-v4-flash). The orchestrator's own Opus session (when running Claude
+  (deepseek-v4.1-flash). The orchestrator's own Opus session (when running Claude
   Code) is separate from this cap.
-- **Meta-agent model: prefer deepseek-v4-flash.** Meta-agents default to
-  opencode-go/deepseek-v4-flash at thinking max. Escalate to claude-opus-4-8 only
+- **Meta-agent model: prefer deepseek-v4.1-flash.** Meta-agents default to
+  opencode-go/deepseek-v4.1-flash at thinking max. Escalate to claude-opus-5-5 only
   when the meta-agent's task genuinely needs frontier judgment (complex
   multi-agent diagnosis, subtle cross-cutting verification). An Opus meta-agent
   counts toward the 2-concurrent Opus cap.
@@ -76,7 +85,7 @@ actor model under test.
   The effort table below survives only as historical guidance for choosing tiers.
 - **The orchestrator keeps the expensive model.** kimi-code/k3 at thinking high for
   scheduling and triage; smol/tiny roles at ~1/30th the price; the chat layer
-  at opencode-go/deepseek-v4-flash thinking max.
+  at opencode-go/deepseek-v4.1-flash thinking max.
 
 ## Thinking effort for Claude delegates (retired 2026-08-01)
 
@@ -92,8 +101,8 @@ gate stays: `user_directive: true` required beside either.
 ## Thinking effort on omp launches
 
 omp takes off/minimal/low/medium/high/xhigh/max/auto as the `thinking` field.
-Use opencode-go/deepseek-v4-flash at thinking max for
-Mid-tier and Small/fast tiers. Frontier runs claude-opus-4-8 at default effort.
+Use opencode-go/deepseek-v4.1-flash at thinking max for
+Mid-tier and Small/fast tiers. Frontier runs claude-opus-5-5 at default effort.
 
 ### Start low, escalate on evidence
 
@@ -106,9 +115,9 @@ cheap run. Escalate when a delegate demonstrates it needs headroom, never on a
 hunch.
 
 **Effort moved before the model (retired 2026-08-01).** Frontier implementation
-runs claude-opus-4-8 at default effort (max 2 concurrent). All other work
+runs claude-opus-5-5 at default effort (max 2 concurrent). All other work
 (reviews, verification, meta-agent, debugging) runs
-opencode-go/deepseek-v4-flash at thinking max. Exceptions: board keeper runs
+opencode-go/deepseek-v4.1-flash at thinking max. Exceptions: board keeper runs
 Sonnet at low; orchestrator runs kimi-code/k3.
 
 ## Routing heuristics

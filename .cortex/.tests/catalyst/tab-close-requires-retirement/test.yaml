@@ -10,14 +10,14 @@
 # (normal mode, herdr available) mid-wave, deciding whether it may close a
 # meta's tab whose status reads idle with no background shell while its worker
 # is still in flight and no hand-back exists. Role: orchestrator-default (omp
-# runtime). Model: the working omp default opencode-go/deepseek-v4-flash; the
+# runtime). Model: the working omp default opencode-go/deepseek-v4.1-flash; the
 # pinned orchestrator-default model kimi-code/k3 returned provider 403 quota
 # errors on 2026-08-04, so the replay runs on the alternative to confirm the
 # instruction text generalizes rather than fitting one model. Its model must
 # differ from the judge model.
 actor:
   role: orchestrator-default
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

@@ -196,3 +196,72 @@ test('readStatus: without herdr pane ids no entry is read as the caller', () => 
   assert.equal(out.agents[0].caller_self, false);
   assert.ok(out.agents[0].wake.command.startsWith('herdr agent wait'));
 });
+
+// Incident 2026-10-28-c2d-omp-meta-own-waits: a meta's waits run on its workers'
+// names, so a wait on the meta's own name is the caller's coverage, never the
+// meta's reachability. An armed omp meta parked between turns read UNWATCHED.
+test('classify: a parked meta that owns live waits on in-flight workers is healthy, not stranded', () => {
+  const result = classify([
+    { name: 'aio-t2-core', role: 'worker', status: 'working', wake: { running: true, owner: 'orch-aio', owners: ['orch-aio', 'meta-aio-w2'] } },
+    { name: 'meta-aio-w2', role: 'meta', status: 'idle', present: true, tokens_spent: true, parked_monitoring: false, wake: { running: false, owners: [] } },
+  ]);
+  assert.equal(result.classification, 'healthy');
+  assert.match(result.reason, /live wait/);
+});
+
+test('classify: a working meta is not a wake gap when its waits are on the workers', () => {
+  const result = classify([
+    { name: 'aio-t2-core', role: 'worker', status: 'working', wake: { running: true, owners: ['meta-aio-w2'] } },
+    { name: 'meta-aio-w2', role: 'meta', status: 'working', present: true, tokens_spent: true, wake: { running: false, owners: [] } },
+  ]);
+  assert.equal(result.classification, 'healthy');
+});
+
+test('classify: a settled meta parked on background shells is not stranded', () => {
+  const result = classify([
+    { name: 'aio-t2-core', role: 'worker', status: 'working', wake: { running: true, owners: ['orch-aio'] } },
+    { name: 'meta-aio-w2', role: 'meta', status: 'done', present: true, tokens_spent: true, parked_monitoring: true, wake: { running: false, owners: [] } },
+  ]);
+  assert.equal(result.classification, 'healthy');
+});
+
+test('classify: a parked meta whose workers are watched only by another agent is stranded', () => {
+  const result = classify([
+    { name: 'aio-t2-core', role: 'worker', status: 'working', wake: { running: true, owner: 'orch-aio', owners: ['orch-aio'] } },
+    { name: 'meta-aio-w2', role: 'meta', status: 'idle', present: true, tokens_spent: true, wake: { running: false, owners: [] } },
+  ]);
+  assert.equal(result.classification, 'UNWATCHED');
+  assert.match(result.reason, /meta-aio-w2/);
+});
+
+test('classify: a blocked meta with workers in flight reads blocked, not parked', () => {
+  const result = classify([
+    { name: 'aio-t2-core', role: 'worker', status: 'working', wake: { running: true, owners: ['orch-aio'] } },
+    { name: 'meta-aio-w2', role: 'meta', status: 'blocked', present: true, tokens_spent: true, wake: { running: false, owners: [] } },
+  ]);
+  assert.equal(result.classification, 'UNWATCHED');
+  assert.match(result.reason, /is blocked/);
+});
+
+test("readStatus: every owner of a worker's live waits is surfaced", () => {
+  const r = rig({
+    agentList: rosterReply([
+      { name: 'orch-aio', agent: 'omp', agent_status: 'working', tab_id: 'w0:t1', pane_id: 'w0:p1', cwd: '/repo', tokens: { input: 10 } },
+      { name: 'meta-aio-w2', agent: 'omp', agent_status: 'idle', tab_id: 'w1:t1', pane_id: 'w1:p1', cwd: '/repo', tokens: { input: 10 } },
+      { name: 'aio-t2-core', agent: 'omp', agent_status: 'working', tab_id: 'w2:t1', pane_id: 'w2:p1', cwd: '/repo', tokens: { input: 10 } },
+    ]),
+    psLines: [
+      '  1000  999 herdr agent wait aio-t2-core --timeout 900000',
+      '  1001  998 herdr agent wait aio-t2-core --timeout 900000',
+    ],
+    environByPid: {
+      1000: ['HERDR_PANE_ID=w0:p1', 'HERDR_TAB_ID=w0:t1'].join('\0'),
+      1001: ['HERDR_PANE_ID=w1:p1', 'HERDR_TAB_ID=w1:t1'].join('\0'),
+    },
+  });
+  const env = { ...r.env, HERDR_PANE_ID: 'w3:p1', HERDR_TAB_ID: 'w3:t1' };
+  const out = readStatus({ names: ['aio-t2-core'], env, options: r.options });
+  const worker = out.agents.find((agent) => agent.name === 'aio-t2-core');
+  assert.deepEqual(worker.wake.owners, ['orch-aio', 'meta-aio-w2']);
+  assert.equal(worker.wake.owner, 'orch-aio');
+});

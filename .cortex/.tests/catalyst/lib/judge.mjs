@@ -140,14 +140,33 @@ export function parseJudgeReport(text) {
 }
 
 /**
- * Parse one candidate object, tolerating a terminal soft-wrap: a logical line
- * that overran the terminal width is captured as a newline plus indent, which is
- * invalid inside a JSON string. Collapsing every newline-plus-surrounding-space
- * run to a single space is a no-op between tokens and rejoins a wrapped string
- * value. Returns the parsed object, or null when neither form is a JSON object.
+ * Strip a TUI code-block line-number gutter: a logical line rendered as
+ * `\n<indent><number><two or more spaces><content>`. The omp JSON viewer draws
+ * the fence that way, and the numbers are not JSON. Applied only as a fallback
+ * form after the untouched candidate fails to parse.
+ */
+function stripLineGutter(text) {
+  return text.replace(/(^|\n)[ \t]*\d+[ \t]{2,}/g, '$1');
+}
+
+/**
+ * Parse one candidate object, tolerating a terminal soft-wrap and a code-block
+ * line-number gutter: a logical line that overran the terminal width is captured
+ * as a newline plus indent, which is invalid inside a JSON string, and the JSON
+ * viewer prefixes each line with its number. Collapsing every
+ * newline-plus-surrounding-space run to a single space is a no-op between tokens
+ * and rejoins a wrapped string value. Returns the parsed object, or null when no
+ * form is a JSON object.
  */
 function tryParseObject(candidate) {
-  for (const text of [candidate, candidate.replace(/\s*\n\s*/g, ' ')]) {
+  const stripped = stripLineGutter(candidate);
+  const forms = [
+    candidate,
+    candidate.replace(/\s*\n\s*/g, ' '),
+    stripped,
+    stripped.replace(/\s*\n\s*/g, ' '),
+  ];
+  for (const text of new Set(forms)) {
     try {
       const value = JSON.parse(text);
       if (isObject(value)) return value;

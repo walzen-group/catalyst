@@ -29,7 +29,7 @@ test('a clean run records pass verdicts, writes history JSON+MD, updates the REA
   // The actor launch cwd is the test directory, model is the resolved model, kind unit.
   const actorCall = calls.find((c) => c.meta.role === 'actor');
   assert.equal(actorCall.input.agents[0].cwd, testDir);
-  assert.equal(actorCall.input.agents[0].model, 'opencode-go/deepseek-v4-flash');
+  assert.equal(actorCall.input.agents[0].model, 'opencode-go/deepseek-v4.1-flash');
   assert.equal(actorCall.input.agents[0].kind, 'unit');
   const judgeCall = calls.find((c) => c.meta.role === 'judge');
   assert.equal(judgeCall.input.agents[0].kind, 'unit');
@@ -49,7 +49,7 @@ test('config_source both with differing actor models runs the actor twice', asyn
   const result = await runTest('guarded-rule', { suiteDir: suite, roles, now: stepClock(), invoke });
   assert.equal(result.runs.length, 2);
   const actorModels = calls.filter((c) => c.meta.role === 'actor').map((c) => c.input.agents[0].model);
-  assert.deepEqual(actorModels, ['opencode-go/deepseek-v4-flash', 'opencode-go/deepseek-v5']);
+  assert.deepEqual(actorModels, ['opencode-go/deepseek-v4.1-flash', 'opencode-go/deepseek-v5']);
 });
 
 test('an actor models list runs the test once per model, each on its own harness, under one judge', async () => {
@@ -62,7 +62,7 @@ test('an actor models list runs the test once per model, each on its own harness
   assert.equal(result.runs.length, 2, 'one run per actor model');
 
   const actors = calls.filter((c) => c.meta.role === 'actor').map((c) => c.input.agents[0]);
-  assert.deepEqual(actors.map((a) => a.model), ['opencode-go/deepseek-v4-flash', 'sonnet']);
+  assert.deepEqual(actors.map((a) => a.model), ['opencode-go/deepseek-v4.1-flash', 'sonnet']);
   // The harness per model is the point: the claude-tier model must launch on
   // the claude CLI, never as an omp agent.
   assert.deepEqual(actors.map((a) => a.cli), ['omp', 'claude']);
@@ -72,7 +72,7 @@ test('an actor models list runs the test once per model, each on its own harness
 
   // Each record is slugged by harness and model, and names the harness it used.
   assert.deepEqual(result.runs.map((r) => r.models_used.actor_runtime), ['omp', 'claude-code']);
-  assert.match(result.runs[0].run_id, /-omp-opencode-go-deepseek-v4-flash$/);
+  assert.match(result.runs[0].run_id, /-omp-opencode-go-deepseek-v4.1-flash$/);
   assert.match(result.runs[1].run_id, /-claude-code-sonnet$/);
 
   const jsons = readdirSync(join(testDir, 'history')).filter((f) => f.endsWith('.json')).sort();
@@ -80,7 +80,7 @@ test('an actor models list runs the test once per model, each on its own harness
 
   // The README cell names both models rather than only the last run.
   const readme = readFileSync(join(suite, 'README.md'), 'utf8');
-  assert.match(readme, /opencode-go\/deepseek-v4-flash: 2\/2 pass/);
+  assert.match(readme, /opencode-go\/deepseek-v4.1-flash: 2\/2 pass/);
   assert.match(readme, /sonnet: 2\/2 pass/);
 });
 
@@ -100,7 +100,7 @@ test('a baseline matches the same actor model only: another model prior is no ba
   seedPriorRun(testDir, [
     { id: 'c1', kind: 'semantic', status: 'pass', detail: 'ok' },
     { id: 'c2', kind: 'deterministic', status: 'pass', detail: 'ok' },
-  ], '2026-08-01T00-00-00-omp-opencode-go-deepseek-v4-flash', 'opencode-go/deepseek-v4-flash');
+  ], '2026-08-01T00-00-00-omp-opencode-go-deepseek-v4.1-flash', 'opencode-go/deepseek-v4.1-flash');
   const failing = JSON.stringify({ verdicts: { c1: { pass: false, justification: 'no' } }, judge_reasoning: 'regressed' });
   const { invoke } = fakeInvoker({ judge: { code: 0, report: failing } });
 
@@ -238,7 +238,7 @@ test('a run against a judge that equals the actor is refused before any launch',
   const suite = tempSuite();
   // Judge model collides with the actor model on the declared side (test.yaml).
   writeTestDir(suite, 'guarded-rule', {
-    testYaml: TEST_YAML.replace('  model: claude-opus-4-8', '  model: opencode-go/deepseek-v4-flash'),
+    testYaml: TEST_YAML.replace('  model: claude-opus-4-8', '  model: opencode-go/deepseek-v4.1-flash'),
   });
   const { invoke, calls } = fakeInvoker();
 

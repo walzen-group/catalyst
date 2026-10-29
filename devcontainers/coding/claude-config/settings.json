@@ -24,13 +24,20 @@
         "source": "github",
         "repo": "obra/superpowers-marketplace"
       }
+    },
+    "tokeneconomizer": {
+      "source": {
+        "source": "github",
+        "repo": "microsoft/TokenEconomizer"
+      }
     }
   },
   "enabledPlugins": {
     "superpowers@superpowers-marketplace": true,
     "pyright-lsp@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
-    "context7@claude-plugins-official": true
+    "context7@claude-plugins-official": true,
+    "tokeneconomizer@tokeneconomizer": true
   },
   "hooks": {
     "PreToolUse": [

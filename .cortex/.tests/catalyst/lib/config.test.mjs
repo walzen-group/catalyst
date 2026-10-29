@@ -34,13 +34,13 @@ function withoutEnv(fn) {
 // The eight roles the real models.yaml declares, with their model strings.
 const EXPECTED_ROLES = {
   'orchestrator-default': 'kimi-code/k3',
-  'orchestrator-claude-code': 'claude-opus-4-8',
-  'chat-layer': 'opencode-go/deepseek-v4-flash',
-  'implementation-frontier': 'claude-opus-4-8',
-  'implementation-mid': 'opencode-go/deepseek-v4-flash',
-  'meta-agent': 'opencode-go/deepseek-v4-flash',
+  'orchestrator-claude-code': 'claude-opus-5-5',
+  'chat-layer': 'opencode-go/deepseek-v4.1-flash',
+  'implementation-frontier': 'claude-opus-5-5',
+  'implementation-mid': 'opencode-go/deepseek-v4.1-flash',
+  'meta-agent': 'opencode-go/deepseek-v4.1-flash',
   'board-keeper': 'sonnet',
-  judge: 'claude-opus-4-8',
+  judge: 'claude-opus-5-5',
 };
 
 test('loadRoles parses the real models.yaml and returns every expected role', () => {
@@ -170,12 +170,12 @@ test('migration coverage: every pre-migration role migrated with its model strin
   // into implementation-mid (identical model + thinking).
   const preMigration = {
     'Orchestrator (default)': ['orchestrator-default', 'kimi-code/k3'],
-    'Orchestrator (Claude Code)': ['orchestrator-claude-code', 'claude-opus-4-8'],
-    'Chat layer (quickchat)': ['chat-layer', 'opencode-go/deepseek-v4-flash'],
-    'Implementation delegates (frontier)': ['implementation-frontier', 'claude-opus-4-8'],
-    'Implementation delegates (mid-tier)': ['implementation-mid', 'opencode-go/deepseek-v4-flash'],
-    'Small/fast (omp)': ['implementation-mid', 'opencode-go/deepseek-v4-flash'],
-    'Meta-agent': ['meta-agent', 'opencode-go/deepseek-v4-flash'],
+    'Orchestrator (Claude Code)': ['orchestrator-claude-code', 'claude-opus-5-5'],
+    'Chat layer (quickchat)': ['chat-layer', 'opencode-go/deepseek-v4.1-flash'],
+    'Implementation delegates (frontier)': ['implementation-frontier', 'claude-opus-5-5'],
+    'Implementation delegates (mid-tier)': ['implementation-mid', 'opencode-go/deepseek-v4.1-flash'],
+    'Small/fast (omp)': ['implementation-mid', 'opencode-go/deepseek-v4.1-flash'],
+    'Meta-agent': ['meta-agent', 'opencode-go/deepseek-v4.1-flash'],
     'Board keeper': ['board-keeper', 'sonnet'],
   };
   for (const [label, [key, model]] of Object.entries(preMigration)) {
@@ -188,5 +188,5 @@ test('migration coverage: every pre-migration role migrated with its model strin
   // strings must still survive in the migrated set so nothing was lost.
   const models = new Set(Object.values(roles).map((r) => r.model));
   assert.ok(models.has('kimi-code/k3'), 'omp plan/designer model kimi-code/k3 survives');
-  assert.ok(models.has('opencode-go/deepseek-v4-flash'), 'omp smol/tiny model deepseek-v4-flash survives');
+  assert.ok(models.has('opencode-go/deepseek-v4.1-flash'), 'omp smol/tiny model deepseek-v4.1-flash survives');
 });

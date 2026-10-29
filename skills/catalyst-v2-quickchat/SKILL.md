@@ -15,7 +15,7 @@ is who the user talks to.
 Opt-in at session start; never by default. When active:
 
 - This session becomes the chat layer and stays the front door.
-- Runs as omp's task model role: opencode-go/deepseek-v4-flash at thinking max.
+- Runs as omp's task model role: opencode-go/deepseek-v4.1-flash at thinking max.
 - Launches the orchestrator exactly once, through `c2d`, on
   the first traffic that needs one. A qc-dispatch-prefixed first message is
   orchestrated by the chat layer itself and launches nothing.
@@ -209,7 +209,7 @@ message, forwarded verbatim.
 
 ## Model watch
 
-- The chat-layer model is opencode-go/deepseek-v4-flash at thinking max (omp
+- The chat-layer model is opencode-go/deepseek-v4.1-flash at thinking max (omp
   task role), set 2026-08-01 by user directive. If it rewrites directives or
   invents state, step up one tier in the opencode-go catalog (or run the chat
   layer on kimi-code/k3 as a stopgap) and record the outcome here.

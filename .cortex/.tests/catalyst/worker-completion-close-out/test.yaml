@@ -18,10 +18,10 @@
 # a mid-tier implementation delegate on omp.
 actor:
   role: implementation-mid
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. The user's dispatch directive for this incident pins
-# every launched agent to opencode-go/deepseek-v4-flash, which collides with
+# every launched agent to opencode-go/deepseek-v4.1-flash, which collides with
 # the suite's distinct-judge gate (lib/resolve.mjs refuses an actor-equal
 # judge). The conflict was escalated to the user; this row carries the
 # recommended ruling (judge on claude-opus-4-8 per models.yaml) until the

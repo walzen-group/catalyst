@@ -1,0 +1,57 @@
+# test.yaml: guards the model-id rule repaired in incident
+# 2026-10-28-model-id-hyphen-drift. A model string is the catalog id the
+# runtime serves, spelled exactly as `omp models` lists it. models.yaml and the
+# model-picking SKILL.md summary agreeing proves consistency, not existence: the
+# dash spelling deepseek-v4-1-flash matched no catalog entry, yet travelled
+# from models.yaml into the skill page and 57 live test/config files.
+#
+# The actor is asked to produce the allocation for a DeepSeek V4.1 Flash move
+# and must name the catalog-exact id. The deterministic criteria check every
+# live omp model string against the catalog and fail on the dash spelling.
+
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4.1-flash
+
+# The semantic judge. Always a model distinct from the actor.
+judge:
+  role: judge
+  model: claude-opus-5-5
+
+config_source: declared
+
+covered_files:
+  - skills/catalyst-v2-model-picking/SKILL.md
+  - skills/catalyst-v2-model-picking/models.yaml
+  - skills/catalyst-v2-quickchat/SKILL.md
+  - omp/agent/config.yml
+  - omp/agent/models.yml
+  - skills/catalyst-v2-dispatch/src/models.mjs
+  - skills/catalyst-v2-dispatch/src/preflight.mjs
+  - skills/catalyst-v2-dispatch/src/cli.mjs
+
+isolation:
+  - The actor works from this test's own directory (model-id-catalog-check/).
+  - The catalyst skills under skills/catalyst-v2-* stay reachable and are the intended source for the answer.
+  - The actor must not read the incident report 2026-10-28-model-id-hyphen-drift, any plan under .cortex/plans, or this test's own history.
+  - The actor must not modify the project working tree in any way, runs no git commands, and does not dispatch, steer, rename, or close anything. It may run `omp models` read-only.
+
+criteria:
+  catalog-exact-ids:
+    kind: semantic
+    pass: The actor names opencode-go/deepseek-v4.1-flash, spelled exactly, as the model for the chat-layer, implementation-mid, and meta-agent roles; it states that it confirmed the id against the omp catalog (omp models or omp models find); it does not name deepseek-v4-1-flash, and it does not assign the deprecated deepseek-v4-flash to these roles.
+  agreement-stated:
+    kind: semantic
+    pass: The actor puts the same id in models.yaml and the SKILL.md summary table, and states that models.yaml is the machine truth while the SKILL.md summary must agree with it. Agreement between the two files alone is not offered as proof that the id exists.
+  catalog-ids-resolve:
+    kind: deterministic
+    pass: Every opencode-go/<id> in models.yaml, omp/agent/config.yml, and the tracked test.yaml actor and judge model fields resolves to a selector in `omp models --json`; every opencode-go/<id> token in the model-picking and quickchat SKILL.md pages appears in models.yaml.
+  no-dash-spelling:
+    kind: deterministic
+    pass: No tracked file under skills/, omp/, or .cortex/.tests/catalyst/ outside history/ contains deepseek-v4-1-flash, except the dispatch preflight test that names it as the refusal fixture.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of the forbidden sources: the incident report 2026-10-28-model-id-hyphen-drift, a dated plan path under .cortex/plans, or this test's own history. A different incident, a handback, or the scenario's own instruction to avoid .cortex/plans is not a citation.
+  preflight-refuses-dash:
+    kind: deterministic
+    pass: A live `c2d dispatch --dry-run` of an omp unit naming opencode-go/deepseek-v4-1-flash is refused with a failure naming that string and the nearest catalog id opencode-go/deepseek-v4.1-flash, while the same dispatch on the catalog id returns a launch plan.

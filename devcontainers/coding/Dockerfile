@@ -11,9 +11,10 @@
 ARG BASE_IMAGE=mcr.microsoft.com/devcontainers/base:ubuntu
 FROM ${BASE_IMAGE}
 
-# unzip is required by the Bun install script below.
+# unzip is required by the Bun install script below; python3 runs the TokenEconomizer
+# Claude Code plugin's hooks.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends direnv unzip \
+ && apt-get install -y --no-install-recommends direnv unzip python3 \
  && rm -rf /var/lib/apt/lists/*
 
 # Base image leaves the passwd entry on bash and the CLI derives SHELL from it, so

@@ -4,13 +4,13 @@
 # names the absolute spec path the delegate must read.
 
 # The agent under test: the brief author (orchestrator) row. The failing
-# effort's orchestrator session ran omp deepseek-v4-flash, so the declared
+# effort's orchestrator session ran omp deepseek-v4.1-flash, so the declared
 # model pins that; the live orchestrator-default row (kimi k3) is a different
 # session shape, so this test runs the declared side only. The actor model
 # must differ from the judge model.
 actor:
   role: orchestrator-default
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

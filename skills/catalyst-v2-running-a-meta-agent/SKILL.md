@@ -86,7 +86,8 @@ wave, not two metas (incident 2026-08-04-agent-self-identity).
 
 **The orchestrator is your watcher, not a monitored agent.** It dispatched
 you and reads your hand-back; you reach it by push (`c2d steer --agent
-orchestrator`, `c2d handback`) and it wakes on that push. Arm waits only on
+<name>`, `c2d handback`), where `<name>` is its roster name from your dispatch
+brief, and it wakes on that push. Arm waits only on
 the agents you monitor, your workers; never arm a wait on the orchestrator.
 A wait on the orchestrator's live session settles at once and wakes nobody,
 the dead shape incident 2026-08-04-orchestrator-self-wait records for a
@@ -169,7 +170,12 @@ Once every worker is done:
    own gates.
 3. **Deliver the structured hand-back via `c2d handback`, then retire.**
    Write the payload to `.cortex/reports/handbacks/<cycle>.json`, then run
-   `c2d handback --agent <orchestrator> --file <that path>`. Required
+   `c2d handback --agent <name> --file <that path>`, where `<name>` is the
+   roster name of the orchestrator that dispatched this wave, the name the
+   dispatch brief gives. Send nothing to the literal `orchestrator` unless the
+   roster shows this effort's orchestrator under that name: with two efforts
+   live, that session belongs to the other one (bootstrap, "Orchestrator
+   identity"). Required
    fields, each refused by name when missing or empty: `files_changed`,
    `diffs_per_worker`, `gate_evidence` (the worker's recorded run, must
    resolve to an existing artifact), `whole_change_output` (repairs, holds,

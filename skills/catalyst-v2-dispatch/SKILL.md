@@ -13,9 +13,9 @@ and the `herdr` binary on PATH.
 
 ```bash
 c2d dispatch [--dry-run]                       # input JSON on stdin (the only input mode)
-c2d steer --agent <name> --text <string>
+c2d steer --agent <name|dispatcher> --text <string>
                            [--expect <keyword>] [--wake-timeout <ms>]
-c2d steer --agent <name> --file <.cortex path>
+c2d steer --agent <name|dispatcher> --file <.cortex path>
                            [--expect <keyword>] [--wake-timeout <ms>]
 c2d status [--dispatch-id <id> | --agents <a,b,...>]
                             [--shared-checkout <path>]
@@ -31,6 +31,15 @@ Input modes: dispatch input is **inline on stdin only**. steer is **inline**
 (`--text`) or a preplanned `.cortex/` doc (`--file <path>`, refused unless the
 path sits under a `.cortex/` tree); passing both or neither to steer is refused.
 There is no positional input argument.
+
+Recipient: dispatch records the dispatching session as `caller` (roster name,
+pane, tab, cwd) in its result document. steer and handback take
+`--agent dispatcher`, which resolves to that recorded caller for the agent
+running in the caller pane; with no record or no caller the call is refused,
+naming the pane, the dispatch id, and the .cortex/reports/handbacks/ fallback.
+A literal `--agent <name>` whose live cwd lies outside the recorded
+dispatcher's cwd is refused with the dispatcher named, unless the caller
+launched that agent or shares its dispatch.
 
 steer does not answer a pending question. A blocked agent is sitting on an
 approval or question UI, and herdr already sends keys; a live question can also
@@ -63,12 +72,22 @@ brief's `spec_path`.
 A settled agent is not a finished one. Claude Code ends its foreground turn while
 background shells keep running. `status` reads "N shells still running" off the
 live screen lines only (turn footer and status lines), so a parked-monitoring
-agent is not mistaken for a retired one. META QUIESCENT is a settled meta whose
-session is still live: an omp meta between turns reads this way (its own harness
-resumes it), so the caller probes and verifies before replacing. META RETIRED
+agent is not mistaken for a retired one. A settled meta with a wake reading
+reads healthy when it owns a live wait on a worker still in flight, and
+UNWATCHED when it owns none; its waits run on its workers' names, so a wait on
+the meta's own name is the caller's coverage and never counts for the meta. META
+QUIESCENT is a settled meta read with no wake reading whose session is still
+live, so the caller probes and verifies before replacing. META RETIRED
 EARLY is a meta session that reads exited, or one whose probe answered nothing.
 
 Worker and meta are told apart by the `meta-` name prefix.
+
+A CLI that stops on a startup dialog is answered, not failed. herdr refuses
+`agent start` with `agent_not_ready` while a fresh CLI sits on its workspace
+trust prompt (herdr 0.9.5), so the launch reads the screen, answers a trust
+prompt that names the requested cwd by walking the cursor onto the accept row,
+then confirms the agent as usual. A prompt naming any other path is never
+dismissed.
 
 Input is strict JSON; comments and trailing commas are refused. Output is JSON on
 stdout: exit 0 on success, exit 1 with `{"status":"failed","failures":[...]}`.
@@ -110,7 +129,7 @@ any other path.
       "name": "impl-task3-storage",
       "cwd": "/workspaces/statswatch/.worktrees/task3",
       "cli": "claude",
-      "model": "claude-opus-4-8",
+      "model": "claude-opus-5-5",
       "brief": {
         "mode": "spec_pointer",
         "spec_path": "/workspaces/statswatch/.cortex/plans/.../task-3.md",
@@ -140,8 +159,8 @@ mid-session traffic and carry no mandate.
 | dispatch_id | Required, unique per call. |
 | workspace | Optional `label`; add `create_cwd` to allow creating it. |
 | agents | One or more. Names unique in the call and absent from the live roster. |
-| model | Required on every agent. No default exists. Name the policy-exact model string from `catalyst-v2-model-picking` (e.g. `claude-opus-4-8`), never a generic alias like `opus` that can resolve to a different model after a CLI or provider update. |
-| effort | Optional for `cli: "claude"`, one of low, medium, high. Omitted = CLI default; the 2026-08-01 model policy assigns default effort to claude-opus-4-8 roles. `xhigh`/`max` need `"user_directive": true`. |
+| model | Required on every agent. No default exists. Name the policy-exact model string from `catalyst-v2-model-picking` (e.g. `claude-opus-5-5`), never a generic alias like `opus` that can resolve to a different model after a CLI or provider update. |
+| effort | Optional for `cli: "claude"`, one of low, medium, high. Omitted = CLI default; the 2026-08-01 model policy assigns default effort to claude-opus-5-5 roles. `xhigh`/`max` need `"user_directive": true`. |
 | thinking | Required for `cli: "omp"`. Other CLIs name effort or thinking, one of the two. |
 | brief.mode | `spec_pointer` (needs `spec_path` under a `.cortex/` tree) or `inline` (forbids it). Both carry `text`. |
 | focus | Optional, default false. True needs `"user_triggered": true`. |
@@ -157,6 +176,10 @@ no `--until` parameter.
 Nothing launches until every rule passes, all failures returned at once: cwds
 exist, spec paths sit under `.cortex/` and exist as files, names are unique and
 free on the roster, model is named, and every worker has a meta present.
+
+An `omp` agent's model must be a `provider/id` selector the live
+`omp models --json` catalog lists; an unknown id is refused with the nearest
+catalog id, and a provider the catalog does not list is skipped.
 
 The worker-needs-meta gate refuses a worker launch unless a meta is in the same
 call or live on the roster. A meta is an agent whose name starts with `meta-` or
@@ -204,3 +227,19 @@ A change to c2d launch arguments needs a real-launch gate, not only
 argv-assembly assertions. Unit tests over assembled argv do not exercise the
 shell-encoding path; a launch-arg change is proven by a live launch, not by
 the unit suite (incident 2026-08-04-c2d-persona-transport-arg-inline).
+
+An omp upgrade can change the parked-paste render, in the composer chip or the
+attachment card, so re-capture the parked screen after upgrading omp and check
+that `hasOmpParkedChip` still matches the screen you captured. A stalled omp
+delivery whose screen shows a chip the detector does not match means the
+detector is stale: the delivery has not failed, so update the match before you
+treat it as lost. Incident 2026-09-06-c2d-multiline-attachment-chip established
+this rule, after omp 18.1.4 started rendering the brief as an attachment card.
+
+A Claude Code upgrade can change the trust prompt's wording or option order, and
+the composer render, so after upgrading claude re-capture a gated startup screen
+and check that `TRUST_MARKERS` still classifies it and `trustAnswerKeys` lands on
+the accept row. c2d refuses to confirm a trust menu whose accept row it cannot
+read, so a stale detector surfaces as a failed launch with the screen specimen in
+its failure output, never as a wrong keypress. Incident
+2026-10-28-c2d-omp-hint-and-startup-gate established the current render.

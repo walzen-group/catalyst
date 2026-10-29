@@ -9,11 +9,11 @@
 # verification, or delegates it to a reviewer role that no longer exists.
 
 # The agent under test: a fresh meta-agent (omp) about to verify a settled
-# worker. Model per models.yaml (meta-agent: opencode-go/deepseek-v4-flash at
+# worker. Model per models.yaml (meta-agent: opencode-go/deepseek-v4.1-flash at
 # max thinking); must differ from the judge model.
 actor:
   role: meta-agent
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

@@ -13,7 +13,7 @@
 # the judge model.
 actor:
   role: meta-agent
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

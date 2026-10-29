@@ -12,7 +12,7 @@ import test from 'node:test';
 
 import { main } from '../src/cli.mjs';
 import { runDispatch } from '../src/dispatch.mjs';
-import { CLAUDE_IDLE, OMP_IDLE, OMP_WORKING_GET, claudeGetNoSession, rig } from './helpers/harness.mjs';
+import { CLAUDE_IDLE, OMP_IDLE, OMP_WORKING_GET, TRUST_PROMPT_CURRENT, claudeGetNoSession, rig } from './helpers/harness.mjs';
 
 const CWD = '/tmp/catalyst-verify-omp';
 const SESSION = { agent: 'omp', kind: 'path', value: '/tmp/catalyst-verify-omp/session.jsonl' };
@@ -58,7 +58,7 @@ function happyDispatch() {
     dispatch_id: 'result-text-test',
     heartbeat_ms: 60000,
     agents: [
-      { name: 'meta', cwd: CWD, cli: 'omp', model: 'deepseek-v4-flash', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
+      { name: 'meta', cwd: CWD, cli: 'omp', model: 'deepseek-v4.1-flash', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
     ],
   };
   const out = runDispatch(input, { env: r.env, options: r.options });
@@ -126,7 +126,7 @@ test('a caller-owned unit dispatch delivers the fixture byte-for-byte and record
     heartbeat_ms: 60000,
     mandate_mode: 'caller_owned',
     agents: [
-      { name: 'judge', cwd: CWD, cli: 'omp', model: 'deepseek-v4-flash', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
+      { name: 'judge', cwd: CWD, cli: 'omp', model: 'deepseek-v4.1-flash', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
     ],
   };
   const out = runDispatch(input, { env: r.env, options: r.options });
@@ -153,7 +153,7 @@ test('an unknown mandate_mode input fails before launch, nothing sent', async ()
       heartbeat_ms: 60000,
       mandate_mode: 'replay',
       agents: [
-        { name: 'a', cwd: CWD, cli: 'omp', model: 'deepseek-v4-flash', thinking: 'low', kind: 'unit', brief: { mode: 'inline', text: 'x' } },
+        { name: 'a', cwd: CWD, cli: 'omp', model: 'deepseek-v4.1-flash', thinking: 'low', kind: 'unit', brief: { mode: 'inline', text: 'x' } },
       ],
     })]),
     fetchRoster: () => [],
@@ -178,7 +178,7 @@ test('a caller_owned input with a non-unit agent fails before launch, nothing se
       heartbeat_ms: 60000,
       mandate_mode: 'caller_owned',
       agents: [
-        { name: 'worker-a', cwd: CWD, cli: 'omp', model: 'deepseek-v4-flash', thinking: 'low', brief: { mode: 'inline', text: 'x' } },
+        { name: 'worker-a', cwd: CWD, cli: 'omp', model: 'deepseek-v4.1-flash', thinking: 'low', brief: { mode: 'inline', text: 'x' } },
       ],
     })]),
     fetchRoster: () => [],
@@ -209,7 +209,7 @@ test('the rest of the dispatch result document keeps its shape', () => {
   assert.equal(agent.tab_id, 't1');
   assert.equal(agent.pane_id, 'p1');
   assert.deepEqual(agent.session, SESSION);
-  assert.equal(agent.model, 'deepseek-v4-flash');
+  assert.equal(agent.model, 'deepseek-v4.1-flash');
   assert.equal(agent.effort, null);
   assert.equal(agent.thinking, null);
   assert.equal(agent.status_at_return, 'working');
@@ -286,7 +286,7 @@ test('a claude launch with no agent_session published still completes; session i
     dispatch_id: 'claude-no-session-test',
     heartbeat_ms: 60000,
     agents: [
-      { name: 'probe-claude', cwd: CWD, cli: 'claude', model: 'claude-opus-4-8', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
+      { name: 'probe-claude', cwd: CWD, cli: 'claude', model: 'claude-opus-5-5', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
     ],
   };
   const out = runDispatch(input, { env, options });
@@ -313,7 +313,7 @@ test('a claude launch with no agent_session published still completes; session i
 // (observed live 2026-08-18 on the probe launch). The poll must see the trust
 // prompt, answer it, and only then proceed.
 const TRUST_LIVE_FOR_CWD = [
-  'claude --model claude-opus-4-8',
+  'claude --model claude-opus-5-5',
   '',
   '──────────────────────────────────────────────────────────────────',
   ' Accessing workspace:',
@@ -348,7 +348,7 @@ test('a claude launch on a never-trusted cwd sees and answers the trust prompt, 
     dispatch_id: 'claude-trust-test',
     heartbeat_ms: 60000,
     agents: [
-      { name: 'probe-claude', cwd: CWD, cli: 'claude', model: 'claude-opus-4-8', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
+      { name: 'probe-claude', cwd: CWD, cli: 'claude', model: 'claude-opus-5-5', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
     ],
   };
   const out = runDispatch(input, { env, options });
@@ -367,6 +367,52 @@ test('a claude launch on a never-trusted cwd sees and answers the trust prompt, 
   assert.equal(r.calls('agent prompt').length, 1, 'the brief was delivered exactly once');
   const enters = r.calls('agent send-keys');
   assert.ok(enters.some((argv) => argv.includes('enter')), 'the trust prompt was answered with Enter');
+});
+
+// Regression anchor: 2026-10-28. herdr 0.9.5 refuses `agent start` with
+// agent_not_ready when the CLI stops on a startup dialog, so the trust screen
+// the launch owes an answer is never reached and every claude dispatch fails
+// before delivery. The refusal is a startup gate like any other: answer a
+// screen that names the requested cwd, then let the confirmation step judge
+// whether the CLI came up.
+const TRUST_CURRENT_FOR_CWD = TRUST_PROMPT_CURRENT.split('/tmp/catalyst-verify').join(CWD);
+
+test('a claude launch herdr refuses at startup for a trust dialog is answered and completed', () => {
+  const r = rig({
+    tabCreate: {
+      status: 0,
+      stdout: `${JSON.stringify({
+        id: 'cli:tab:create',
+        result: { tab: { tab_id: 'w1:t0' }, root_pane: { pane_id: 'w1:p0', cwd: CWD } },
+      })}\n`,
+    },
+    agentStart: {
+      status: 1,
+      stderr: `${JSON.stringify({ error: { code: 'agent_not_ready', message: 'agent probe-claude is blocked during startup and is not ready for prompts' } })}\n`,
+    },
+    agentGet: claudeGetNoSession({ name: 'probe-claude', cwd: CWD, pane: 'w1:p0', tab: 'w1:t0', status: 'blocked' }),
+    agentGetAfterEnter: claudeGetNoSession({ name: 'probe-claude', cwd: CWD, pane: 'w1:p0', tab: 'w1:t0', terminal: 'term_0804' }),
+    reads: [TRUST_CURRENT_FOR_CWD],
+    readsAfterEnter: [CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE, CLAUDE_IDLE],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+  const { env, options } = fastGates(r);
+  const input = {
+    dispatch_id: 'claude-start-blocked-test',
+    heartbeat_ms: 60000,
+    agents: [
+      { name: 'probe-claude', cwd: CWD, cli: 'claude', model: 'claude-opus-5-5', kind: 'unit', brief: { mode: 'inline', text: BRIEF } },
+    ],
+  };
+  const out = runDispatch(input, { env, options });
+
+  assert.equal(out.document.status, 'ok', JSON.stringify(out.document.failures));
+  assert.deepEqual(r.calls('agent send-keys')[0].slice(2), ['probe-claude', 'down', 'enter'],
+    'the cursor is walked onto the accept row before confirming');
+  const agent = out.document.agents[0];
+  assert.equal(agent.brief_delivery.verified, true, 'the brief landed after the startup gate was answered');
+  assert.deepEqual(out.document.failures, []);
+  assert.equal(r.calls('agent prompt').length, 1, 'the brief was delivered exactly once');
 });
 
 test('the omp session gate is not weakened: a session-less omp launch still fails session_not_established', () => {
@@ -394,7 +440,7 @@ test('the omp session gate is not weakened: a session-less omp launch still fail
     dispatch_id: 'omp-gate-intact-test',
     heartbeat_ms: 60000,
     agents: [
-      { name: 'a', cwd: CWD, cli: 'omp', model: 'deepseek-v4-flash', thinking: 'max', kind: 'unit', brief: { mode: 'inline', text: 'do it' } },
+      { name: 'a', cwd: CWD, cli: 'omp', model: 'deepseek-v4.1-flash', thinking: 'max', kind: 'unit', brief: { mode: 'inline', text: 'do it' } },
     ],
   };
   const out = runDispatch(input, { env, options });

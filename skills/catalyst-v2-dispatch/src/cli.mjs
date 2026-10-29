@@ -5,22 +5,23 @@ import { readFileSync } from 'node:fs';
 import { modelTail, validateDispatchInput } from './schema.mjs';
 import { styleArgs } from './launch.mjs';
 import { preflight, requireCortexDoc } from './preflight.mjs';
-import { fetchRoster } from './herdr.mjs';
+import { loadCatalog } from './models.mjs';
+import { fetchRoster, herdrRun, parseReply } from './herdr.mjs';
 import { runDispatch as runDispatchPlan } from './dispatch.mjs';
 import { steerAgent } from './steer.mjs';
 import { readStatus } from './status.mjs';
 import { formatHandback, validateHandback, gateInFlightWorkers } from './handback.mjs';
-import { findDispatchForCaller } from './result.mjs';
+import { findDispatchForCaller, findDispatcherForCaller, listResultIds, loadResult } from './result.mjs';
 
 const USAGE = `c2d — deterministic herdr launch wrapper
 
 Usage:
   c2d dispatch [--dry-run]                       (input JSON on stdin)
-  c2d steer --agent <name> --text <string>
+  c2d steer --agent <name|dispatcher> --text <string>
                              [--expect <keyword>] [--wake-timeout <ms>]
-  c2d steer --agent <name> --file <.cortex path>
+  c2d steer --agent <name|dispatcher> --file <.cortex path>
                              [--expect <keyword>] [--wake-timeout <ms>]
-  c2d handback --agent <name> --file <.cortex path>
+  c2d handback --agent <name|dispatcher> --file <.cortex path>
                              [--expect <keyword>] [--wake-timeout <ms>]
                              [--allow-in-flight true]
   c2d status [--dispatch-id <id> | --agents <a,b,...>]
@@ -58,7 +59,12 @@ Options:
   --file <path>          steer: file-mode input; refused unless the path is a
                          cortex plan/spec doc under a .cortex/ tree
   --dry-run              dispatch: validate and print the launch plan, launch nothing
-  --agent <name>         steer: the agent to re-prompt
+  --agent <name>         steer, handback: the agent to re-prompt. "dispatcher"
+                         resolves to the session that launched the caller, read
+                         from the caller pane's dispatch record. A name whose
+                         live cwd lies outside the recorded dispatcher's cwd
+                         is refused unless the caller launched it or shares
+                         its dispatch
   --text <string>        steer: the directive to send inline
   --expect <keyword>     steer: grep the post-send read, reported not gated
   --wake-timeout <ms>    steer: settle-wake timeout to arm (default 900000)
@@ -186,7 +192,12 @@ async function runDispatch(args, io) {
     return failed(out, [`roster: ${detail}`]);
   }
 
-  const gate = preflight(schema.value, roster);
+  // Machine truth for model ids, read once per dispatch and only when an omp
+  // agent rides the call; a missing omp binary leaves the catalog unchecked.
+  const catalog = schema.value.agents.some((agent) => agent.cli === 'omp')
+    ? loadCatalog()
+    : undefined;
+  const gate = preflight(schema.value, roster, { catalog });
   if (!gate.ok) return failed(out, gate.failures);
 
   if (dryRun) {
@@ -197,6 +208,63 @@ async function runDispatch(args, io) {
   const { document } = runDispatchPlan(schema.value, { env: process.env });
   emit(out, document);
   return document.status === 'ok' ? 0 : 1;
+}
+
+const DISPATCHER = 'dispatcher';
+
+function nested(a, b) {
+  const within = (inner, outer) => inner === outer || inner.startsWith(outer.endsWith('/') ? outer : `${outer}/`);
+  return within(a, b) || within(b, a);
+}
+
+/** Whether `name` was launched by the caller, or shares its dispatch record. */
+function sameEffort(name, found, env) {
+  const own = loadResult(found.dispatch_id, env);
+  if ((own?.agents ?? []).some((agent) => agent?.name === name)) return true;
+  const paneId = env.HERDR_PANE_ID ?? null;
+  const tabId = env.HERDR_TAB_ID ?? null;
+  return listResultIds(env).some((id) => {
+    const doc = loadResult(id, env);
+    const launchedHere = (paneId !== null && doc?.caller?.pane_id === paneId)
+      || (tabId !== null && doc?.caller?.tab_id === tabId);
+    return launchedHere && (doc.agents ?? []).some((agent) => agent?.name === name);
+  });
+}
+
+/**
+ * The roster name a steer or hand-back goes to. `dispatcher` resolves to the
+ * caller's recorded dispatcher; a literal naming a live session in another
+ * effort's cwd is refused with the dispatcher named (incident
+ * 2026-10-28-orchestrator-name-taken-handback-misroute).
+ */
+function resolveRecipient(verb, requested, env, options) {
+  const found = findDispatcherForCaller(env);
+  if (requested === DISPATCHER) {
+    if (found?.caller) return { ok: true, name: found.caller.name };
+    const pane = env.HERDR_PANE_ID ?? env.HERDR_TAB_ID ?? null;
+    const where = pane === null
+      ? 'this session runs outside herdr (no HERDR_PANE_ID or HERDR_TAB_ID)'
+      : found === null
+        ? `no dispatch record holds an agent in pane ${pane}`
+        : `dispatch ${found.dispatch_id} holds pane ${pane} but recorded no dispatcher`;
+    return {
+      ok: false,
+      reason: `${verb}: --agent dispatcher cannot resolve: ${where}. Address the roster name your brief gives, or write the hand-back to the effort's .cortex/reports/handbacks/ and report the unresolved target`,
+    };
+  }
+
+  const caller = found?.caller ?? null;
+  if (caller === null || typeof caller.cwd !== 'string' || requested === caller.name) return { ok: true, name: requested };
+  if (sameEffort(requested, found, env)) return { ok: true, name: requested };
+  const run = herdrRun(['agent', 'get', requested], options);
+  const cwd = run.status === 0 ? parseReply(run.stdout)?.result?.agent?.cwd : null;
+  if (typeof cwd === 'string' && cwd !== '' && !nested(cwd, caller.cwd)) {
+    return {
+      ok: false,
+      reason: `${verb}: --agent ${requested} is a live session in ${cwd}, outside this effort: dispatch ${found.dispatch_id} was launched by ${caller.name} in ${caller.cwd}. Re-run with --agent dispatcher (resolves to ${caller.name})`,
+    };
+  }
+  return { ok: true, name: requested };
 }
 
 /** Flag parsing for the two handle-driven verbs. */
@@ -255,12 +323,16 @@ function runSteer(args, io) {
     }
   }
 
+  const env = io.env ?? process.env;
+  const recipient = resolveRecipient('steer', flags.agent, env, io.options);
+  if (!recipient.ok) return failed(out, [recipient.reason]);
+
   const document = steerAgent({
-    agent: flags.agent,
+    agent: recipient.name,
     text,
     expect: flags.expect ?? null,
     ...(wakeTimeoutMs !== undefined ? { wakeTimeoutMs } : {}),
-    env: io.env ?? process.env,
+    env,
     ...(io.options ? { options: io.options } : {}),
   });
   emit(out, document);
@@ -292,6 +364,9 @@ function runHandback(args, io) {
 
   const validated = validateHandback(raw);
   if (!validated.ok) return failed(out, validated.errors);
+
+  const recipient = resolveRecipient('handback', flags.agent, io.env ?? process.env, io.options);
+  if (!recipient.ok) return failed(out, [recipient.reason]);
 
   // Retirement gate: never deliver a hand-back while a worker of the caller's
   // own dispatch is still in flight (catalyst-v2-running-a-meta-agent). The
@@ -356,7 +431,7 @@ function runHandback(args, io) {
   }
 
   const document = steerAgent({
-    agent: flags.agent,
+    agent: recipient.name,
     text: delivered,
     expect: flags.expect ?? null,
     ...(wakeTimeoutMs !== undefined ? { wakeTimeoutMs } : {}),

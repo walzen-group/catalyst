@@ -61,6 +61,11 @@ Small tasks use the reduced workset instead (`catalyst-v2-running-a-reduced-work
    verification hands over an artifact, and workers it does not name stay
    unwatched. REQUIRED: `catalyst-v2-running-a-meta-agent`.
 
+   The handover brief names this session's roster name as the hand-back target
+   (bootstrap, "Orchestrator identity"): with two catalyst efforts live, the
+   literal `orchestrator` can belong to the other effort's session, so the
+   meta-agent sends its hand-back to the name the brief gives.
+
    Workers and meta-agent then run autonomously. The orchestrator limits itself
    to minimal check-ins and fixes only what gets escalated (bad spec, broken
    environment, missing decision). The phase ends with the meta-agent's

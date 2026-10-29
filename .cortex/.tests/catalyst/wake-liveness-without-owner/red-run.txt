@@ -1,23 +1,47 @@
-=== RED: wake.test.mjs ===
-ℹ pass 0
-ℹ fail 1
-ℹ cancelled 0
-ℹ skipped 0
-ℹ todo 0
-ℹ duration_ms 50.07029
+# Red run, incident 2026-10-28-c2d-omp-meta-own-waits (unfixed src/status.mjs, src/wake.mjs)
+# Recorded 2026-10-28 before any src edit. The 2026-08-26 red run is kept in history/2026-08-26-fix-mechanical-proof-log.md.
 
+=== RED: cd skills/catalyst-v2-dispatch && node --test test/status.test.mjs test/wake.test.mjs ===
+# exit 1
+✖ classify: a parked meta that owns live waits on in-flight workers is healthy, not stranded (1.215976ms)
+✖ classify: a working meta is not a wake gap when its waits are on the workers (0.241867ms)
+✖ classify: a settled meta parked on background shells is not stranded (0.245457ms)
+✖ classify: a blocked meta with workers in flight reads blocked, not parked (0.322546ms)
+✖ readStatus: every owner of a worker's live waits is surfaced (92.438534ms)
+✖ liveWaitFor: every live wait for a name is reported with its own owner (8.373945ms)
+ℹ tests 34
+ℹ pass 28
+ℹ fail 6
 ✖ failing tests:
 
-test at test/wake.test.mjs:1:1
-✖ test/wake.test.mjs (43.162764ms)
-  'test failed'
-
-=== RED: status.test.mjs ===
-      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
-    generatedMessage: false,
-    code: 'ERR_ASSERTION',
+--- assertion detail ---
+    actual: 'UNWATCHED',
+    expected: 'healthy',
+✖ classify: a working meta is not a wake gap when its waits are on the workers (0.241867ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+    actual: 'UNWATCHED',
+    expected: 'healthy',
+✖ classify: a settled meta parked on background shells is not stranded (0.245457ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+    actual: 'UNWATCHED',
+    expected: 'healthy',
+✖ classify: a blocked meta with workers in flight reads blocked, not parked (0.322546ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /is blocked/. Input:
+    actual: 'meta-aio-w2 is parked with no live wait of its own: a settle wakes no one, so its verification is stranded. Probe it and re-arm its wait',
+    expected: /is blocked/,
+✖ readStatus: every owner of a worker's live waits is surfaced (92.438534ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
     actual: undefined,
-    expected: false,
-    operator: 'strictEqual',
-    diff: 'simple'
-  }
+    expected: [ 'orch-aio', 'meta-aio-w2' ],
+✖ liveWaitFor: every live wait for a name is reported with its own owner (8.373945ms)
+  TypeError: Cannot read properties of undefined (reading 'map')
+
+=== RED: deterministic checks (runDeterministicChecks ./wake-liveness-without-owner) ===
+# exit 1
+all-waits-per-target-reported FAIL :: liveWaitFor waits=null owner_pane=w0:p1; readStatus owners=null owner=orch-x
+no-contamination PASS :: no forbidden sources cited, no git command output
+file-presence PASS :: test files present
+open-wave-stranded-meta-not-healthy FAIL :: stranded=UNWATCHED retired=healthy verifying=healthy armedPark=UNWATCHED armedWorking=UNWATCHED shellPark=UNWATCHED unarmedPark=UNWATCHED (meta-x is parked with no live wait of its own: a settle wakes no one, so its verification is stranded. Probe it and re-arm its wait)
+report-schema PASS :: newest recorded run JSON matches the record schema
+status-note-names-owner FAIL :: unit suite failed:       at Test.postRun (node:internal/test_runner/test:1542:19) |       at Test.run (node:internal/test_runner/test:1467:12) |       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+wait-owner-attributed PASS :: readProcessOwner reads HERDR_PANE_ID/HERDR_TAB_ID; liveWaitFor attaches owner_pane/owner_tab; an unreadable environ yields a null owner

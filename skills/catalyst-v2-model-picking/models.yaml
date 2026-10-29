@@ -10,27 +10,27 @@ roles:
     when: default orchestrator session, scheduling and triage
   orchestrator-claude-code:
     runtime: claude-code
-    model: claude-opus-4-8
+    model: claude-opus-5-5
     effort: default
     when: when the orchestrator runs as Claude Code in a herdr tab
   chat-layer:
     runtime: omp
-    model: opencode-go/deepseek-v4-1-flash
+    model: opencode-go/deepseek-v4.1-flash
     thinking: max
     when: cheap front door at session start
   implementation-frontier:
     runtime: claude-code
-    model: claude-opus-4-8
+    model: claude-opus-5-5
     effort: default
     when: contract-defining implementation only, max 2 concurrent
   implementation-mid:
     runtime: omp
-    model: opencode-go/deepseek-v4-1-flash
+    model: opencode-go/deepseek-v4.1-flash
     thinking: max
     when: standard implementation, reviews, debugging, chore-sized mechanical work
   meta-agent:
     runtime: omp
-    model: opencode-go/deepseek-v4-1-flash
+    model: opencode-go/deepseek-v4.1-flash
     thinking: max
     when: monitoring and verification cycles
   board-keeper:
@@ -45,6 +45,6 @@ roles:
     when: memory-curation pass; c2m reads this model for the curator dispatch
   judge:
     runtime: claude-code
-    model: claude-opus-4-8
+    model: claude-opus-5-5
     effort: default
     when: LLM judge for semantic test criteria; always a model distinct from the actor

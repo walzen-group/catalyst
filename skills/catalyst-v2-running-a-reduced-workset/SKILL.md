@@ -36,7 +36,10 @@ catalyst kit tree, the kit's `.cortex/` included — stop and dispatch
 0. **Adopt identity**: you are the orchestrator. Before anything else, name
    this session in the herdr roster, at session start, before answering the
    user or any dispatch: `herdr agent rename <pane> orchestrator` (bootstrap,
-   "Orchestrator identity"). Meta hand-backs steer by that name.
+   "Orchestrator identity"). When the roster shows another session under that
+   name, take `orch-<effort-slug>` instead, confirm it on the roster, and give
+   the user the name. Meta hand-backs steer by this roster name, so every brief
+   you write names it as the hand-back target.
 1. **Route**: pick the model tier (`catalyst-v2-model-picking`).
 2. **Dispatch**: through `c2d`, one delegate, brief mode `inline`.
    The tool brings it up verified; arm the wake it hands back yourself,

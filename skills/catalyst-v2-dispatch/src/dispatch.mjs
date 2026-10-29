@@ -9,12 +9,32 @@ import { launchAgent, resolveWorkspace } from './launch.mjs';
 import { priorFailures, recordAgentFailure, targetsFor } from './failures.mjs';
 import { assembleResult, persistResult } from './result.mjs';
 
-function liveNames(options) {
+function liveRoster(options) {
   try {
-    return rosterAgents(fetchRoster(options)).map((agent) => agent?.name).filter(Boolean);
+    return rosterAgents(fetchRoster(options));
   } catch {
     return [];
   }
+}
+
+/**
+ * The dispatching session as the roster names it, matched on the herdr pane
+ * (or tab) ids herdr sets in its environment. Launched agents address their
+ * hand-back to it as `--agent dispatcher` (incident
+ * 2026-10-28-orchestrator-name-taken-handback-misroute). Null outside herdr.
+ */
+export function callerIdentity(env, roster) {
+  const paneId = env.HERDR_PANE_ID ?? null;
+  const tabId = env.HERDR_TAB_ID ?? null;
+  if (paneId === null && tabId === null) return null;
+  const self = roster.find((agent) => paneId !== null && agent?.pane_id === paneId)
+    ?? roster.find((agent) => tabId !== null && agent?.tab_id === tabId);
+  return {
+    name: self?.name ?? null,
+    pane_id: paneId,
+    tab_id: tabId,
+    cwd: self?.cwd ?? null,
+  };
 }
 
 /**
@@ -76,10 +96,12 @@ export function runDispatch(input, { env = process.env, options = {} } = {}) {
     }
   }
 
+  const roster = liveRoster(options);
   const document = assembleResult({
     input,
+    caller: callerIdentity(env, roster),
     results,
-    rosterNames: liveNames(options),
+    rosterNames: roster.map((agent) => agent?.name).filter(Boolean),
     priorFailures: history,
     notLaunched,
     extraFailures,

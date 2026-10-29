@@ -119,6 +119,16 @@ function isPaneBusy(run) {
 }
 
 /**
+ * herdr's refusal to start a CLI that stopped on a startup dialog. herdr 0.9.5
+ * reports `agent_not_ready` for the workspace trust prompt instead of returning
+ * interactive_ready; the CLI is running behind the dialog, so the launch can
+ * answer it and carry on.
+ */
+function isStartupBlocked(run) {
+  return parseReply(run?.stderr ?? '')?.error?.code === 'agent_not_ready';
+}
+
+/**
  * `agent start`, retried for as long as herdr says the pane is not an available
  * shell yet. Every other failure comes straight back on the first try.
  * @returns the `call` result of the last attempt
@@ -320,24 +330,6 @@ function runLaunchSteps(agent, ctx, result, fail) {
     );
   }
 
-  // 2. Start the CLI in that tab's root pane. Model and level only, never a
-  //    permission flag: launch mode is the user's setting.
-  const startArgs = ['agent', 'start', agent.name, '--kind', agent.cli, '--pane', result.pane_id, '--', ...modelTail(agent), ...styleArgs(agent)];
-  const started = startWhenPaneIsShell(startArgs, { env, options });
-  if (!started.ok) return fail('agent_start', started.reason, transcript(started.run));
-  result.session = started.reply.result?.agent?.agent_session ?? null;
-
-  // 3. Confirm the agent, and clear whatever screen a fresh CLI is sitting on.
-  let info = agentGet(agent.name, options);
-  if (!info.ok) return fail('agent_get', info.reason, transcript(info.run));
-  let live = info.reply.result?.agent ?? {};
-  if ((live.cwd ?? null) !== agent.cwd) {
-    return fail('agent_get_cwd', `agent get reports cwd "${live.cwd ?? null}", not the requested "${agent.cwd}"`, transcript(info.run));
-  }
-  if (!live.agent_status) return fail('agent_get', 'agent get reported no status', transcript(info.run));
-
-  // The screen check waits on the same readiness the session wait below does,
-  // so a CLI that is merely slow to draw is never mistaken for a gated one.
   // Readiness differs per CLI: omp and every other CLI herdr publishes a
   // session for is ready when the session appears; a claude agent on herdr
   // 0.8.0 never publishes one (incident 2026-08-18-c2d-claude-session-identity),
@@ -351,6 +343,46 @@ function runLaunchSteps(agent, ctx, result, fail) {
     return poll.ok && Boolean(poll.reply.result?.agent?.agent_session);
   };
   const isReady = agent.cli === 'claude' ? null : sessionPublished;
+
+  // 2. Start the CLI in that tab's root pane. Model and level only, never a
+  //    permission flag: launch mode is the user's setting.
+  const startArgs = ['agent', 'start', agent.name, '--kind', agent.cli, '--pane', result.pane_id, '--', ...modelTail(agent), ...styleArgs(agent)];
+  const started = startWhenPaneIsShell(startArgs, { env, options });
+  let startupGate = null;
+  if (!started.ok) {
+    if (!isStartupBlocked(started.run)) return fail('agent_start', started.reason, transcript(started.run));
+    // herdr 0.9.5 refuses `agent start` when the CLI stopped on a startup
+    // dialog instead of returning interactive_ready for the screen recovery to
+    // answer. The CLI is running behind the dialog, so answer an attributable
+    // screen here and let the confirmation step judge whether it came up.
+    try {
+      startupGate = recoverStartupScreen({
+        name: agent.name,
+        cwd: agent.cwd,
+        screenAnswers,
+        options,
+        env,
+        isReady,
+      });
+    } catch (error) {
+      return fail('interactive_screen', `agent read failed: ${error.message}`, error.toJSON?.() ?? null);
+    }
+    if (!startupGate.ok) {
+      return fail('interactive_screen', `${startupGate.reason}. Screen: ${screenSpecimen(startupGate.screen)}`, transcript(started.run));
+    }
+  }
+  result.session = started.reply?.result?.agent?.agent_session ?? null;
+
+  // 3. Confirm the agent, and clear whatever screen a fresh CLI is sitting on.
+  let info = agentGet(agent.name, options);
+  if (!info.ok) return fail('agent_get', startupGate ? `${info.reason} after the startup gate (${startupGate.action})` : info.reason, transcript(info.run));
+  let live = info.reply.result?.agent ?? {};
+  if ((live.cwd ?? null) !== agent.cwd) {
+    return fail('agent_get_cwd', `agent get reports cwd "${live.cwd ?? null}", not the requested "${agent.cwd}"`, transcript(info.run));
+  }
+  if (!live.agent_status) {
+    return fail('agent_get', startupGate ? `agent get reported no status after the startup gate (${startupGate.action})` : 'agent get reported no status', transcript(info.run));
+  }
 
   if (!live.agent_session) {
     let screen;

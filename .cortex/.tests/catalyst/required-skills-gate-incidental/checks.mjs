@@ -53,7 +53,7 @@ export function identityCommandPresent(ctx) {
 // The model the table routes mechanical implementation and meta-agents to.
 // Every agent in this wave is one or the other, so a correct dispatch document
 // carries this string in every model slot and nothing else.
-const POLICY_MODEL = 'opencode-go/deepseek-v4-flash';
+const POLICY_MODEL = 'opencode-go/deepseek-v4.1-flash';
 
 // A model slot as it appears in a c2d dispatch document: JSON, or the same
 // field written in YAML. Captures the value so a wrong one is reported by name.

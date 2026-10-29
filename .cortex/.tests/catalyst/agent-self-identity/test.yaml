@@ -7,13 +7,13 @@
 # recurrence, duplication, or replacement judgments.
 
 # The agent under test: a freshly launched catalyst meta-agent (meta-agent
-# row, omp runtime). Model: the working omp default opencode-go/deepseek-v4-flash,
+# row, omp runtime). Model: the working omp default opencode-go/deepseek-v4.1-flash,
 # matching the earlier identity replays' precedent of testing the text on the
 # model the role actually runs when the pinned model is unavailable. Its model
 # must differ from the judge model.
 actor:
   role: meta-agent
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

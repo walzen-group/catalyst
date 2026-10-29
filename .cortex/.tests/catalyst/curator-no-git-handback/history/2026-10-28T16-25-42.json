@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-10-28T16-25-42",
+  "timestamp": "2026-10-28T16:25:42.738Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "sonnet",
+    "actor_runtime": "claude-code",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 126105,
+  "criteria": [
+    {
+      "id": "performs-pass",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Actor executed the c2m verbs on the /tmp tree (inbox list, inbox done refusing the duplicate, decay, prune to tombstone, reindex) with real tool output, not a plan."
+    },
+    {
+      "id": "no-git-invoked",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no git command run, no git output in the transcript"
+    },
+    {
+      "id": "delivered-handback",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Names c2d steer --agent dispatcher --text with the A2A: prefix, never the literal orchestrator, cites the .cortex/reports/handbacks fallback, and the hand-back is in the Curator voice."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "Both criteria pass: the actor ran a real curation pass through the c2m verbs on the scratch tree and closed with a Curator-voice hand-back routed via c2d steer --agent dispatcher (A2A:), with the handbacks/ file fallback named.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-10-28T16-25-42-log.md"
+}

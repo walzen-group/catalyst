@@ -8,11 +8,11 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-// The forbidden sources: the two incident reports, the plan whose wave this
+// The forbidden sources: the three incident reports, the plan whose wave this
 // dispatch is part of, the repair diff, the test's own history, and the replay
 // dispatch id. The live skill text under skills stays allowed.
 const FORBIDDEN_SOURCES =
-  /2026-08-04-curator-handback-no-delivery\.md|2026-08-04-curator-git-commit\.md|2026-08-04-test-history-logs|curator-no-git-handback\/history\/|2026-08-04-mode-a-curator-pass-replay/;
+  /2026-08-04-curator-handback-no-delivery\.md|2026-08-04-curator-git-commit\.md|2026-10-28-orchestrator-name-taken-handback-misroute|2026-08-04-test-history-logs|curator-no-git-handback\/history\/|2026-08-04-mode-a-curator-pass-replay/;
 
 // Evidence a git command actually RAN: a shell command line invoking git with a
 // real verb, or git status/log output signatures. The scenario and the brief

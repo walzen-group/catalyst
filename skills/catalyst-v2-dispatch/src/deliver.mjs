@@ -40,7 +40,7 @@ import { readFileSync } from 'node:fs';
 
 import { herdrRun, parseReply } from './herdr.mjs';
 import { collapse, findDelivery, hasSession, recordDelivery } from './ledger.mjs';
-import { ompComposerText, probeGhostText, readComposerSettled, readVisibleSettled, waitForComposer } from './screens.mjs';
+import { ompComposerText, probeGhostText, readComposerSettled, readOmpComposerSettled, readVisibleSettled, waitForComposer } from './screens.mjs';
 import { numericEnv, sleep } from './timing.mjs';
 
 export const MAX_ENTER_ATTEMPTS = 3;
@@ -191,8 +191,8 @@ export function isOurParkedText(composer, sentText) {
  * @returns {{ghost: boolean, note: string}} note: '' unless the refusal owes the
  *          caller a word about the probe itself
  */
-function ghostComposer(name, composer, env, options) {
-  const probe = probeGhostText(name, { composer, env, options });
+function ghostComposer(name, composer, env, options, read = readComposerSettled) {
+  const probe = probeGhostText(name, { composer, env, options, read });
   if (probe.ghost) return { ghost: true, note: '' };
   return { ghost: false, note: probe.restored ? '' : `; ${probe.reason}` };
 }
@@ -325,13 +325,21 @@ export function deliver({ name, cli, session, text, verb = 'dispatch', mandateMo
       };
     }
     if (collapse(draft) !== '') {
-      return {
-        status: 'refused',
-        attempts: 0,
-        text,
-        reason: 'the omp composer already held live input before anything was sent',
-        specimen: collapse(draft),
-      };
+      // The 18.x editor line carries right-aligned chrome beside the buffer
+      // (the thinking-effort hint), and a capture cannot tell that from a draft.
+      // Reading it as input held every fresh omp launch. Same probe as claude:
+      // a backspace that leaves the line unchanged proves it is a rendering.
+      // A cell does not type into a composer it cannot read.
+      const hint = ghostComposer(name, draft, env, options, readOmpComposerSettled);
+      if (!hint.ghost) {
+        return {
+          status: 'refused',
+          attempts: 0,
+          text,
+          reason: `the omp composer already held live input before anything was sent${hint.note}`,
+          specimen: collapse(draft),
+        };
+      }
     }
     // Composer quiet; herdr's confirmed submit is the first proof of landing:
     // delivered the moment herdr saw the working transition. A stall is not

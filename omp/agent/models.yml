@@ -203,12 +203,17 @@ providers:
         cost: { input: 0.144, output: 0.42, cacheRead: 0.036, cacheWrite: 0 }
 
   # Override-only block: no models list, so omp merges these overrides into its
-  # built-in opencode-go provider without replacing it. deepseek-v4-flash is the
-  # model behind the default, smol, tiny and task roles; top_p 0.95 per request.
-  # The neuralwatt deepseek-v4-flash entry above gets the same value so both
-  # variants behave identically.
+  # built-in opencode-go provider without replacing it. The top_p 0.95 override
+  # covers the current catalog id deepseek-v4.1-flash (the model behind the
+  # default, smol, tiny and task roles) and the deprecated alias
+  # deepseek-v4-flash, kept for older callers. The neuralwatt deepseek-v4-flash
+  # entry above gets the same value so both variants behave identically.
   opencode-go:
     modelOverrides:
+      deepseek-v4.1-flash:
+        compat:
+          extraBody:
+            top_p: 0.95
       deepseek-v4-flash:
         compat:
           extraBody:

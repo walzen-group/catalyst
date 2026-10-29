@@ -21,6 +21,14 @@ const TRUST_MARKERS = [
 // nothing draws a border around it. Only consulted once no composer is on
 // screen, so ordinary numbered output in a transcript cannot reach it.
 const CHOICE_GATE = /^\s*❯\s*1\.\s+\S/m;
+// The trust prompt's option rows, in every render seen: a numbered box row
+// (`│ ❯ 1. Yes, proceed │`) and Claude Code 2.1.x's plain list
+// (` ❯ No, exit` / `   Yes, I trust this folder`). The cursor row is the one
+// carrying the marker; the row that keeps the folder is the one that is not an
+// exit, whatever it is worded.
+const TRUST_OPTION_ROW = /^[│\s]*(?:❯\s*)?(?:\d+\.\s*)?(?:yes|no)\b/i;
+const TRUST_ROW_MARKER = /^[│\s]*❯/;
+const TRUST_REJECT_ROW = /\b(?:no|exit|don'?t|do not)\b/i;
 const RULE_LINE = /^[^\p{L}\p{N}|]*─[^\p{L}\p{N}|]*$/u;
 
 // A CLI that has not drawn anything yet shows whatever the shell left on the
@@ -141,6 +149,18 @@ function editorDraft(lines) {
 }
 
 /**
+ * The omp composer, settled, read through the render omp actually draws: the
+ * 17.x status-box bar or the 18.x `❯` editor. The 18.x editor line carries
+ * right-aligned chrome next to the buffer (the thinking-effort hint), which
+ * `extractComposer` would fold into the draft; `ompComposerText` reads the same
+ * line, and the ghost probe settles what that text is.
+ */
+export function readOmpComposerSettled(name, options = {}) {
+  const raw = readVisibleSettled(name, options);
+  return { raw, composer: ompComposerText(raw) };
+}
+
+/**
  * The lines a CLI draws live rather than scrolls: the turn footer directly
  * above the composer, and the status lines below it. A capture holds the whole
  * visible buffer, so anything read out of the transcript body is quoted text,
@@ -244,7 +264,7 @@ export function removedCharacter(before, after) {
  *
  * @returns {{ghost: boolean, probed: boolean, restored: boolean, reason: string}}
  */
-export function probeGhostText(name, { composer, env = process.env, options = {} } = {}) {
+export function probeGhostText(name, { composer, env = process.env, options = {}, read = readComposerSettled } = {}) {
   const before = String(composer ?? '');
   const no = (reason, extra = {}) => ({ ghost: false, probed: false, restored: true, reason, ...extra });
 
@@ -265,7 +285,7 @@ export function probeGhostText(name, { composer, env = process.env, options = {}
   // that dies is a verdict to hand back, not an exception to throw through it.
   let after;
   try {
-    after = readComposerSettled(name, options).composer;
+    after = read(name, options).composer;
   } catch (error) {
     return { ghost: false, probed: true, restored: false, reason: `the composer could not be read after the probe keystroke: ${error.message}` };
   }
@@ -349,6 +369,36 @@ export function answerFor(screen, screenAnswers, { kindKeys = true } = {}) {
 }
 
 /**
+ * The keystrokes that choose a trust prompt's accept row.
+ *
+ * Claude Code has drawn the accept option first with the cursor already on it,
+ * and (2.1.x) drawn it second with the cursor parked on `No, exit`; a bare
+ * Enter pressed on the cursor exits the CLI instead of trusting the folder.
+ * The accept row is the option that is not an exit, and the cursor is walked
+ * onto it before the confirm.
+ *
+ * @returns {string[]|null} herdr key names, or null when no option pair could
+ *          be read — the tool never confirms a menu it cannot read
+ */
+export function trustAnswerKeys(text) {
+  const rows = [];
+  for (const line of String(text ?? '').split('\n')) {
+    if (TRUST_OPTION_ROW.test(line)) {
+      rows.push({ reject: TRUST_REJECT_ROW.test(line), marked: TRUST_ROW_MARKER.test(line) });
+    }
+  }
+  if (rows.length === 0) return null;
+  const acceptAt = rows.findIndex((row) => !row.reject);
+  if (acceptAt === -1) return null;
+  let markedAt = rows.findIndex((row) => row.marked);
+  if (markedAt === -1) markedAt = 0; // an unmarked menu starts on its first row
+  const steps = acceptAt - markedAt;
+  if (steps === 0) return ['enter'];
+  const key = steps > 0 ? 'down' : 'up';
+  return [...Array(Math.abs(steps)).fill(key), 'enter'];
+}
+
+/**
  * Resolve whatever keyboard-gated screen a freshly started agent is sitting on.
  *
  * Polled, not sampled once. A CLI reaches `interactive_ready` before it has
@@ -390,7 +440,16 @@ export function recoverStartupScreen({
           reason: `trust screen names a different path than the requested cwd (${screen.paths.join(', ') || 'no path read'}); the tool never dismisses it`,
         };
       }
-      herdrJson(['agent', 'send-keys', name, 'enter'], options);
+      const keys = trustAnswerKeys(screen.text);
+      if (keys === null) {
+        return {
+          ok: false,
+          action: 'none',
+          screen,
+          reason: 'trust screen drew no readable accept row; the tool never confirms a menu it cannot read',
+        };
+      }
+      herdrJson(['agent', 'send-keys', name, ...keys], options);
       return { ok: true, action: 'trust-enter', screen };
     }
 

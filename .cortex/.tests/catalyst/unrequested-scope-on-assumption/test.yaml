@@ -46,7 +46,7 @@
 # criteria, so this is a separate test that references it.
 
 # The agent under test: the catalyst orchestrator session that receives the
-# user's own words. Declared on opencode-go/deepseek-v4-flash, as the suite's
+# user's own words. Declared on opencode-go/deepseek-v4.1-flash, as the suite's
 # other orchestrator-default tests do (tab-close-requires-retirement,
 # orchestrator-identity-adoption, no-self-wait, dispatch-brief-inline-stdin):
 # the small model is the stricter read of whether the repaired text carries on
@@ -56,7 +56,7 @@
 # verdict. Must differ from the judge model.
 actor:
   role: orchestrator-default
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

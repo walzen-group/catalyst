@@ -83,10 +83,11 @@ export function reconcileRoster(expected, results, rosterNames) {
 
 /**
  * Assemble the whole document.
- * @param {{input, results, rosterNames, priorFailures, notLaunched, extraFailures}} parts
+ * @param {{input, caller, results, rosterNames, priorFailures, notLaunched, extraFailures}} parts
  */
 export function assembleResult({
   input,
+  caller = null,
   results = [],
   rosterNames = [],
   priorFailures = [],
@@ -101,6 +102,7 @@ export function assembleResult({
   return {
     dispatch_id: input.dispatch_id,
     status: extraFailures.length > 0 && results.length === 0 ? 'failed' : overallStatus(expected, results),
+    caller,
     agents: results.map(presentAgent),
     roster_reconciliation: reconcileRoster(expected, results, rosterNames),
     not_launched: notLaunched,
@@ -155,6 +157,33 @@ export function listResultIds(env = process.env) {
  * @returns {{dispatch_id: string, name: string} | null}
  */
 export function findDispatchForCaller(env = process.env) {
+  const found = newestRecordForCaller(env, (agent) => /^meta[_-]/.test(agent?.name ?? ''));
+  return found === null ? null : { dispatch_id: found.dispatch_id, name: found.agent.name };
+}
+
+/**
+ * The session that launched the caller: the recorded `caller` of the newest
+ * dispatch record holding any agent entry in the caller's own herdr pane,
+ * meta or not (the-curator included). `caller` is null on a record written
+ * before dispatch recorded it, or when the dispatcher ran outside herdr; the
+ * dispatch id still comes back so a refusal can name it (incident
+ * 2026-10-28-orchestrator-name-taken-handback-misroute).
+ * @param {NodeJS.ProcessEnv} env
+ * @returns {{dispatch_id: string, agent: string, caller: object|null} | null}
+ */
+export function findDispatcherForCaller(env = process.env) {
+  const found = newestRecordForCaller(env, () => true);
+  if (found === null) return null;
+  const caller = found.doc.caller;
+  return {
+    dispatch_id: found.dispatch_id,
+    agent: found.agent.name,
+    caller: typeof caller?.name === 'string' && caller.name !== '' ? caller : null,
+  };
+}
+
+/** The newest record with an entry in the caller's pane that `accept` admits. */
+function newestRecordForCaller(env, accept) {
   const paneId = env.HERDR_PANE_ID ?? null;
   const tabId = env.HERDR_TAB_ID ?? null;
   if (paneId === null && tabId === null) return null;
@@ -167,7 +196,7 @@ export function findDispatchForCaller(env = process.env) {
     for (const agent of agents) {
       const self = (paneId !== null && agent?.pane_id === paneId)
         || (tabId !== null && agent?.tab_id === tabId);
-      if (!self || !/^meta[_-]/.test(agent?.name ?? '')) continue;
+      if (!self || !accept(agent)) continue;
       let mtime = 0;
       try {
         mtime = statSync(resultPath(id, env)).mtimeMs;
@@ -175,7 +204,7 @@ export function findDispatchForCaller(env = process.env) {
         // Unreadable record file: keep mtime 0 so it never wins a tie.
       }
       if (mtime > bestMtime) {
-        best = { dispatch_id: id, name: agent.name };
+        best = { dispatch_id: id, doc, agent };
         bestMtime = mtime;
       }
       break;

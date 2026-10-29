@@ -5,7 +5,7 @@ import { parseYaml } from './yaml.mjs';
 
 const DOC = `actor:
   role: implementation-mid
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 config_source: both
 covered_files:
   - skills/a
@@ -23,7 +23,7 @@ criteria:
 
 test('parses nested maps, scalar lists, and an ordered criteria map', () => {
   const doc = parseYaml(DOC);
-  assert.deepEqual(doc.actor, { role: 'implementation-mid', model: 'opencode-go/deepseek-v4-flash' });
+  assert.deepEqual(doc.actor, { role: 'implementation-mid', model: 'opencode-go/deepseek-v4.1-flash' });
   assert.equal(doc.config_source, 'both');
   assert.deepEqual(doc.covered_files, ['skills/a', 'skills/b']);
   assert.equal(Object.keys(doc.criteria).length, 2);

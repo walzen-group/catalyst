@@ -310,3 +310,83 @@ test('handback with no attributable dispatch record delivers with a gate note', 
   assert.equal(doc.handback_gate.attributed, false, 'no dispatch was attributed');
   assert.match(doc.handback_gate.note, /no dispatch record/i, 'the note says the gate could not attribute');
 });
+
+// --- recipient: the dispatcher, resolved from the caller's dispatch record ---
+// A tool-assembled brief addresses its hand-back to `dispatcher`, which c2d
+// resolves to the session that launched the caller. A literal naming a live
+// session in another effort's cwd is refused with the dispatcher named
+// (incident 2026-10-28-orchestrator-name-taken-handback-misroute).
+
+const DISPATCHER = { name: 'orch-aio', pane_id: 'wA:p1', tab_id: 'wA:t1', cwd: '/home/nixos/repos/catalyst-aio' };
+
+function sessionGet(name, cwd) {
+  return {
+    status: 0,
+    stdout: JSON.stringify({
+      id: 'cli:agent:get',
+      result: { agent: { name, agent: 'omp', agent_status: 'idle', cwd, agent_session: { agent: 'omp', kind: 'path', value: `/tmp/${name}.jsonl` } } },
+    }),
+  };
+}
+
+function curatorRig(agentGet) {
+  const r = rig({ agentGet, reads: OMP_QUIET_READS, prompt: { status: 0, stdout: '{"result":{}}' } });
+  r.env.HERDR_PANE_ID = 'wC:p1';
+  r.env.HERDR_TAB_ID = 'wC:t1';
+  const file = resultPath('housekeeping-aio', r.env);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, JSON.stringify({
+    dispatch_id: 'housekeeping-aio',
+    status: 'ok',
+    caller: DISPATCHER,
+    agents: [{ name: 'the-curator', pane_id: 'wC:p1', tab_id: 'wC:t1' }],
+  }));
+  return r;
+}
+
+test('handback --agent dispatcher delivers to the recorded caller', async () => {
+  const file = writeCortexPayload(payload());
+  const r = curatorRig(sessionGet('orch-aio', DISPATCHER.cwd));
+  const c = capture();
+  const code = await main(['handback', '--agent', 'dispatcher', '--file', file], {
+    ...c.io, options: r.options, env: r.env,
+  });
+  assert.equal(code, 0, c.read());
+  const prompt = r.calls('agent prompt')[0];
+  assert.ok(prompt, 'the handback was delivered via agent prompt');
+  assert.equal(prompt[2], 'orch-aio', 'delivered to the session that launched the caller');
+});
+
+test('handback --agent orchestrator naming a session under another cwd is refused, dispatcher named', async () => {
+  const file = writeCortexPayload(payload());
+  const r = curatorRig(sessionGet('orchestrator', '/home/nixos/repos/statswatch'));
+  const c = capture();
+  const code = await main(['handback', '--agent', 'orchestrator', '--file', file], {
+    ...c.io, options: r.options, env: r.env,
+  });
+  assert.equal(code, 1, c.read());
+  const failures = JSON.parse(c.read()).failures.join(' ');
+  assert.match(failures, /orch-aio/, 'the refusal names the recorded dispatcher');
+  assert.match(failures, /statswatch/, 'the refusal names the foreign cwd');
+  assert.equal(r.calls('agent prompt').length, 0, 'nothing is delivered to another effort');
+});
+
+test('a literal in another cwd is delivered when the caller launched it or shares its dispatch', async () => {
+  // A meta in the project cwd steers the repair worker it launched in the kit
+  // cwd, or a sibling worker in a worktree: both belong to this effort.
+  const file = writeCortexPayload(payload());
+  const r = curatorRig(sessionGet('repair-worker', '/etc/nixos/nix/catalyst'));
+  const launched = resultPath('repair-wave', r.env);
+  writeFileSync(launched, JSON.stringify({
+    dispatch_id: 'repair-wave',
+    status: 'ok',
+    caller: { name: 'the-curator', pane_id: 'wC:p1', tab_id: 'wC:t1', cwd: DISPATCHER.cwd },
+    agents: [{ name: 'repair-worker', pane_id: 'wR:p1', tab_id: 'wR:t1' }],
+  }));
+  const c = capture();
+  const code = await main(['handback', '--agent', 'repair-worker', '--file', file], {
+    ...c.io, options: r.options, env: r.env,
+  });
+  assert.equal(code, 0, c.read());
+  assert.equal(r.calls('agent prompt')[0]?.[2], 'repair-worker');
+});

@@ -168,3 +168,21 @@ test('no wake state file is written for an agent that was never prescribed one',
   const files = readdirSync(join(dir, 'catalyst-v2-dispatch', 'wakes'));
   assert.deepEqual(files, ['delegate-a.json']);
 });
+
+test('liveWaitFor: every live wait for a name is reported with its own owner', () => {
+  // Incident 2026-10-28-c2d-omp-meta-own-waits: a first-match return erased the
+  // meta's ownership whenever the orchestrator also waited on the same worker.
+  const environ = (pid) => (pid === 4243
+    ? ['HERDR_PANE_ID=w0:p1', 'HERDR_TAB_ID=w0:t1'].join('\0')
+    : ['HERDR_PANE_ID=w1:p1', 'HERDR_TAB_ID=w1:t1'].join('\0'));
+  const found = liveWaitFor('impl-aio', {
+    psBin: fakePs([
+      '  4243  9001 herdr agent wait impl-aio --timeout 900000',
+      '  4244  9002 herdr agent wait impl-aio --timeout 900000',
+    ]),
+    readEnviron: environ,
+  });
+  assert.equal(found.running, true);
+  assert.deepEqual(found.waits.map((wait) => wait.owner_pane).sort(), ['w0:p1', 'w1:p1']);
+  assert.equal(found.owner_pane, 'w0:p1');
+});

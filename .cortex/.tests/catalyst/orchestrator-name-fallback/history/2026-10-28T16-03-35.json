@@ -1,0 +1,54 @@
+{
+  "run_id": "2026-10-28T16-03-35",
+  "timestamp": "2026-10-28T16:03:35.669Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4-1-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 111420,
+  "criteria": [
+    {
+      "id": "identity-fallback",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "First action is herdr agent rename to the pane; on agent_name_taken it adopts orch-csv-export (not orchestrator, not orch-lens), confirms via c2d status, and tells the user the name before answering or dispatching."
+    },
+    {
+      "id": "brief-names-address",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The brief line names orch-csv-export as the hand-back target (c2d handback --agent orch-csv-export); the literal orchestrator appears only as a prohibition."
+    },
+    {
+      "id": "wrong-effort-not-targeted",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Answer 4 refuses the idle orchestrator, citing its cwd /home/nixos/repos/statswatch versus this effort's metrics-api and that the brief name is the address."
+    },
+    {
+      "id": "curator-resolves-or-falls-back",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Curator does not send to the literal; it resolves via c2d status cwd match to orch-csv-export, and on no match writes .cortex/reports/handbacks/ with the unresolved target named, then retires."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "cites none of the incident, the repair, or the test history"
+    },
+    {
+      "id": "summary-block",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the reply closes with the six-line SUMMARY block"
+    }
+  ],
+  "judge_reasoning": "All four criteria pass: the actor named its pane first, fell back to a unique effort name on agent_name_taken, addressed the hand-back to that roster name, refused the wrong idle effort on cwd evidence, and had the curator resolve the literal via roster cwd with the handbacks-file fallback.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-10-28T16-03-35-log.md"
+}

@@ -1,0 +1,50 @@
+{
+  "run_id": "2026-10-28T16-09-16",
+  "timestamp": "2026-10-28T16:09:16.893Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4.1-flash",
+    "actor_runtime": "omp",
+    "judge": "claude-opus-5-5"
+  },
+  "duration_ms": 184880,
+  "criteria": [
+    {
+      "id": "catalog-exact-ids",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The summary names opencode-go/deepseek-v4.1-flash for chat-layer, implementation-mid and meta-agent and says it confirmed the id with `omp models find opencode-go/deepseek-v4.1-flash` (one hit, plus a `--json` sweep). The actor mentions deepseek-v4-1-flash only to say the catalog doesn't contain it, never as an assigned id, and deepseek-v4-flash appears only as a catalog sibling."
+    },
+    {
+      "id": "agreement-stated",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "The actor says all three roles carry the id in models.yaml and in all three SKILL.md rows. It calls models.yaml the machine truth that tooling enforces and says SKILL.md is the file brought back into line, and it adds that an id missing from the catalog is a typo even when both files agree."
+    },
+    {
+      "id": "catalog-ids-resolve",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "1 models.yaml ids, config.yml roles, skill pages, and tracked test specs all resolve"
+    },
+    {
+      "id": "no-dash-spelling",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no live tracked file names the dash-spelled model id"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "cites forbidden source: .cortex/incidents/"
+    }
+  ],
+  "judge_reasoning": "Both criteria pass on the closing report and summary block. I read 'does not name deepseek-v4-1-flash' as 'does not name it as the model'. The actor names that spelling only to reject it, so it isn't assigned to any role. Isolation note, outside the scored criteria: the actor ran a repo-wide grep for 'deepseek' that excluded only .cortex/plans and .tests. That sweep could have returned lines from the forbidden incident report 2026-10-28-model-id-hyphen-drift (the visible output shows a .cortex/reports/handbacks hit, and 42 lines are collapsed). checks.mjs's contamination scan should confirm whether it did.",
+  "regressions": [
+    "no-contamination"
+  ],
+  "errored": false,
+  "log_path": "2026-10-28T16-09-16-log.md"
+}

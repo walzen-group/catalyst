@@ -208,6 +208,37 @@ export const TRUST_PROMPT_LIVE = [
   ' Enter to confirm · Esc to cancel',
 ].join('\n');
 
+/**
+ * Claude Code 2.1.312's trust prompt (captured live 2026-10-28): the same
+ * safety check, now drawn as a plain list whose cursor starts on `No, exit`,
+ * plus a warning naming the folder's pre-approved tool permissions. A bare
+ * Enter here exits the CLI instead of trusting the folder.
+ */
+export const TRUST_PROMPT_CURRENT = [
+  '❯ claude --model claude-opus-5-5',
+  '',
+  '──────────────────────────────────────────────────────────────────',
+  ' Accessing workspace:',
+  '',
+  ' /tmp/catalyst-verify',
+  '',
+  ' Quick safety check: Is this a project you created or one you trust? (Like your own code, a well-known open source project, or work from your team). If not, take a moment to',
+  " review what's in this folder first.",
+  '',
+  " Claude Code'll be able to read, edit, and execute files here.",
+  '',
+  ' ⚠ This folder pre-approves 14 tool permissions in .claude/settings.local.json:',
+  '   WebSearch, Bash(pnpm add:*), Bash(pnpm install), Bash(cat:*), and 10 more',
+  ' These will apply without asking. Only proceed if you trust this configuration.',
+  '',
+  ' Security guide',
+  '',
+  ' ❯ No, exit',
+  '   Yes, I trust this folder',
+  '',
+  ' Enter to confirm · Esc to cancel',
+].join('\n');
+
 /** The older boxed wording, kept so the marker set never loses a form. */
 export const TRUST_PROMPT = [
   '╭─────────────────────────────────────────────╮',
@@ -274,6 +305,45 @@ export const OMP_DRAFT_EDITOR = [
   '❯ live draft specimen                                        ',
   '──────────────────────────────────────────────────────────────',
   ' π  · ⬢ DeepSeek V4 Flash · ◒ high · 🗑 /tmp/omp-style-probe',
+].join('\n');
+
+/**
+ * A fresh omp 18.x tab (captured live 2026-10-28): an empty buffer, with omp's
+ * thinking-effort hint drawn right-aligned on the composer line. The hint is
+ * chrome, and a capture cannot tell it from a draft; the ghost probe is what
+ * settles it. Reading it as input held every fresh omp dispatch.
+ */
+export const OMP_IDLE_EDITOR_HINT = [
+  '────────────────────────────────────── ◫ 2.1%/1M ⟲ · ⏱ 10:55 ─',
+  '❯                                                                                          ⇧⇥ to change thinking effort',
+  '──────────────────────────────────────────────────────────────',
+  ' π  · ◉ DeepSeek V4 Flash · 📁 /tmp/catalyst-verify-omp · ⑂ main',
+].join('\n');
+
+/** A real draft on the same render: the hint beside text the user typed. */
+export const OMP_DRAFT_EDITOR_HINT = [
+  '────────────────────────────────────── ◫ 2.1%/1M ⟲ · ⏱ 10:55 ─',
+  '❯ half a thought                                              ⇧⇥ to change thinking effort',
+  '──────────────────────────────────────────────────────────────',
+  ' π  · ◉ DeepSeek V4 Flash · 📁 /tmp/catalyst-verify-omp · ⑂ main',
+].join('\n');
+
+/** The same line after a backspace: one buffer character gone. */
+export const OMP_DRAFT_EDITOR_HINT_BACKSPACED = [
+  '────────────────────────────────────── ◫ 2.1%/1M ⟲ · ⏱ 10:55 ─',
+  '❯ half a though                                              ⇧⇥ to change thinking effort',
+  '──────────────────────────────────────────────────────────────',
+  ' π  · ◉ DeepSeek V4 Flash · 📁 /tmp/catalyst-verify-omp · ⑂ main',
+].join('\n');
+
+/** The 17.x bar after one backspace, for the bar render's draft test. */
+export const OMP_DRAFT_BACKSPACED = [
+  ' Connected to MCP servers: context-mode, context7.',
+  '',
+  ' Done. Task complete.',
+  '',
+  '╭── π  ▶ ⬢ DeepSeek V4 Flash · ◉ max ▶ 🗑 /tmp/catalyst-verify-draft ▶──◀ 💾 60.9% ◀ ⏱ 16:42 ──╮',
+  '╰─ half a thought the user was typin                                                                                              ─╯',
 ].join('\n');
 
 /** The same omp pane with a large paste parked in the composer (captured

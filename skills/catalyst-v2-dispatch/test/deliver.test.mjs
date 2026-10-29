@@ -19,10 +19,15 @@ import {
   HERDR_STALL_STDERR,
   OMP_ATTACHMENT_PARKED,
   OMP_DRAFT,
+  OMP_DRAFT_BACKSPACED,
+  OMP_DRAFT_EDITOR_HINT,
+  OMP_DRAFT_EDITOR_HINT_BACKSPACED,
   OMP_IDLE,
+  OMP_IDLE_EDITOR_HINT,
   OMP_PARKED_PASTE,
   OMP_WORKING,
   OMP_WORKING_GET,
+  claudeGetNoSession,
   rig,
 } from './helpers/harness.mjs';
 
@@ -65,7 +70,15 @@ test('an omp brief lands via herdr\'s confirmed submit over a quiet composer', (
 // with the draft as specimen, nothing sent.
 
 test('an omp delivery over a live composer draft is refused with the draft as specimen', () => {
-  const r = rig({ reads: [OMP_DRAFT, OMP_DRAFT], prompt: { status: 0, stdout: '{"result":{}}' } });
+  // The probe is what tells the bar's draft from chrome drawn in the same
+  // place: a backspace shortens real text, so the character is typed back and
+  // the delivery holds.
+  const r = rig({
+    agentGet: claudeGetNoSession({ name: 'orchestrator', cwd: '/tmp/catalyst-verify-draft', pane: 'w1:p5' }),
+    reads: [OMP_DRAFT, OMP_DRAFT],
+    readsAfterBackspace: [OMP_DRAFT_BACKSPACED, OMP_DRAFT_BACKSPACED],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
 
   const out = deliver({
     name: 'orchestrator',
@@ -79,7 +92,56 @@ test('an omp delivery over a live composer draft is refused with the draft as sp
   assert.equal(out.status, 'refused', out.reason);
   assert.equal(out.specimen, 'half a thought the user was typing');
   assert.equal(r.calls('agent prompt').length, 0, 'nothing is sent over a live draft');
-  assert.equal(r.calls('agent send-keys').length, 0, 'no keystroke touches the draft');
+  assert.deepEqual(r.calls('agent send-keys')[0].slice(2), ['orchestrator', 'backspace']);
+  assert.deepEqual(r.calls('pane send-text')[0].slice(2), ['w1:p5', 'g'], 'the character the probe deleted goes back');
+});
+
+// Regression anchor: 2026-10-28. A fresh omp 18.x tab draws its thinking-effort
+// hint right-aligned on the composer line, where a capture cannot tell it from
+// a draft; read as input it held every omp dispatch before anything was sent.
+// The same backspace probe settles it: the line does not move, so it is chrome.
+
+test('the omp thinking-effort hint is chrome, so the brief is delivered', () => {
+  const r = rig({
+    agentGet: claudeGetNoSession({ name: 'orchestrator', cwd: '/tmp/catalyst-verify-omp', pane: 'w1:p5' }),
+    reads: [OMP_IDLE_EDITOR_HINT, OMP_IDLE_EDITOR_HINT],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+
+  const out = deliver({
+    name: 'orchestrator',
+    cli: 'omp',
+    session: '/tmp/catalyst-verify-omp/session.jsonl',
+    text: BRIEF,
+    env: r.env,
+    options: r.options,
+  });
+
+  assert.equal(out.status, 'delivered', out.reason);
+  assert.equal(r.calls('agent prompt').length, 1, 'the brief lands over the hint');
+  assert.equal(r.calls('pane send-text').length, 0, 'a rendering is never typed back into');
+});
+
+test('an omp draft beside the hint is still refused, and the character goes back', () => {
+  const r = rig({
+    agentGet: claudeGetNoSession({ name: 'orchestrator', cwd: '/tmp/catalyst-verify-omp', pane: 'w1:p5' }),
+    reads: [OMP_DRAFT_EDITOR_HINT, OMP_DRAFT_EDITOR_HINT],
+    readsAfterBackspace: [OMP_DRAFT_EDITOR_HINT_BACKSPACED, OMP_DRAFT_EDITOR_HINT_BACKSPACED],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+
+  const out = deliver({
+    name: 'orchestrator',
+    cli: 'omp',
+    session: '/tmp/catalyst-verify-omp/session.jsonl',
+    text: BRIEF,
+    env: r.env,
+    options: r.options,
+  });
+
+  assert.equal(out.status, 'refused', out.reason);
+  assert.equal(r.calls('agent prompt').length, 0, 'nothing is sent over a live draft');
+  assert.deepEqual(r.calls('pane send-text')[0].slice(2), ['w1:p5', 't'], 'the character the probe deleted goes back');
 });
 
 test('an omp delivery with no readable composer bar fails honestly, nothing sent', () => {

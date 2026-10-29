@@ -164,6 +164,27 @@ test('a clean strict-JSON report parses directly', () => {
   assert.equal(r.value.verdicts.c1.pass, true);
 });
 
+test('a JSON-viewer line-number gutter is stripped before parsing', () => {
+  // omp renders a fenced JSON block with a line-number column, so every line
+  // after the opening brace carries its number inside the captured span. The
+  // numbers are not JSON and the parser must remove them.
+  const capture = [
+    '● ── json  [ ⧉ copy ]',
+    '     1  {',
+    '     2    "verdicts": {',
+    '     3      "c1": { "pass": true, "justification": "Routes through the delegate channel." }',
+    '     4    },',
+    '     5    "judge_reasoning": "ok"',
+    '     6  }',
+    '',
+    '✻ Churned for 18s',
+  ].join('\n');
+  const r = parseJudgeReport(capture);
+  assert.ok(r.ok, r.ok ? '' : JSON.stringify(r.errors));
+  assert.equal(r.value.verdicts.c1.pass, true);
+  assert.equal(r.value.judge_reasoning, 'ok');
+});
+
 test('the verdicts object is recovered from a real terminal capture', () => {
   // The hazards a live `herdr agent read` capture carries, all at once: TUI
   // chrome, the prompt echo (which itself contains the word "verdicts" and a

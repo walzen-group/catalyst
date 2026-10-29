@@ -1,0 +1,73 @@
+# test.yaml: guards the two launch-gate rules repaired in incident
+# 2026-10-28-c2d-omp-hint-and-startup-gate.
+#
+# Rule 1 (omp): a fresh omp 18.x tab draws its thinking-effort hint
+# right-aligned on the composer line. The delivery hold settles what that text
+# is with a backspace probe through the omp reader, so chrome proceeds and a
+# real user draft still refuses with its specimen.
+#
+# Rule 2 (claude): herdr 0.9.5 refuses `agent start` with agent_not_ready while
+# a CLI sits on its startup dialog. c2d treats that refusal as a startup gate:
+# it answers a trust screen that names the requested cwd by walking the cursor
+# onto the accept row (Claude Code 2.1.312 parks it on `No, exit`), then lets
+# the confirmation step judge whether the CLI came up.
+#
+# Both rules are mechanical tool code, so the durable guard is deterministic,
+# not a Mode A intent simulation (same shape as omp-parked-attachment-chip and
+# claude-launch-session-identity): the pinned unit cases stay green in the live
+# tree, the live source keeps each gate wired, and the fixtures carry the
+# screens captured live on 2026-10-28. The first recorded run
+# (history/2026-10-28-fix-live-proof) transcribes the repair dispatch's live
+# evidence; the transcript criteria are first asserted on a later live run.
+
+actor:
+  role: meta-agent
+  model: opencode-go/deepseek-v4.1-flash
+
+# Declared, never launched: this test has no semantic criteria.
+judge:
+  role: judge
+  model: claude-opus-4-8
+
+config_source: declared
+
+covered_files:
+  - skills/catalyst-v2-dispatch/src/screens.mjs
+  - skills/catalyst-v2-dispatch/src/deliver.mjs
+  - skills/catalyst-v2-dispatch/src/launch.mjs
+  - skills/catalyst-v2-dispatch/test/screens.test.mjs
+  - skills/catalyst-v2-dispatch/test/deliver.test.mjs
+  - skills/catalyst-v2-dispatch/test/launch.test.mjs
+  - skills/catalyst-v2-dispatch/test/helpers/harness.mjs
+
+isolation:
+  - The actor works from this test's own directory (omp-hint-and-startup-gate/).
+  - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
+  - The actor must not read the incident report 2026-10-28-c2d-omp-hint-and-startup-gate, the repair dispatch's evidence under $XDG_STATE_HOME/catalyst-v2-dispatch, or this test's own history.
+  - The actor must not modify the project working tree in any way, runs no git commands, and does not dispatch, steer, rename, or close anything: it runs the pinned unit command and reads the live source only.
+
+criteria:
+  unit-guards-pass:
+    kind: deterministic
+    pass: The pinned c2d cases still pass in the installed dispatch tool dir: node --test over test/screens.test.mjs test/deliver.test.mjs test/launch.test.mjs runs with zero failures and names all three pins (accept-row walk, omp hint is chrome, refused claude start is gated and completed).
+  hint-probe-wired:
+    kind: deterministic
+    pass: The live omp delivery hold probes its composer instead of refusing non-empty text outright: screens.mjs exports readOmpComposerSettled, probeGhostText accepts a reader, and deliver.mjs's omp branch calls ghostComposer with the omp reader.
+  startup-gate-wired:
+    kind: deterministic
+    pass: launch.mjs recognizes herdr's agent_not_ready refusal, answers an attributable startup screen through recoverStartupScreen, and then confirms the agent rather than failing the launch.
+  trust-answer-wired:
+    kind: deterministic
+    pass: screens.mjs exports trustAnswerKeys, carries a reject-row pattern, and recoverStartupScreen confirms a trust prompt with the keys it returns, so the confirm lands on the row that keeps the folder.
+  fixture-carries-live-captures:
+    kind: deterministic
+    pass: test/helpers/harness.mjs carries the 2026-10-28 captures: the omp composer line with the thinking-effort hint, and the Claude Code 2.1.312 trust prompt whose cursor sits on `No, exit` with `Yes, I trust this folder` below it.
+  no-contamination:
+    kind: deterministic
+    pass: The actor cites none of the forbidden sources (the incident report, the repair dispatch evidence, or this test's own history).
+  report-schema:
+    kind: deterministic
+    pass: The newest recorded run JSON matches the record schema the runner reads back for regression comparison.
+  file-presence:
+    kind: deterministic
+    pass: The test directory is complete: test.yaml, scenario.md, checks.mjs, and a non-empty history/.

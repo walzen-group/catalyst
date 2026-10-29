@@ -149,9 +149,19 @@ RESURRECT c2m resurrect <slug> --tree <p>, for any tombstoned entry made
           relevant again
 
 FINISH    c2m reindex --tree <p>, then deliver the hand-back via c2d steer
-          --agent orchestrator --text, A2A: prefix; on steer failure write it
-          to the project's .cortex/reports/handbacks/. Retire
+          --agent <the name the brief gives; c2m briefs give dispatcher> --text,
+          A2A: prefix; on steer failure write it to the project's
+          .cortex/reports/handbacks/. Retire
 ```
+
+The orchestrator name is the roster name of the effort's orchestrator, the one
+the pass brief gives. A brief that names only the literal `orchestrator` leaves
+the name for the Curator to resolve: run `c2d status`, which lists each entry's
+cwd, and the effort's orchestrator runs in the project whose memory tree this
+pass targets. When no entry matches the effort, send nothing to the literal;
+write the hand-back to the fallback path with the unresolved target named, and
+retire (bootstrap, "Orchestrator identity"). A steer that fails keeps the same
+fallback.
 
 Relevance is the Curator's judgment, read from the inbox notes and the
 effort's own artifacts, not a measured access count. Judging it only against

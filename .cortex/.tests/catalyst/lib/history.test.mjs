@@ -68,7 +68,7 @@ test('latestPrior with an actor model matches only that model, and never falls b
   const dir = join(tempSuite(), 'history');
   writeRun(dir, record({
     run_id: '2026-08-01T00-00-00-omp-deepseek',
-    models_used: { actor: 'opencode-go/deepseek-v4-flash', judge: 'j' },
+    models_used: { actor: 'opencode-go/deepseek-v4.1-flash', judge: 'j' },
     judge_reasoning: 'deepseek baseline',
   }));
   writeRun(dir, record({
@@ -77,7 +77,7 @@ test('latestPrior with an actor model matches only that model, and never falls b
     judge_reasoning: 'opus baseline',
   }));
 
-  assert.equal(latestPrior(dir, { actor: 'opencode-go/deepseek-v4-flash' }).judge_reasoning, 'deepseek baseline');
+  assert.equal(latestPrior(dir, { actor: 'opencode-go/deepseek-v4.1-flash' }).judge_reasoning, 'deepseek baseline');
   assert.equal(latestPrior(dir, { actor: 'claude-opus-4-8' }).judge_reasoning, 'opus baseline');
   // A model with no prior of its own gets no baseline at all: a cross-model
   // comparison would report a model difference as a regression.

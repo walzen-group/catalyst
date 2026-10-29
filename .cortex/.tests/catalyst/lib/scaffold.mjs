@@ -14,7 +14,7 @@ const TEST_YAML = `# test.yaml: the guarded rule's actor, judge, and pass criter
 # The agent under test. Its model must differ from the judge model.
 actor:
   role: implementation-mid
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

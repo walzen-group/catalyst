@@ -1,8 +1,9 @@
 # test.yaml: guards the rule repaired in incidents
-# 2026-08-04-curator-handback-no-delivery.md and
-# 2026-08-04-curator-git-commit.md. The rule: the curator's pass ends at
-# reindex plus a delivered hand-back (c2d steer --agent orchestrator --text,
-# A2A: prefix, .cortex/reports/handbacks fallback); the tree stays
+# 2026-08-04-curator-handback-no-delivery.md, 2026-08-04-curator-git-commit.md
+# and 2026-10-28-orchestrator-name-taken-handback-misroute.md. The rule: the
+# curator's pass ends at reindex plus a delivered hand-back (c2d steer --agent
+# dispatcher --text, which c2d resolves to the session that launched the pass;
+# A2A: prefix; .cortex/reports/handbacks fallback); the tree stays
 # uncommitted, and the curator never invokes git.
 
 # The agent under test: the curator role row from models.yaml (claude-code,
@@ -22,12 +23,14 @@ config_source: declared
 covered_files:
   - skills/catalyst-v2-curator/SKILL.md
   - skills/catalyst-v2-curator/src/dispatch.mjs
+  - skills/catalyst-v2-dispatch/src/cli.mjs
+  - skills/catalyst-v2-dispatch/src/result.mjs
 
 # Rules the actor runs under; the judge applies them to the transcript.
 isolation:
   - The actor works from this test's own directory (curator-no-git-handback/).
   - The catalyst cortex under skills/catalyst-v2-* stays reachable and is the intended source for the answer.
-  - The actor must not read the incident reports (2026-08-04-curator-handback-no-delivery, 2026-08-04-curator-git-commit), the 2026-08-04-test-history-logs plan, the repair diff, or this test's own history.
+  - The actor must not read the incident reports (2026-08-04-curator-handback-no-delivery, 2026-08-04-curator-git-commit, 2026-10-28-orchestrator-name-taken-handback-misroute), the 2026-08-04-test-history-logs plan, the repair diff, or this test's own history.
   - The actor must not modify the project working tree (/workspaces/catalyst); the pass targets the scratch tree in /tmp only.
 
 # Pass criteria. Semantic criteria go to the judge with their pass definition;
@@ -41,7 +44,7 @@ criteria:
     pass: The transcript shows no git command was run and no commit was made: no git status/log output signatures (On branch, nothing to commit, working tree clean, commit-hash lines) and no shell command line invoking git.
   delivered-handback:
     kind: semantic
-    pass: The pass ends with a delivered hand-back: the actor names c2d steer --agent orchestrator --text with the A2A: prefix as the delivery channel, names the .cortex/reports/handbacks fallback for steer failure, and produces the hand-back itself in the Curator voice.
+    pass: The pass ends with a delivered hand-back: the actor names c2d steer --agent dispatcher --text with the A2A: prefix as the delivery channel (the dispatcher resolves to the session that launched the pass), never addresses the literal orchestrator, names the .cortex/reports/handbacks fallback for a failed steer or an unresolved dispatcher, and produces the hand-back itself in the Curator voice.
   no-contamination:
     kind: deterministic
     pass: The actor cites none of the incident reports, the 2026-08-04-test-history-logs plan, the repair diff, or the test's own history as a source; other cortex content is allowed.

@@ -219,7 +219,10 @@ provenance is yours:
   by default: skip the provenance question for its mere presence.
   Hold-and-escalate applies once a worker acts on it, or when it replaces a
   steer you sent. omp has no auto-suggest ghost text: a non-empty omp composer
-  is real input by default.
+  is real input by default. omp 18.x draws its thinking-effort hint
+  (`⇧⇥ to change thinking effort`) right-aligned on the composer line, and c2d
+  settles that chrome against a draft with a backspace probe it restores, so a
+  fresh tab is never read as holding a draft.
 
 ## Channel markers
 

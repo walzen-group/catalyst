@@ -164,9 +164,25 @@ herdr agent rename <pane> orchestrator
 ```
 
 Use `herdr pane list` to find the pane ID if needed. Confirm the name on the
-roster (`c2d status`) before dispatching. Meta-agents deliver hand-backs via
-`c2d steer --agent orchestrator`; without a name they fall back to writing a
-file, which then needs manual cleanup.
+roster (`c2d status`) before dispatching.
+
+**When the name is taken**, the rename fails with `agent_name_taken`: another
+catalyst effort or an unrelated session already runs as `orchestrator`. Take a
+unique effort name, `orch-<effort-slug>` (for example `orch-aio`), confirm it
+on the roster, and give the user the name in your first answer. That roster
+name becomes this effort's hand-back address.
+
+**The hand-back address is a roster name, never an assumed literal.** Every
+dispatch brief names the orchestrator's roster name as the target for the
+hand-back it will produce, and the agents it spawns send there: meta-agents and
+the Curator included. An agent that receives the bare literal `orchestrator` in
+a tool-assembled brief resolves it before sending: `c2d status` lists each
+entry's cwd, and this effort's orchestrator runs in the project the effort
+works on. Two catalyst efforts can run at once; the session that answers to a
+name may serve the other one. When no entry matches the effort, send nothing to
+the literal; write the hand-back to the effort's `.cortex/reports/handbacks/`
+and report the unresolved target. Without a name at all, agents fall back to
+that file, which then needs manual cleanup.
 
 ## Dispatch surface
 

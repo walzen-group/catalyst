@@ -1,0 +1,44 @@
+{
+  "run_id": "2026-10-28T16-23-46",
+  "timestamp": "2026-10-28T16:23:46.006Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "sonnet",
+    "actor_runtime": "claude-code",
+    "judge": "claude-opus-4-8"
+  },
+  "duration_ms": 110073,
+  "criteria": [
+    {
+      "id": "performs-pass",
+      "kind": "semantic",
+      "status": "fail",
+      "detail": "No c2m verb ran; the actor reported the tree missing and offered to seed/run, delivering a plan of the pass rather than performing read/promote/decay/prune/resurrect/reindex."
+    },
+    {
+      "id": "no-git-invoked",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no git command run, no git output in the transcript"
+    },
+    {
+      "id": "delivered-handback",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Hand-back in Curator voice with c2d steer --agent dispatcher --text and the A2A: prefix, no literal orchestrator addressed, and the .cortex/reports/handbacks fallback named for a failed steer or unresolved dispatcher."
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "no forbidden sources cited"
+    }
+  ],
+  "judge_reasoning": "The seeded scratch tree is genuinely absent, so no c2m verb executed: performs-pass fails because the actor produced only a report of the pass. The delivery mechanics and Curator voice are fully present, so delivered-handback passes independently of the pass not running.",
+  "regressions": [
+    "performs-pass"
+  ],
+  "errored": false,
+  "log_path": "2026-10-28T16-23-46-log.md"
+}

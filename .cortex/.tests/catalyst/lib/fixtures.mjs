@@ -26,13 +26,13 @@ export function tempSuite() {
 
 /** Live role table fixture. Override per test by cloning and editing. */
 export const ROLES = {
-  'implementation-mid': { runtime: 'omp', model: 'opencode-go/deepseek-v4-flash', thinking: 'max', when: 'impl' },
+  'implementation-mid': { runtime: 'omp', model: 'opencode-go/deepseek-v4.1-flash', thinking: 'max', when: 'impl' },
   judge: { runtime: 'claude-code', model: 'claude-opus-4-8', effort: 'default', when: 'judge' },
 };
 
 export const TEST_YAML = `actor:
   role: implementation-mid
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 judge:
   role: judge
   model: claude-opus-4-8
@@ -53,8 +53,8 @@ criteria:
 // The same test with an actor models list: two models, one per harness, in the
 // inline form a test.yaml writes them.
 export const MULTI_TEST_YAML = TEST_YAML.replace(
-  '  model: opencode-go/deepseek-v4-flash\n',
-  '  models: [omp:opencode-go/deepseek-v4-flash, claude-code:sonnet]\n',
+  '  model: opencode-go/deepseek-v4.1-flash\n',
+  '  models: [omp:opencode-go/deepseek-v4.1-flash, claude-code:sonnet]\n',
 );
 
 export const CHECKS_MJS = `export function contaminationScan(ctx) {
@@ -78,7 +78,7 @@ export function writeTestDir(suiteDir, slug, { testYaml = TEST_YAML, scenario = 
  * baseline. The actor model defaults to TEST_YAML's, because a baseline only
  * counts for the same actor model.
  */
-export function seedPriorRun(testDir, criteria, runId = '2026-08-01T00-00-00', actorModel = 'opencode-go/deepseek-v4-flash') {
+export function seedPriorRun(testDir, criteria, runId = '2026-08-01T00-00-00', actorModel = 'opencode-go/deepseek-v4.1-flash') {
   const record = {
     run_id: runId,
     timestamp: '2026-08-01T00:00:00.000Z',

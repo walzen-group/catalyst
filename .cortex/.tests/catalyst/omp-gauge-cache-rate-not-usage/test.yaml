@@ -15,7 +15,7 @@
 
 # The agent under test: the catalyst orchestrator session that reads the omp
 # status bar gauges at dispatch and every heartbeat. The role runs omp; the
-# declared model is opencode-go/deepseek-v4-flash, the omp default modelRole
+# declared model is opencode-go/deepseek-v4.1-flash, the omp default modelRole
 # (config.yml modelRoles.default) and the model the live orchestrator session
 # actually runs on this host — kimi-code/k3, models.yaml's orchestrator-default
 # row, has no API key here ("No API key found for kimi-code" on a fresh tab,
@@ -23,7 +23,7 @@
 # table. Must differ from the judge model.
 actor:
   role: orchestrator-default
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

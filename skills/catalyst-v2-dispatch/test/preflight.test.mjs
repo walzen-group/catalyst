@@ -11,6 +11,21 @@ import test from 'node:test';
 
 import { preflight } from '../src/preflight.mjs';
 
+// The omp model catalog, injected in the shape `loadCatalog` returns.
+function catalog(entries, ok = true) {
+  return {
+    ok,
+    selectors: new Set(entries.map(({ provider, id }) => `${provider}/${id}`)),
+    providers: new Set(entries.map(({ provider }) => provider)),
+  };
+}
+
+const CATALOG = catalog([
+  { provider: 'opencode-go', id: 'deepseek-v4.1-flash' },
+  { provider: 'opencode-go', id: 'deepseek-v4-pro' },
+  { provider: 'neuralwatt', id: 'deepseek-v4-flash' },
+]);
+
 const realCwd = mkdtempSync(join(tmpdir(), 'catalyst-preflight-'));
 
 // A validated-shape agent: kind defaults to worker, brief carries the text the
@@ -20,7 +35,7 @@ function agent(overrides = {}) {
     name: 'impl-x',
     cwd: realCwd,
     cli: 'claude',
-    model: 'claude-opus-4-8',
+    model: 'claude-opus-5-5',
     kind: 'worker',
     brief: { mode: 'inline', text: 'do work' },
     ...overrides,
@@ -155,4 +170,67 @@ test('an existing readable style_file passes preflight', () => {
   writeFileSync(persona, '---\nname: x\n---\nbody');
   const result = preflight({ agents: [agent({ style_file: persona, kind: 'unit' })] }, []);
   assert.equal(result.ok, true, result.failures.join('; '));
+});
+
+// --- omp model catalog --------------------------------------------------------
+
+function ompAgent(overrides = {}) {
+  return agent({ cli: 'omp', thinking: 'high', kind: 'unit', ...overrides });
+}
+
+function modelFailure(failures) {
+  return failures.find((f) => /is not in the omp catalog/.test(f));
+}
+
+test('an omp model spelling the catalog does not list is refused with the nearest id', () => {
+  const result = preflight(
+    { agents: [ompAgent({ name: 'a', model: 'opencode-go/deepseek-v4-1-flash' })] },
+    [],
+    { catalog: CATALOG },
+  );
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.failures, [
+    'agents[0].model: "opencode-go/deepseek-v4-1-flash" is not in the omp catalog; nearest: opencode-go/deepseek-v4.1-flash',
+  ]);
+});
+
+test('an omp model the catalog lists passes', () => {
+  const result = preflight(
+    { agents: [ompAgent({ name: 'a', model: 'opencode-go/deepseek-v4.1-flash' })] },
+    [],
+    { catalog: CATALOG },
+  );
+  assert.equal(result.ok, true, result.failures.join('; '));
+});
+
+test('an omp model whose provider the catalog does not list is not checked', () => {
+  const result = preflight(
+    { agents: [ompAgent({ name: 'a', model: 'kimi-code/kimi-k2.6' })] },
+    [],
+    { catalog: CATALOG },
+  );
+  assert.equal(result.ok, true, result.failures.join('; '));
+  assert.equal(modelFailure(result.failures), undefined);
+});
+
+test('an unavailable catalog leaves every omp model unchecked', () => {
+  for (const entries of [[], [{ provider: 'opencode-go', id: 'deepseek-v4.1-flash' }]]) {
+    const result = preflight(
+      { agents: [ompAgent({ name: 'a', model: 'opencode-go/deepseek-v4-1-flash' })] },
+      [],
+      { catalog: catalog(entries, false) },
+    );
+    assert.equal(result.ok, true, result.failures.join('; '));
+    assert.equal(modelFailure(result.failures), undefined);
+  }
+});
+
+test('a claude model is never checked against the catalog', () => {
+  const result = preflight(
+    { agents: [agent({ name: 'a', cli: 'claude', model: 'claude-opus-4-8', kind: 'unit' })] },
+    [],
+    { catalog: CATALOG },
+  );
+  assert.equal(result.ok, true, result.failures.join('; '));
+  assert.equal(modelFailure(result.failures), undefined);
 });

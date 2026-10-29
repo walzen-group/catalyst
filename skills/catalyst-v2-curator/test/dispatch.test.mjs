@@ -51,7 +51,9 @@ test('the curate brief ends at reindex plus a delivered hand-back: no git, steer
   const doc = buildCurateDispatch(TREE, { model: 'sonnet', now: CLOCK });
   const brief = doc.agents[0].brief.text;
   assert.doesNotMatch(brief, /\bgit\b/, 'brief must not instruct the curator to use git');
-  assert.match(brief, /c2d steer --agent orchestrator --text/, 'brief names the steer delivery channel');
+  assert.match(brief, /c2d steer --agent dispatcher --text/, 'brief names the steer delivery channel');
+  assert.doesNotMatch(brief, /--agent orchestrator\b/, 'brief never addresses a literal another effort may own');
+  assert.match(brief, /dispatcher resolves to the agent that launched this pass/, 'brief states what dispatcher resolves to');
   assert.match(brief, /A2A:/, 'the steer text carries the A2A prefix');
   assert.match(brief, /\/tmp\/some\/\.cortex\/reports\/handbacks/, 'brief names the steer-failure fallback');
   assert.match(brief, /REINDEX/, 'the pass still ends at reindex');

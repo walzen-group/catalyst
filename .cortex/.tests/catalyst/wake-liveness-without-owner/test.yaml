@@ -35,7 +35,7 @@
 # first run (no semantic criteria).
 actor:
   role: meta-agent
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor. Declared but
 # never launched: this test has no semantic criteria.
@@ -49,6 +49,7 @@ config_source: declared
 covered_files:
   - skills/catalyst-v2-dispatch/src/wake.mjs
   - skills/catalyst-v2-dispatch/src/status.mjs
+  - skills/catalyst-v2-dispatch/SKILL.md
 
 # Rules the actor runs under.
 isolation:
@@ -68,7 +69,10 @@ criteria:
     pass: readStatus's wake block for a worker whose only live wait is owned by another pane reports owned_by_caller false, owner set to the owning agent, and a note that names the owner and says "not you"; the note never asserts bare coverage ("its owner will be woken").
   open-wave-stranded-meta-not-healthy:
     kind: deterministic
-    pass: classify() does not read a settled-worker wave healthy when a meta is still open with its own wake dead (returns UNWATCHED naming the stranded meta); a settled-worker wave whose meta has retired (exited) is healthy, and one whose meta is verifying with a live wait is healthy.
+    pass: classify() does not read a settled-worker wave healthy when a meta is still open and owns no live wake mechanism (returns UNWATCHED naming the stranded meta); a settled-worker wave whose meta has retired (exited) is healthy, and one whose meta is verifying with a live wait is healthy. A meta's reachability is the waits it owns on in-flight workers, never a wait on its own name (incident 2026-10-28-c2d-omp-meta-own-waits) - a parked or working meta that owns a live wait on an in-flight worker is healthy, a meta parked on background shells is healthy, a parked meta whose in-flight workers only another agent watches is UNWATCHED, and no reason claims "no live wait of its own".
+  all-waits-per-target-reported:
+    kind: deterministic
+    pass: Two live waits on one name with two owner panes give both owners - liveWaitFor returns both in waits with their owner panes and keeps the first as owner_pane, and readStatus's wake.owners lists both owning agent names in wait order with wake.owner the first.
   no-contamination:
     kind: deterministic
     pass: The actor cites none of the dispatch materials (the incident report, the fix dispatch, the test's own history) as a source; other cortex content is allowed.

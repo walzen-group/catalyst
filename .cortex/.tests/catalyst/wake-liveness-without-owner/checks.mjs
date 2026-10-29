@@ -83,18 +83,94 @@ export async function openWaveStrandedMetaNotHealthy(ctx) {
       { name: 'impl-x', role: 'worker', status: 'idle' },
       { name: 'meta-x', role: 'meta', status: 'working', present: true, wake: { running: true } },
     ]);
+    // A meta's waits run on its workers' names, so a dead wait on the meta's own
+    // name is the caller's gap, never the meta's (incident
+    // 2026-10-28-c2d-omp-meta-own-waits).
+    const armedPark = classify([
+      { name: 'impl-x', role: 'worker', status: 'working', wake: { running: true, owner: 'orch-x', owners: ['orch-x', 'meta-x'] } },
+      { name: 'meta-x', role: 'meta', status: 'idle', present: true, tokens_spent: true, parked_monitoring: false, wake: { running: false, owners: [] } },
+    ]);
+    const armedWorking = classify([
+      { name: 'impl-x', role: 'worker', status: 'working', wake: { running: true, owners: ['meta-x'] } },
+      { name: 'meta-x', role: 'meta', status: 'working', present: true, tokens_spent: true, wake: { running: false, owners: [] } },
+    ]);
+    const shellPark = classify([
+      { name: 'impl-x', role: 'worker', status: 'working', wake: { running: true, owners: ['orch-x'] } },
+      { name: 'meta-x', role: 'meta', status: 'done', present: true, tokens_spent: true, parked_monitoring: true, wake: { running: false, owners: [] } },
+    ]);
+    const unarmedPark = classify([
+      { name: 'impl-x', role: 'worker', status: 'working', wake: { running: true, owner: 'orch-x', owners: ['orch-x'] } },
+      { name: 'meta-x', role: 'meta', status: 'idle', present: true, tokens_spent: true, wake: { running: false, owners: [] } },
+    ]);
     const ok = stranded.classification === 'UNWATCHED' && /meta-x/.test(stranded.reason)
       && retired.classification === 'healthy'
-      && verifying.classification === 'healthy';
+      && verifying.classification === 'healthy'
+      && armedPark.classification === 'healthy'
+      && armedWorking.classification === 'healthy'
+      && shellPark.classification === 'healthy'
+      && unarmedPark.classification === 'UNWATCHED' && /meta-x/.test(unarmedPark.reason)
+      && !/no live wait of its own/.test(`${stranded.reason} ${unarmedPark.reason}`);
     return {
       criterion: 'open-wave-stranded-meta-not-healthy',
       pass: ok,
       detail: ok
-        ? 'a settled-worker wave with a meta parked on a dead wake is UNWATCHED; a retired meta is a closed healthy wave; a verifying meta with a live wait is healthy'
-        : `stranded=${stranded.classification} retired=${retired.classification} verifying=${verifying.classification}`,
+        ? 'a settled-worker wave with a meta parked on a dead wake is UNWATCHED; a retired meta is a closed healthy wave; a verifying meta with a live wait is healthy; a parked or working meta that owns a live wait on an in-flight worker is healthy; a shell-parked meta is healthy; a parked meta whose workers only another agent watches is UNWATCHED, and no reason claims "no live wait of its own"'
+        : `stranded=${stranded.classification} retired=${retired.classification} verifying=${verifying.classification} armedPark=${armedPark.classification} armedWorking=${armedWorking.classification} shellPark=${shellPark.classification} unarmedPark=${unarmedPark.classification} (${unarmedPark.reason})`,
     };
   } catch (error) {
     return { criterion: 'open-wave-stranded-meta-not-healthy', pass: false, detail: `threw: ${error.message}` };
+  }
+}
+
+// all-waits-per-target-reported: two live waits on one name, owned by two panes,
+// give both owners through liveWaitFor and through readStatus's wake.owners. A
+// first-match return erased a meta's ownership whenever the orchestrator also
+// waited on the same worker (incident 2026-10-28-c2d-omp-meta-own-waits).
+export async function allWaitsPerTargetReported(ctx) {
+  try {
+    const { liveWaitFor } = await loadWake(ctx.testDir);
+    const { readStatus } = await loadStatus(ctx.testDir);
+    const { rig } = await import(pathToFileURL(join(dispatchDir(ctx.testDir), 'test', 'helpers', 'harness.mjs')).href);
+    const psLines = [
+      '  1000  999 herdr agent wait impl-x --timeout 900000',
+      '  1001  998 herdr agent wait impl-x --timeout 900000',
+    ];
+    const environByPid = {
+      1000: ['HERDR_PANE_ID=w0:p1', 'HERDR_TAB_ID=w0:t1'].join('\0'),
+      1001: ['HERDR_PANE_ID=w1:p1', 'HERDR_TAB_ID=w1:t1'].join('\0'),
+    };
+    const found = liveWaitFor('impl-x', {
+      psBin: fakePs(psLines),
+      readEnviron: (pid) => environByPid[pid] ?? null,
+    });
+    const wakePanes = Array.isArray(found.waits) ? found.waits.map((wait) => wait.owner_pane).sort() : null;
+    const agents = [
+      { name: 'orch-x', agent: 'omp', agent_status: 'working', tab_id: 'w0:t1', pane_id: 'w0:p1', cwd: '/repo', tokens: { input: 10 } },
+      { name: 'meta-x', agent: 'omp', agent_status: 'idle', tab_id: 'w1:t1', pane_id: 'w1:p1', cwd: '/repo', tokens: { input: 10 } },
+      { name: 'impl-x', agent: 'omp', agent_status: 'working', tab_id: 'w2:t1', pane_id: 'w2:p1', cwd: '/repo', tokens: { input: 10 } },
+    ];
+    const r = rig({
+      agentList: { status: 0, stdout: `${JSON.stringify({ id: 'cli:agent:list', result: { agents } })}\n` },
+      psLines,
+      environByPid,
+    });
+    const env = { ...r.env, HERDR_PANE_ID: 'w3:p1', HERDR_TAB_ID: 'w3:t1' };
+    const out = readStatus({ names: ['impl-x'], env, options: r.options });
+    const worker = out.agents.find((agent) => agent.name === 'impl-x');
+    const owners = worker?.wake?.owners ?? null;
+    const ok = found.running === true && found.owner_pane === 'w0:p1'
+      && JSON.stringify(wakePanes) === JSON.stringify(['w0:p1', 'w1:p1'])
+      && JSON.stringify(owners) === JSON.stringify(['orch-x', 'meta-x'])
+      && worker.wake.owner === 'orch-x';
+    return {
+      criterion: 'all-waits-per-target-reported',
+      pass: ok,
+      detail: ok
+        ? 'liveWaitFor reports both live waits on impl-x with owner panes w0:p1 and w1:p1, first entry kept as owner_pane; readStatus gives wake.owners [orch-x, meta-x] with wake.owner orch-x'
+        : `liveWaitFor waits=${JSON.stringify(wakePanes)} owner_pane=${found.owner_pane}; readStatus owners=${JSON.stringify(owners)} owner=${worker?.wake?.owner}`,
+    };
+  } catch (error) {
+    return { criterion: 'all-waits-per-target-reported', pass: false, detail: `threw: ${error.message}` };
   }
 }
 
@@ -119,13 +195,18 @@ export function statusNoteNamesOwner(ctx) {
   const status = readFileSync(join(dir, 'src', 'status.mjs'), 'utf8');
   const hasOwnerNote = /owned_by_caller/.test(status) && /it wakes ITS owner, not you/.test(status);
   const dropsBareCoverage = !/and its owner will be woken/.test(status);
-  const ok = suiteOk && hasOwnerNote && dropsBareCoverage;
+  // The status-class paragraph in the dispatch skill must not tell a reader that
+  // a parked omp meta reads META QUIESCENT: with a wake reading it reads healthy
+  // when armed on its workers (incident 2026-10-28-c2d-omp-meta-own-waits).
+  const skill = readFileSync(join(dir, 'SKILL.md'), 'utf8').replace(/\s+/g, ' ');
+  const skillSynced = !/META QUIESCENT is a settled meta whose session is still live: an omp meta between turns reads this way/.test(skill);
+  const ok = suiteOk && hasOwnerNote && dropsBareCoverage && skillSynced;
   return {
     criterion: 'status-note-names-owner',
     pass: ok,
     detail: ok
-      ? `${suiteDetail}; status wake block carries owned_by_caller and the "not you" note, and no longer asserts bare coverage`
-      : `${suiteDetail}; ownerNote=${hasOwnerNote} dropsBareCoverage=${dropsBareCoverage}`,
+      ? `${suiteDetail}; status wake block carries owned_by_caller and the "not you" note, and no longer asserts bare coverage; SKILL.md no longer says a parked omp meta reads META QUIESCENT`
+      : `${suiteDetail}; ownerNote=${hasOwnerNote} dropsBareCoverage=${dropsBareCoverage} skillSynced=${skillSynced}`,
   };
 }
 

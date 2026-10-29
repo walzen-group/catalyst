@@ -12,13 +12,13 @@
 
 # The agent under test: the catalyst orchestrator receiving a user-supplied
 # hand-back on the user channel. Role: orchestrator-default (omp runtime).
-# Model: the working omp default opencode-go/deepseek-v4-flash; the pinned
+# Model: the working omp default opencode-go/deepseek-v4.1-flash; the pinned
 # orchestrator-default model kimi-code/k3 returned provider 403 quota errors
 # on 2026-08-04, so the replay runs on the alternative per the cross-model
 # precedent. Its model must differ from the judge model.
 actor:
   role: orchestrator-default
-  model: opencode-go/deepseek-v4-flash
+  model: opencode-go/deepseek-v4.1-flash
 
 # The semantic judge. Always a model distinct from the actor.
 judge:

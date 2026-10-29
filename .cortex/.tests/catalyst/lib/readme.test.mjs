@@ -22,7 +22,7 @@ test('formatLastResult renders the pinned cell', () => {
 });
 
 test('formatMultiResult names each actor model, and stays plain for a single run', () => {
-  const one = [{ model: 'opencode-go/deepseek-v4-flash', pass: 8, total: 8, date: '2026-08-06', runId: 'r1' }];
+  const one = [{ model: 'opencode-go/deepseek-v4.1-flash', pass: 8, total: 8, date: '2026-08-06', runId: 'r1' }];
   assert.equal(formatMultiResult(one), '8/8 pass (2026-08-06, r1)');
 
   const two = [
@@ -31,7 +31,7 @@ test('formatMultiResult names each actor model, and stays plain for a single run
   ];
   assert.equal(
     formatMultiResult(two),
-    'opencode-go/deepseek-v4-flash: 8/8 pass (2026-08-06, r1); claude-opus-4-8: 7/8 pass (2026-08-06, r2)',
+    'opencode-go/deepseek-v4.1-flash: 8/8 pass (2026-08-06, r1); claude-opus-4-8: 7/8 pass (2026-08-06, r2)',
   );
 });
 
