@@ -35,8 +35,8 @@ roles:
     when: monitoring and verification cycles
   board-keeper:
     runtime: claude-code
-    model: sonnet
-    effort: low
+    model: claude-haiku-5-5
+    effort: medium
     when: status-board sync only
   curator:
     runtime: claude-code

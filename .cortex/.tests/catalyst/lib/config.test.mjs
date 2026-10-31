@@ -39,7 +39,7 @@ const EXPECTED_ROLES = {
   'implementation-frontier': 'claude-opus-5-5',
   'implementation-mid': 'opencode-go/deepseek-v4.1-flash',
   'meta-agent': 'opencode-go/deepseek-v4.1-flash',
-  'board-keeper': 'sonnet',
+  'board-keeper': 'claude-haiku-5-5',
   judge: 'claude-opus-5-5',
 };
 
@@ -176,7 +176,7 @@ test('migration coverage: every pre-migration role migrated with its model strin
     'Implementation delegates (mid-tier)': ['implementation-mid', 'opencode-go/deepseek-v4.1-flash'],
     'Small/fast (omp)': ['implementation-mid', 'opencode-go/deepseek-v4.1-flash'],
     'Meta-agent': ['meta-agent', 'opencode-go/deepseek-v4.1-flash'],
-    'Board keeper': ['board-keeper', 'sonnet'],
+    'Board keeper': ['board-keeper', 'claude-haiku-5-5'],
   };
   for (const [label, [key, model]] of Object.entries(preMigration)) {
     assert.ok(Object.prototype.hasOwnProperty.call(roles, key), `${label} -> role ${key} present`);

@@ -24,7 +24,7 @@ launch that omits one; this page is the authority for *which* to name.
 | **Mid-tier** | Standard implementation, per-task reviews, open-ended verification, meta-agent monitoring, final whole-branch review, debugging | opencode-go/deepseek-v4.1-flash at thinking max (omp) | One-shot or back-to-back chain |
 | **Small/fast** | Chore-sized mechanical work: mirrored tests, config bumps, doc edits | opencode-go/deepseek-v4.1-flash at thinking max | One-shot, fully spec'd |
 | **Reserve** | Independent verification reruns, triage, smoke-test driving | Orchestrator's own session, or omp smol/tiny | Sparingly |
-| **Board keeper** | Status-board sync only | Claude Sonnet at effort low | Long-lived, whole epic |
+| **Board keeper** | Status-board sync only | claude-haiku-5-5 at effort medium | Long-lived, whole epic |
 
 ## Model table
 
@@ -46,7 +46,7 @@ back to its own `skills/` layout.
 | Implementation (frontier) | Claude Code in herdr tab, max 2 concurrent | claude-opus-5-5, default effort |
 | Implementation (mid-tier, small/fast) | omp in herdr tab | opencode-go/deepseek-v4.1-flash, thinking max |
 | Meta-agent | omp in herdr tab | opencode-go/deepseek-v4.1-flash, thinking max |
-| Board keeper | Claude Code in herdr tab | sonnet, effort low |
+| Board keeper | Claude Code in herdr tab | claude-haiku-5-5, effort medium |
 | Curator | Claude Code in herdr tab | sonnet, default effort |
 | Judge (test runner) | Claude Code | claude-opus-5-5, default effort |
 
@@ -118,7 +118,7 @@ hunch.
 runs claude-opus-5-5 at default effort (max 2 concurrent). All other work
 (reviews, verification, meta-agent, debugging) runs
 opencode-go/deepseek-v4.1-flash at thinking max. Exceptions: board keeper runs
-Sonnet at low; orchestrator runs kimi-code/k3.
+claude-haiku-5-5 at medium; orchestrator runs kimi-code/k3.
 
 ## Routing heuristics
 
