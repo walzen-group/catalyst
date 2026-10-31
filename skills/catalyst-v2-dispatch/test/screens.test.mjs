@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { classifyScreen, extractComposer, ompComposerText, probeGhostText, recoverStartupScreen, trustAnswerKeys } from '../src/screens.mjs';
+import { classifyScreen, extractComposer, liveIndicatorLines, ompComposerText, probeGhostText, recoverStartupScreen, trustAnswerKeys } from '../src/screens.mjs';
 import {
   CLAUDE_FOREIGN_TEXT,
   CLAUDE_FOREIGN_TEXT_BACKSPACED,
@@ -12,6 +12,8 @@ import {
   CLAUDE_GHOST_QUEUED,
   CLAUDE_IDLE,
   CLAUDE_PARKED_PASTE,
+  CLAUDE_TITLED_GHOST_QUEUED,
+  CLAUDE_TITLED_IDLE,
   OMP_DRAFT,
   OMP_DRAFT_EDITOR,
   OMP_IDLE,
@@ -77,6 +79,61 @@ test('a drawn composer settles it: the CLI is taking input', () => {
   assert.notEqual(extractComposer(CLAUDE_IDLE), null);
   assert.equal(classifyScreen(CLAUDE_IDLE, CWD).kind, 'none');
   assert.equal(classifyScreen(CLAUDE_PARKED_PASTE, CWD).kind, 'none');
+});
+
+// Regression anchor: incident 2026-10-31-c2d-claude-composer-title-border.
+// Claude Code 2.1.316 draws the generated session title inside the composer's
+// top border, so the line above the prompt is not a bare rule. The border is
+// still the composer's: the prompt marker follows it and the block closes on
+// the bottom rule.
+function titledScreen({ left = 176, title = 'Nyx Plane board setup', right = 1, prompt = '❯', above = '● Ready when you are.', footer = '  Opus 5 | 72k/1.0M (7%)' } = {}) {
+  return [
+    above,
+    '',
+    `${'─'.repeat(left)} ${title} ${'─'.repeat(right)}`,
+    prompt,
+    '─'.repeat(60),
+    footer,
+  ].join('\n');
+}
+
+test('a composer border with the session title drawn in it is still a composer', () => {
+  assert.equal(extractComposer(CLAUDE_TITLED_IDLE), '', 'the titled empty composer resolves to an empty string');
+  assert.equal(extractComposer(CLAUDE_TITLED_GHOST_QUEUED), ' Press up to edit queued messages');
+  assert.equal(classifyScreen(CLAUDE_TITLED_IDLE, CWD).kind, 'none', 'a titled composer is not a dialog');
+});
+
+test('the titled-border recognition holds across titles and widths', () => {
+  const cases = [
+    { left: 41, title: 'S', right: 1 },
+    { left: 90, title: 'A longer generated session title', right: 12 },
+    { left: 176, title: 'Nyx Plane board setup', right: 1 },
+  ];
+  for (const { left, title, right } of cases) {
+    assert.equal(
+      extractComposer(titledScreen({ left, title, right })),
+      '',
+      `"${title}" between ${left} and ${right} border dashes`,
+    );
+  }
+});
+
+test('the live indicator lines are read above and below a titled composer', () => {
+  assert.deepEqual(liveIndicatorLines(titledScreen()), [
+    '● Ready when you are.',
+    '  Opus 5 | 72k/1.0M (7%)',
+  ]);
+});
+
+test('a titled rule the prompt marker does not follow is not a composer', () => {
+  assert.equal(extractComposer(titledScreen({ prompt: 'not a prompt' })), null);
+});
+
+test('the untitled claude fixtures keep their extraction results', () => {
+  assert.equal(extractComposer(CLAUDE_IDLE), ' ');
+  assert.equal(extractComposer(CLAUDE_PARKED_PASTE), ' [Pasted text #1 +43 lines]');
+  assert.equal(extractComposer(CLAUDE_GHOST_QUEUED), ' Press up to edit queued messages');
+  assert.equal(extractComposer(CLAUDE_FOREIGN_TEXT), ' half a thought the user was typing');
 });
 
 test('the trust prompt is still recognized, and still checked against the cwd', () => {

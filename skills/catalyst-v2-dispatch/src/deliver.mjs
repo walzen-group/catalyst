@@ -90,6 +90,13 @@ export const DEFAULT_ENTER_BACKOFF_MS = 1000;
 const SEND_WAIT_FLAGS = ['--wait', '--until', 'working'];
 const STALL_CODES = new Set(['agent_prompt_stalled', 'timeout']);
 const PASTE_PLACEHOLDER = /^\[Pasted text #\d+(?: \+\d+ lines?)?\]$/;
+// A not-located specimen is read from the tail of the capture: the composer
+// draws at the bottom of the screen, so the old head slice showed only old
+// conversation while the line that explains the failure sat outside it
+// (incident 2026-10-31-c2d-claude-composer-title-border). Length is unchanged.
+function tailSpecimen(screen) {
+  return collapse(screen).slice(-2000);
+}
 // opencode/omp renders a parked paste as a chip, e.g. "[Paste #1, +107 lines]"
 // (comma before the count), worded unlike Claude Code's "[Pasted text #1 +43
 // lines]". Anywhere on the visible screen, since omp draws no composer block the
@@ -321,7 +328,7 @@ export function deliver({ name, cli, session, text, verb = 'dispatch', mandateMo
         attempts: 0,
         text,
         reason: 'could not locate the omp composer bar; the agent may be on a dialog',
-        specimen: collapse(screen).slice(0, 2000),
+        specimen: tailSpecimen(screen),
       };
     }
     if (collapse(draft) !== '') {
@@ -377,7 +384,7 @@ export function deliver({ name, cli, session, text, verb = 'dispatch', mandateMo
       attempts: 0,
       text,
       reason: 'could not locate the composer; the agent may be on a dialog',
-      specimen: collapse(before.raw).slice(0, 2000),
+      specimen: tailSpecimen(before.raw),
     };
   }
   if (collapse(before.composer) !== '') {
@@ -426,7 +433,7 @@ export function deliver({ name, cli, session, text, verb = 'dispatch', mandateMo
         attempts,
         text,
         reason: `could not locate the composer after "${code}"`,
-        specimen: collapse(seen.raw).slice(0, 2000),
+        specimen: tailSpecimen(seen.raw),
       };
     }
     // An emptied composer means the paste was submitted after all: it was empty

@@ -43,6 +43,29 @@ test('mandate_mode parses when present and stays absent when omitted', () => {
   assert.equal(injected.value.mandate_mode, 'injected');
 });
 
+// User-authorized runner exception 2026-10-31: the judge may share the actor's
+// model id only when the spec names the separate-context isolation that makes
+// the same id safe. Any other value is a spec error, so a typo cannot silently
+// permit a same-id judge.
+test('judge.distinct_by accepts only isolation, and stays absent by default', () => {
+  const absent = specFrom(TEST_YAML);
+  assert.equal('distinct_by' in absent.value.judge, false, 'the default refusal stays in force');
+
+  const isolation = specFrom(TEST_YAML.replace(
+    '  model: claude-opus-4-8\n',
+    '  model: claude-opus-4-8\n  distinct_by: isolation\n',
+  ));
+  assert.ok(isolation.ok, JSON.stringify(isolation.errors));
+  assert.equal(isolation.value.judge.distinct_by, 'isolation');
+
+  const unknown = specFrom(TEST_YAML.replace(
+    '  model: claude-opus-4-8\n',
+    '  model: claude-opus-4-8\n  distinct_by: shared\n',
+  ));
+  assert.equal(unknown.ok, false);
+  assert.ok(unknown.errors.some((e) => /distinct_by/.test(e)), JSON.stringify(unknown.errors));
+});
+
 test('an unknown mandate_mode is rejected', () => {
   const r = specFrom(`${TEST_YAML}mandate_mode: replay\n`);
   assert.equal(r.ok, false);

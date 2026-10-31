@@ -197,6 +197,16 @@ export function parseTestSpec(obj, slug) {
   const actor = validateActor(obj.actor, errors);
   const judge = validateRoleModel(obj.judge, 'judge', errors);
 
+  // Optional judge separation field. The judge must run a model distinct from
+  // the actor's by default; the only accepted exception is `isolation`, which
+  // names the fresh separate context the judge still launches in. An unknown
+  // value is refused here so a typo cannot silently permit a same-id judge
+  // (user-authorized runner exception 2026-10-31).
+  const distinctBy = isObject(obj.judge) ? obj.judge.distinct_by : undefined;
+  if (distinctBy !== undefined && distinctBy !== null && distinctBy !== 'isolation') {
+    errors.push('judge.distinct_by: must be "isolation" when present; any other value is refused');
+  }
+
   const configSource = obj.config_source;
   if (!CONFIG_SOURCES.includes(configSource)) {
     errors.push(`config_source: must be one of ${CONFIG_SOURCES.join(', ')}`);
@@ -221,7 +231,7 @@ export function parseTestSpec(obj, slug) {
     value: {
       slug,
       actor,
-      judge,
+      judge: distinctBy === 'isolation' ? { ...judge, distinct_by: distinctBy } : judge,
       config_source: configSource,
       covered_files: coveredFiles,
       isolation,

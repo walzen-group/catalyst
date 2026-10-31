@@ -141,6 +141,49 @@ export const CLAUDE_FOREIGN_TEXT = CLAUDE_IDLE.replace('❯ ', '❯ half a thoug
 /** The same composer one backspace later: real input shortens by a character. */
 export const CLAUDE_FOREIGN_TEXT_BACKSPACED = CLAUDE_IDLE.replace('❯ ', '❯ half a thought the user was typin');
 
+/**
+ * Claude Code 2.1.316 (captured live 2026-10-31, session 0411d547): the
+ * generated session title is drawn inside the composer's top border. The line
+ * above the prompt is 200 cells: 176 leading dashes, the title padded by
+ * spaces, and one closing dash, 177 dashes in all. The transcript box and the
+ * survey question above it are what the old reader misclassified as a dialog
+ * once the titled border failed its rule test.
+ */
+const CLAUDE_TITLED_BORDER = `${'─'.repeat(176)} Nyx Plane board setup ─`;
+const CLAUDE_TITLED_CLOSE = '─'.repeat(200);
+
+export const CLAUDE_TITLED_IDLE = [
+  '● How is Claude doing this session? (optional)',
+  '  1: Bad    2: Fine   3: Good   0: Dismiss',
+  '',
+  '╭──────────────────────────────────────────╮',
+  '│ older conversation                       │',
+  '╰──────────────────────────────────────────╯',
+  '',
+  CLAUDE_TITLED_BORDER,
+  '❯',
+  CLAUDE_TITLED_CLOSE,
+  '  Haiku 5.5 | [██████████░░░░░░] 607k/1.0M (61%) | [░░░░░░░░░░░░░░░░] 1.0% for 4hr 25m | Weekly: 77.0%',
+].join('\n');
+
+/** The titled composer holding half a thought the user really typed. */
+export const CLAUDE_TITLED_FOREIGN_TEXT = CLAUDE_TITLED_IDLE.replace(
+  '\n❯\n',
+  '\n❯ half a thought the user was typing\n',
+);
+
+/** The same titled composer one backspace later. */
+export const CLAUDE_TITLED_FOREIGN_TEXT_BACKSPACED = CLAUDE_TITLED_IDLE.replace(
+  '\n❯\n',
+  '\n❯ half a thought the user was typin\n',
+);
+
+/** The titled composer showing Claude's queued-messages hint mid-turn. */
+export const CLAUDE_TITLED_GHOST_QUEUED = CLAUDE_TITLED_IDLE.replace(
+  '\n❯\n',
+  '\n❯ Press up to edit queued messages\n',
+);
+
 /** herdr `agent get` for a live claude agent, carrying the pane the tool types into. */
 export const CLAUDE_GET = {
   status: 0,

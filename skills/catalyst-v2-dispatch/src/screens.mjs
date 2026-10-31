@@ -30,6 +30,24 @@ const TRUST_OPTION_ROW = /^[│\s]*(?:❯\s*)?(?:\d+\.\s*)?(?:yes|no)\b/i;
 const TRUST_ROW_MARKER = /^[│\s]*❯/;
 const TRUST_REJECT_ROW = /\b(?:no|exit|don'?t|do not)\b/i;
 const RULE_LINE = /^[^\p{L}\p{N}|]*─[^\p{L}\p{N}|]*$/u;
+// A composer border. Claude Code 2.1.316 draws the generated session title
+// inside the composer's top border ("── Nyx Plane board setup ─"), so the old
+// letter-rejecting rule test stopped seeing the block and paired the closing
+// rule with a transcript box instead (incident
+// 2026-10-31-c2d-claude-composer-title-border). A border starts with a dash,
+// carries at least 40 dashes, and may hold one short title segment between two
+// dash runs, padded by spaces. The 40-dash floor keeps an omp status rule's
+// short chrome segment out; the title cap keeps a prose line from passing.
+const COMPOSER_BORDER_MIN_DASHES = 40;
+const COMPOSER_BORDER_SHAPE = /^─+(?: +[^─\s](?:[^─]{0,78}[^─\s])? +─+)?$/u;
+
+/** Whether a line is a composer border rather than a plain transcript rule. */
+function isComposerBorder(line) {
+  const text = String(line ?? '');
+  if (!text.startsWith('─')) return false;
+  if ((text.match(/─/gu) ?? []).length < COMPOSER_BORDER_MIN_DASHES) return false;
+  return COMPOSER_BORDER_SHAPE.test(text);
+}
 
 // A CLI that has not drawn anything yet shows whatever the shell left on the
 // screen, and shells are full of boxes: direnv, a nix banner, a pnpm update
@@ -85,7 +103,7 @@ export function extractComposer(text) {
   const lines = String(text ?? '').split('\n');
   const rules = [];
   lines.forEach((line, index) => {
-    if (line.includes('─') && RULE_LINE.test(line)) rules.push(index);
+    if (isComposerBorder(line)) rules.push(index);
   });
   if (rules.length < 2) return null;
   const top = rules[rules.length - 2];
@@ -172,7 +190,7 @@ export function liveIndicatorLines(text) {
   const populated = (list) => list.filter((line) => line.trim() !== '');
   const rules = [];
   lines.forEach((line, index) => {
-    if (line.includes('─') && RULE_LINE.test(line)) rules.push(index);
+    if (isComposerBorder(line)) rules.push(index);
   });
   // No composer block on screen: the last populated line is all that is live.
   if (rules.length < 2) return populated(lines).slice(-1);

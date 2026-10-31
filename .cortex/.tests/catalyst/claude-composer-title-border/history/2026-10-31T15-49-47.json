@@ -1,0 +1,54 @@
+{
+  "run_id": "2026-10-31T15-49-47",
+  "timestamp": "2026-10-31T15:49:47.775Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4.1-flash",
+    "actor_runtime": "omp",
+    "judge": "opencode-go/deepseek-v4.1-flash"
+  },
+  "duration_ms": 90594,
+  "criteria": [
+    {
+      "id": "titled-composer-resolves",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "Reports the titled-border replay's extractComposer as \"\" (empty string, not null) and never labels the screen a dialog."
+    },
+    {
+      "id": "upgrade-check-named",
+      "kind": "semantic",
+      "status": "pass",
+      "detail": "States the post-upgrade check as capturing an idle composer live and confirming extractComposer returns \"\" rather than null before trusting c2d delivery to a Claude tab."
+    },
+    {
+      "id": "unit-pins-pass",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "75 tests, 75 pass, 0 fail; all three titled-border pins named"
+    },
+    {
+      "id": "titled-border-behavior",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "the titled empty composer extracts to an empty string and classifies as none"
+    },
+    {
+      "id": "dispatch-pairing",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "both launch documents run omp at thinking max on the DeepSeek Flash model under distinct_by: isolation"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "cites forbidden source: 2026-10-31-c2d-claude-composer-title-border"
+    }
+  ],
+  "judge_reasoning": "Both semantic criteria are explicitly satisfied by the actor's output and summary: empty-composer extraction for the titled border, and the idle-composer empty-extract upgrade gate.",
+  "regressions": [],
+  "errored": false,
+  "log_path": "2026-10-31T15-49-47-log.md"
+}

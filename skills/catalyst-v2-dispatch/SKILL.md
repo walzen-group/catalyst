@@ -241,5 +241,10 @@ the composer render, so after upgrading claude re-capture a gated startup screen
 and check that `TRUST_MARKERS` still classifies it and `trustAnswerKeys` lands on
 the accept row. c2d refuses to confirm a trust menu whose accept row it cannot
 read, so a stale detector surfaces as a failed launch with the screen specimen in
-its failure output, never as a wrong keypress. Incident
-2026-10-28-c2d-omp-hint-and-startup-gate established the current render.
+its failure output, never as a wrong keypress. Then capture an idle composer and
+confirm `extractComposer` returns an empty string, not null, before trusting c2d
+delivery to a Claude tab. Incident
+2026-10-31-c2d-claude-composer-title-border established that last check, after
+Claude Code 2.1.316 started drawing the generated session title inside the
+composer's top border; incident 2026-10-28-c2d-omp-hint-and-startup-gate
+established the trust-render check.

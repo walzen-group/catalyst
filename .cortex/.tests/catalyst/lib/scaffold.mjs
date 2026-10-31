@@ -16,10 +16,14 @@ actor:
   role: implementation-mid
   model: opencode-go/deepseek-v4.1-flash
 
-# The semantic judge. Always a model distinct from the actor.
+# The semantic judge. By default its model must differ from the actor's. A
+# shared model id is accepted only when distinct_by: isolation names the fresh
+# separate context the judge still launches in; any other value is a spec error.
 judge:
   role: judge
   model: claude-opus-4-8
+  # Optional; the only accepted value is isolation.
+  # distinct_by: isolation
 
 # Which config side to run: declared (the models above), live (models.yaml now),
 # or both (run both when they differ, one when they agree).

@@ -61,6 +61,35 @@ test('a judge model equal to the actor model is refused', () => {
   assert.ok(r.errors.some((e) => /distinct from the actor/.test(e)));
 });
 
+// User-authorized runner exception 2026-10-31: a shared model id is accepted
+// only when the spec declares distinct_by: isolation, which names the fresh
+// separate tab the judge still launches in. An unknown value is refused at
+// parse time, so a typo never reaches this exception.
+test('the same model id is accepted only under distinct_by: isolation', () => {
+  const judgeBlock = 'judge:\n  role: judge\n  model: claude-opus-4-8';
+  const collided = TEST_YAML.replace('  model: claude-opus-4-8', '  model: opencode-go/deepseek-v4.1-flash');
+  const refused = resolveRuns(specFromText(collided), ROLES);
+  assert.equal(refused.ok, false, 'the default refusal stays');
+
+  const isolated = specFromText(TEST_YAML.replace(
+    judgeBlock,
+    'judge:\n  role: judge\n  model: opencode-go/deepseek-v4.1-flash\n  distinct_by: isolation',
+  ));
+  assert.equal(isolated.judge.distinct_by, 'isolation');
+  const accepted = resolveRuns(isolated, ROLES);
+  assert.ok(accepted.ok, JSON.stringify(accepted.errors));
+  assert.equal(accepted.runs.length, 1);
+  assert.equal(accepted.runs[0].judgeModel, 'opencode-go/deepseek-v4.1-flash');
+  assert.equal(accepted.runs[0].actorModel, 'opencode-go/deepseek-v4.1-flash');
+
+  const unknown = parseTestSpec(parseYaml(TEST_YAML.replace(
+    judgeBlock,
+    'judge:\n  role: judge\n  model: claude-opus-4-8\n  distinct_by: separate',
+  )), 'slug');
+  assert.equal(unknown.ok, false);
+  assert.ok(unknown.errors.some((e) => /distinct_by/.test(e)), JSON.stringify(unknown.errors));
+});
+
 test('two actor models produce two runs, in order, each on its own harness and suffix', () => {
   const r = resolveRuns(specFromText(MULTI_TEST_YAML), ROLES);
   assert.ok(r.ok, JSON.stringify(r.errors));

@@ -1,0 +1,56 @@
+{
+  "run_id": "2026-10-31T15-52-10",
+  "timestamp": "2026-10-31T15:52:10.924Z",
+  "config_source": "declared",
+  "side": "declared",
+  "models_used": {
+    "actor": "opencode-go/deepseek-v4.1-flash",
+    "actor_runtime": "omp",
+    "judge": "opencode-go/deepseek-v4.1-flash"
+  },
+  "duration_ms": 110282,
+  "criteria": [
+    {
+      "id": "titled-composer-resolves",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "upgrade-check-named",
+      "kind": "semantic",
+      "status": "unverified",
+      "detail": "judge run errored; criterion left unverified"
+    },
+    {
+      "id": "unit-pins-pass",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "75 tests, 75 pass, 0 fail; all three titled-border pins named"
+    },
+    {
+      "id": "titled-border-behavior",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "no deterministic check produced a result for this criterion"
+    },
+    {
+      "id": "dispatch-pairing",
+      "kind": "deterministic",
+      "status": "pass",
+      "detail": "both launch documents run omp at thinking max on the DeepSeek Flash model under distinct_by: isolation"
+    },
+    {
+      "id": "no-contamination",
+      "kind": "deterministic",
+      "status": "fail",
+      "detail": "cites forbidden source: .cortex/reports/"
+    }
+  ],
+  "judge_reasoning": null,
+  "regressions": [
+    "titled-border-behavior"
+  ],
+  "errored": true,
+  "log_path": "2026-10-31T15-52-10-log.md"
+}

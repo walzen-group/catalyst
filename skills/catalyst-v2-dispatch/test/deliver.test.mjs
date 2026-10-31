@@ -16,6 +16,10 @@ import {
   CLAUDE_GHOST_QUEUED,
   CLAUDE_IDLE,
   CLAUDE_PARKED_PASTE,
+  CLAUDE_TITLED_FOREIGN_TEXT,
+  CLAUDE_TITLED_FOREIGN_TEXT_BACKSPACED,
+  CLAUDE_TITLED_GHOST_QUEUED,
+  CLAUDE_TITLED_IDLE,
   HERDR_STALL_STDERR,
   OMP_ATTACHMENT_PARKED,
   OMP_DRAFT,
@@ -574,6 +578,116 @@ test('a clean send needs no recovery at all', () => {
   assert.equal(out.status, 'delivered');
   assert.equal(out.attempts, 1);
   assert.equal(r.calls('agent send-keys').length, 0);
+});
+
+// Regression anchor: incident 2026-10-31-c2d-claude-composer-title-border.
+// Claude Code 2.1.316 draws the session title inside the composer's top
+// border. The pre-send read must still locate that composer, so an empty one
+// takes the send instead of failing as a dialog.
+
+test('a claude brief is delivered over a titled empty composer', () => {
+  const r = rig({
+    reads: [CLAUDE_TITLED_IDLE, CLAUDE_TITLED_IDLE],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+
+  const out = deliver({
+    name: 'orchestrator',
+    cli: 'claude',
+    session: '0411d547-4c0d-451a-bc47-4927cbe8ee23',
+    text: BRIEF,
+    env: r.env,
+    options: r.options,
+  });
+
+  assert.equal(out.status, 'delivered', out.reason);
+  assert.equal(out.attempts, 1);
+  assert.equal(r.calls('agent prompt').length, 1, 'the send happens over the empty titled composer');
+  assert.equal(r.calls('agent send-keys').length, 0);
+});
+
+test('a titled composer holding a real draft still refuses, with the draft as specimen', () => {
+  const r = rig({
+    agentGet: CLAUDE_GET,
+    reads: [CLAUDE_TITLED_FOREIGN_TEXT, CLAUDE_TITLED_FOREIGN_TEXT],
+    readsAfterBackspace: [CLAUDE_TITLED_FOREIGN_TEXT_BACKSPACED, CLAUDE_TITLED_FOREIGN_TEXT_BACKSPACED],
+  });
+
+  const out = deliver({
+    name: 'orchestrator',
+    cli: 'claude',
+    session: '0411d547-4c0d-451a-bc47-4927cbe8ee23',
+    text: BRIEF,
+    env: r.env,
+    options: r.options,
+  });
+
+  assert.equal(out.status, 'refused', out.reason);
+  assert.equal(out.specimen, 'half a thought the user was typing');
+  assert.equal(r.calls('agent prompt').length, 0, 'nothing is sent into the user\'s draft');
+  const typed = r.calls('pane send-text');
+  assert.deepEqual(typed[0].slice(2), ['w6:p5', 'g'], 'the probe puts back the character it took');
+});
+
+test('a titled composer showing the queued hint still proceeds', () => {
+  const r = rig({
+    agentGet: CLAUDE_GET,
+    reads: [CLAUDE_TITLED_GHOST_QUEUED, CLAUDE_TITLED_GHOST_QUEUED],
+    prompt: { status: 0, stdout: '{"result":{}}' },
+  });
+
+  const out = deliver({
+    name: 'orchestrator',
+    cli: 'claude',
+    session: '0411d547-4c0d-451a-bc47-4927cbe8ee23',
+    text: BRIEF,
+    env: r.env,
+    options: r.options,
+  });
+
+  assert.equal(out.status, 'delivered', out.reason);
+  assert.equal(r.calls('agent prompt').length, 1, 'the hint is not text to refuse over');
+  assert.deepEqual(r.calls('agent send-keys')[0].slice(2), ['orchestrator', 'backspace']);
+});
+
+test('an unlocated claude composer reports the specimen from the tail of the capture', () => {
+  const head = `● historical output ${'x'.repeat(2600)}`;
+  const tail = '● the composer render changed: no rule, no prompt';
+  const r = rig({ reads: [`${head}\n\n${tail}`] });
+
+  const out = deliver({
+    name: 'orchestrator',
+    cli: 'claude',
+    session: '0411d547-4c0d-451a-bc47-4927cbe8ee23',
+    text: BRIEF,
+    env: { ...r.env, CATALYST_DISPATCH_COMPOSER_ATTEMPTS: '2' },
+    options: r.options,
+  });
+
+  assert.equal(out.status, 'failed');
+  assert.match(out.reason, /could not locate the composer/);
+  assert.ok(out.specimen.includes('the composer render changed'), 'the tail, where the composer draws, is in the specimen');
+  assert.ok(!out.specimen.includes('historical output'), 'the old head of the screen is not what diagnosis sees');
+});
+
+test('an unlocated omp composer reports the specimen from the tail of the capture', () => {
+  const head = `● historical output ${'x'.repeat(2600)}`;
+  const tail = '● the omp composer bar is missing at the tail';
+  const r = rig({ reads: [`${head}\n\n${tail}`, `${head}\n\n${tail}`] });
+
+  const out = deliver({
+    name: 'orchestrator',
+    cli: 'omp',
+    session: '/tmp/catalyst-verify-tail/session.jsonl',
+    text: BRIEF,
+    env: r.env,
+    options: r.options,
+  });
+
+  assert.equal(out.status, 'failed');
+  assert.match(out.reason, /could not locate the omp composer bar/);
+  assert.ok(out.specimen.includes('the omp composer bar is missing at the tail'));
+  assert.ok(!out.specimen.includes('historical output'));
 });
 
 test('a composer that is only slow to draw is waited for, not failed', () => {

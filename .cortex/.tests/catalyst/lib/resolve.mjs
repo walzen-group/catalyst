@@ -81,8 +81,13 @@ export function resolveRuns(spec, roles) {
   // The judge must never run the same model as the actor (runner-enforced
   // invariant). Checked per run, so a collision with any one actor model in a
   // fanned-out list is caught and the whole test is refused before any launch.
+  // The one authorized exception is `distinct_by: isolation`: the two roles
+  // still launch in fresh separate tabs through c2d, and that isolation is what
+  // separates their contexts when the model id is shared (user-authorized
+  // runner exception 2026-10-31). The default refusal is unchanged.
+  const separatedByIsolation = spec.judge.distinct_by === 'isolation';
   for (const run of runs) {
-    if (run.actorModel === run.judgeModel) {
+    if (run.actorModel === run.judgeModel && !separatedByIsolation) {
       errors.push(
         `judge model "${run.judgeModel}" equals the actor model on the ${run.side} config; `
         + 'the judge must be a model distinct from the actor',
