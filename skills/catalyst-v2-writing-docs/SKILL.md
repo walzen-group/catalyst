@@ -55,7 +55,7 @@ Each hit is a candidate. The table says which ones to rewrite on sight.
 | wire, wiring | Keep only a literal wire. |
 | takes | Keep only for a duration or a quantity (rule 20). |
 | holds, held, reaches, carries, appears, arrives | Rewrite where the word stands for data being somewhere or a value moving by itself (rule 9). |
-| lists no, names no, writes no, reads no, sets no | Rewrite. Negate the verb (rule 21). |
+| has no, lists no, names no, writes no, reads no, sets no | Rewrite. Negate the verb (rule 21). |
 
 ## Structure rules
 
@@ -461,8 +461,7 @@ rule names. Remove the tic and the flow survives.
     sentence never states.
 21. Negate the verb. "An app without any of those lists no ConfigMap" reads as
     translated text; spoken English says "doesn't list a ConfigMap". The same
-    goes for names no, writes no, reads no and sets no. "Has no" stays where
-    "has" is the plain verb.
+    goes for has no, names no, writes no, reads no and sets no.
 22. Describe a group by what puts a member in it, and name one or two members
     as examples: "put an app that administers the platform, such as a
     dashboard or a database console, in management". A complete list of
