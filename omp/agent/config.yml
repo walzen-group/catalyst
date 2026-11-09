@@ -60,3 +60,5 @@ statusLine:
 startup:
   quiet: false
 interruptMode: wait
+update:
+  auto: false
